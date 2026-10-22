@@ -144,6 +144,10 @@ function initEls() {
   els.outputLockRatio = $("output-lock-ratio");
   els.outputWarn = $("output-warn");
   els.ditherSerpentine = $("dither-serpentine");
+  els.customPaletteBuilder = $("custom-palette-builder");
+  els.paletteBuilder = $("palette-builder");
+  els.paletteAddColor = $("palette-add-color");
+  els.paletteSaveCustom = $("palette-save-custom");
 }
 
 function setTheme(dark) {
@@ -167,6 +171,7 @@ function populatePalettes() {
   BUILTIN_PALETTES.forEach(p => {
     const opt = document.createElement("option");
     opt.value = p.name; opt.textContent = p.name;
+    if (p.editable) opt.dataset.editable = "true";
     select.appendChild(opt);
   });
   const autoOpt = document.createElement("option");
@@ -174,10 +179,12 @@ function populatePalettes() {
   select.appendChild(autoOpt);
   select.value = state.opts.palette;
   updatePaletteSwatches();
+  updateCustomPaletteBuilder();
 }
 
 function currentPalette() {
   if (state.opts.palette === "__auto__") return state.opts.customPalette || [];
+  if (state.opts.palette === "__custom__") return state.opts.customPalette || [];
   const builtin = BUILTIN_PALETTES.find(p => p.name === state.opts.palette);
   return builtin ? builtin.colors.slice() : [];
 }
@@ -187,12 +194,13 @@ function updatePaletteSwatches() {
   els.paletteSwatches.innerHTML = "";
   const palette = currentPalette();
   state.paletteColors = palette;
-  palette.forEach(c => {
+  palette.forEach((c, i) => {
     const sw = document.createElement("div");
     sw.className = "palette-swatch";
     sw.style.background = c;
     sw.title = c;
     sw.dataset.color = c;
+    sw.dataset.index = i;
     if (c === state.opts.monoColor) sw.classList.add("active");
     sw.addEventListener("click", () => {
       state.opts.monoColor = c;
@@ -202,6 +210,90 @@ function updatePaletteSwatches() {
     });
     els.paletteSwatches.appendChild(sw);
   });
+}
+
+function updateCustomPaletteBuilder() {
+  if (!els.customPaletteBuilder || !els.paletteBuilder) return;
+  const paletteName = state.opts.palette;
+  const builtin = BUILTIN_PALETTES.find(p => p.name === paletteName);
+  const isEditable = builtin && builtin.editable;
+  const isCustom = paletteName === "__custom__";
+  
+  if (isEditable || isCustom) {
+    els.customPaletteBuilder.style.display = "";
+    renderPaletteBuilder(paletteName);
+  } else {
+    els.customPaletteBuilder.style.display = "none";
+  }
+}
+
+function renderPaletteBuilder(paletteName) {
+  if (!els.paletteBuilder) return;
+  const colors = state.opts.customPalette && state.opts.customPalette.length 
+    ? state.opts.customPalette.slice() 
+    : (builtin = BUILTIN_PALETTES.find(p => p.name === paletteName)) 
+      ? builtin.colors.slice() 
+      : ["#000", "#fff"];
+  
+  els.paletteBuilder.innerHTML = "";
+  colors.forEach((c, i) => {
+    const wrap = document.createElement("div");
+    wrap.style.display = "flex";
+    wrap.style.alignItems = "center";
+    wrap.style.gap = "4px";
+    wrap.style.marginBottom = "4px";
+    
+    const input = document.createElement("input");
+    input.type = "color";
+    input.value = c;
+    input.style.width = "32px";
+    input.style.height = "24px";
+    input.style.border = "1px solid var(--line)";
+    input.style.borderRadius = "4px";
+    input.addEventListener("input", (e) => {
+      colors[i] = e.target.value;
+      state.opts.customPalette = colors;
+      updatePaletteSwatches();
+      pushHistory("custom-palette");
+      scheduleRender();
+    });
+    wrap.appendChild(input);
+    
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "btn btn-small";
+    removeBtn.textContent = "×";
+    removeBtn.style.padding = "2px 6px";
+    removeBtn.style.lineHeight = "1";
+    removeBtn.addEventListener("click", () => {
+      colors.splice(i, 1);
+      state.opts.customPalette = colors;
+      renderPaletteBuilder(paletteName);
+      updatePaletteSwatches();
+      pushHistory("custom-palette");
+      scheduleRender();
+    });
+    wrap.appendChild(removeBtn);
+    els.paletteBuilder.appendChild(wrap);
+  });
+  state.opts.customPalette = colors;
+  state.opts.palette = paletteName === "__custom__" ? "__custom__" : paletteName;
+}
+
+function saveCustomPalette() {
+  const name = (window.prompt("Custom palette name:", "") || "").trim();
+  if (!name) return;
+  const custom = { name, colors: state.opts.customPalette || [], editable: true };
+  try {
+    const customs = JSON.parse(localStorage.getItem("glyphcraft-custom-palettes") || "[]");
+    customs.push(custom);
+    localStorage.setItem("glyphcraft-custom-palettes", JSON.stringify(customs));
+    populatePalettes();
+    state.opts.palette = name;
+    state.opts.customPalette = custom.colors.slice();
+    updatePaletteSwatches();
+    pushHistory("custom-palette-save");
+    scheduleRender();
+  } catch (e) { alert("Could not save palette"); }
 }
 
 function rebuildRamp() {
@@ -1233,6 +1325,7 @@ function setupEventListeners() {
   on(els.paletteSelect, "change", () => {
     state.opts.palette = els.paletteSelect.value;
     updatePaletteSwatches();
+    updateCustomPaletteBuilder();
     pushHistory("palette"); scheduleRender();
   });
 
@@ -1264,6 +1357,16 @@ function setupEventListeners() {
     state.opts.ditherSerpentine = els.ditherSerpentine.checked;
     pushHistory("ditherSerpentine"); scheduleRender();
   });
+  on(els.paletteAddColor, "click", () => {
+    if (!state.opts.customPalette) state.opts.customPalette = ["#000", "#fff"];
+    state.opts.customPalette.push("#888");
+    const paletteName = state.opts.palette === "__custom__" ? "__custom__" : state.opts.palette;
+    renderPaletteBuilder(paletteName);
+    updatePaletteSwatches();
+    pushHistory("custom-palette");
+    scheduleRender();
+  });
+  on(els.paletteSaveCustom, "click", saveCustomPalette);
   on(els.outputWidth, "change", () => {
     state.opts.outputWidth = Math.min(8192, Math.max(1, +els.outputWidth.value));
     if (state.opts.outputLockRatio && els.outputPreset.value !== "custom") {

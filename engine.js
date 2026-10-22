@@ -16,14 +16,19 @@ const CHAR_SETS = {
 };
 
 const BUILTIN_PALETTES = [
-  { name: "Default", colors: ["#0b0b0c","#1a1a2e","#16213e","#0f3460","#e94560","#fff"] },
-  { name: "Terminal", colors: ["#000","#003300","#006600","#00aa00","#00ff00","#ccffcc"] },
-  { name: "Amber", colors: ["#000","#331a00","#663300","#cc6600","#ffaa00","#ffe0aa"] },
-  { name: "CGA", colors: ["#000","#555","#aaa","#fff","#f00","#0f0","#ff0","#0ff"] },
-  { name: "Sunset", colors: ["#1a0a2e","#3e1a4a","#6b2d5e","#a84866","#e87a6e","#ffb88c"] },
-  { name: "Ocean", colors: ["#001219","#005f73","#0a9396","#94d2bd","#e9d8a6","#ee9b00"] },
-  { name: "Matrix", colors: ["#000","#001100","#003300","#005500","#00aa00","#00ff00","#88ff88","#cceecc"] },
-  { name: "Monochrome", colors: ["#000","#222","#444","#666","#888","#aaa","#ccc","#fff"] }
+  { name: "1-bit", colors: ["#000", "#fff"] },
+  { name: "2-color", colors: ["#000", "#fff"], editable: true },
+  { name: "Game Boy", colors: ["#0f380f", "#306230", "#8bac0f", "#9bbc0f"] },
+  { name: "CGA", colors: ["#000", "#555", "#aaa", "#fff", "#f00", "#0f0", "#ff0", "#0ff"] },
+  { name: "Grayscale 4", colors: ["#000", "#555", "#aaa", "#fff"] },
+  { name: "Grayscale 8", colors: ["#000", "#222", "#444", "#666", "#888", "#aaa", "#ccc", "#fff"] },
+  { name: "Grayscale 16", colors: ["#000", "#111", "#222", "#333", "#444", "#555", "#666", "#777", "#888", "#999", "#aaa", "#bbb", "#ccc", "#ddd", "#eee", "#fff"] },
+  { name: "Terminal", colors: ["#000", "#003300", "#006600", "#00aa00", "#00ff00", "#ccffcc"] },
+  { name: "Amber", colors: ["#000", "#331a00", "#663300", "#cc6600", "#ffaa00", "#ffe0aa"] },
+  { name: "Sunset", colors: ["#1a0a2e", "#3e1a4a", "#6b2d5e", "#a84866", "#e87a6e", "#ffb88c"] },
+  { name: "Ocean", colors: ["#001219", "#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00"] },
+  { name: "Matrix", colors: ["#000", "#001100", "#003300", "#005500", "#00aa00", "#00ff00", "#88ff88", "#cceecc"] },
+  { name: "Monochrome", colors: ["#000", "#222", "#444", "#666", "#888", "#aaa", "#ccc", "#fff"] }
 ];
 
 function measureGlyphDensities(font, chars) {
