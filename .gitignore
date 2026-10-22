@@ -1,7 +1,3 @@
-TEST_REPORT.md
-TEST_RESULTS.json
-/test_suite_shots/
-/test_exports/
 .DS_Store
 Thumbs.db
 *.swp
@@ -11,6 +7,5 @@ Thumbs.db
 *.bak
 *.bak/
 tests/reports/
-
 __pycache__/
 *.pyc

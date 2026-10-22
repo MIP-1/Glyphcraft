@@ -105,11 +105,11 @@
 - Single optional Google Font (UnifrakturCook) with serif fallback
 - Vanilla JS, plain script tags, no modules, works on file://
 - Engraved manuscript aesthetic: oxblood gradient buttons, diamond slider thumbs, chamfered clip-path
-- Tests: `python3 test_suite.py` (headless Chromium); report in TEST_REPORT.md, 114 checks (all pass)
+- Tests: `python tests/test_suite.py` (headless Chromium); reports in `tests/reports/`
 - No Web Worker: effects run synchronously on the reduced preview
 ## Round 2 (2026-10-22) - DONE
 - **Light theme rebuilt** with a semantic token system (`--surface*`, `--text*`, `--border-*`, `--accent*`); every colour in `style.css` now comes from a token (including select arrows, checkbox SVGs, shadows and hover gradients). Legacy aliases (`--bg`, `--panel`, `--line`, …) kept for inline styles.
-- **Contrast**: 44×44 custom tokenised checkboxes, 44px controls, ≥3:1 control borders. New automated audit `tests/test_contrast.py` checks every visible text node, field, placeholder and control border in both themes at 360 and 1280 → **5960 pairs, 0 violations**.
+- **Contrast**: 44×44 custom tokenised checkboxes, 44px controls, ≥3:1 control borders. New automated audit `tests/test_contrast.py` checks every visible text node, field, placeholder and control border in both themes at 360 and 1280 → **9,628 pairs, 0 violations**.
 - **Sticky action bar**: solid `--surface-panel`, full panel width including padding/gap, `z-index: 40`, divider, content scrolls underneath (verified by hit-testing the gap).
 - **Unified controls**: duplicate value labels removed (`<input type=number>` is the only value display); one style per theme; no UA-white fields in dark or UA-dark fields in light; section headers are real buttons with `aria-expanded`.
 - **Menus**: File (Open/Export/Reset), View (zoom, fit, full page, fit small, 100/200%, panel, theme), Edit (undo/redo/compare). Click/tap open, Esc + outside click close, ArrowUp/Down/Home/End navigation, `<kbd>` shortcuts, `aria-haspopup/expanded`. Preset save/load moved to the Effects section.
@@ -119,16 +119,16 @@
 - **Cleanup**: test reports moved to `tests/reports/` (gitignored), no `.bak` files added, README added.
 
 ## Round 1 — Fixes + UI (2026-10-22) - DONE
-- **Theme audit (Task 1):** every colour in `style.css` resolves from the light/dark token sets; effect cards, fields, steppers, sliders, menus, dropdowns, borders and scrollbars re-theme. Automated contrast now also audits open menus, the zoom menu and the size-picker panel in both states → **9,620 pairs, 0 violations** at 360 and 1280.
+- **Theme audit (Task 1):** every colour in `style.css` resolves from the light/dark token sets; effect cards, fields, steppers, sliders, menus, dropdowns, borders and scrollbars re-theme. Automated contrast now also audits open menus, the zoom menu and the size-picker panel in both states → **9,628 pairs, 0 violations** at 360 and 1280.
 - **Effect values (Tasks 2/3):** all effect params use the shared `roundToStep()` / `clampToParam()` path. Slider, number field, wheel and arrows stay in sync; empty text is allowed while typing; clamping/snapping happens on blur or Enter; wheel and arrows move exactly one step; hold repeats through native key repeat; per-effect min/max/step preserved. Five effects exercised through type, arrow, hold, wheel and mouse-slider drag; all 28 numeric effect params checked for exact up/down and min/max clamp.
-- **Theme menu item (Task 4):** removed the View → Light theme row only. `T` and the top-bar theme button still work.
+- **Theme menu item (Task 4):** removed the View → Light theme row only. `T` and the top-bar theme button still work. (Superseded in Round 2 Phase 4: View → Theme is restored.)
 - **Inverse menus (Task 5):** File/View/Edit, the zoom menu and the size-picker panel use dedicated `--menu-*` tokens (dark page → light menu, light page → dark menu), including hover, focus, disabled, shortcut and accent states. Search field inside the inverse panel also uses the menu palette.
 - **Zoom borders (Task 6):** the whole −/%/+ group now has the same visible border as the % box, with separators between the three controls.
 - **Reorder (Task 7):** new reusable `reorder.js` (pointer events, 250 ms hold or 4 px drag, 6-dot handle, lifted ghost, drop line, FLIP neighbour animation, edge auto-scroll, `Alt+Up/Down`, Escape cancel, focus restoration). Render order follows stack order; plain clicks/scrolls do not reorder; order survives parameter edits. Mouse, synthetic touch-pointer and keyboard paths are tested.
 - **Dimensions (Task 8):** phone list rebuilt to 47 real models (26 iPhone 12–18, 21 Galaxy S20–S26), newest first. Picker shows true-aspect swatches, search, keyboard navigation, scrollable list, collapsed three-phone default, animated View more/View less and reduced-motion support. Native `#output-preset` remains as a hidden compatibility shim. Other size groups unchanged.
 - **UNVERIFIED resolutions:** iPhone 18 Pro Max 1320×2868, 18 Pro / 18 1206×2622; Galaxy S26 Ultra / S26+ 1440×3120, S26 1080×2340 (closest predecessor values, marked in data and UI).
-- **Evidence:** 167 tests, 0 failures; contrast 9,620 pairs, 0 violations; dark/light screenshots at 360 and 1280.
+- **Evidence:** 169 tests, 0 failures; contrast 9,628 pairs, 0 violations; dark/light screenshots at 360 and 1280.
 
 ## Testing
-- `python tests/test_suite.py` → 167 checks, 0 failures.
-- `python tests/test_contrast.py` → 9,620 pairs, 0 violations; screenshots in `tests/reports/`.
+- `python tests/test_suite.py` → 169 checks, 0 failures (includes the contrast audit).
+- `python tests/test_contrast.py` → 9,628 pairs, 0 violations; screenshots in `tests/reports/`.

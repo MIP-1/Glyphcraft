@@ -71,7 +71,7 @@ borders in both themes at 360 px and 1280 px.
 ## Tests
 
 ```bash
-python tests/test_suite.py     # 167 checks, headless Chromium via Playwright
+python tests/test_suite.py     # 169 checks, headless Chromium via Playwright
 python tests/test_contrast.py  # WCAG contrast audit, both themes, 2 widths
 ```
 
