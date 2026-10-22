@@ -809,6 +809,36 @@ with sync_playwright() as p:
     z_after_wheel = page.inner_text("#zoom-level")
     record("Ctrl + wheel zooms", z_before_wheel != z_after_wheel, f"{z_before_wheel} -> {z_after_wheel}")
 
+    # Two-finger pinch via Pointer Events (synthetic; no physical touch hardware).
+    page.keyboard.press("0")
+    page.wait_for_timeout(300)
+    pinch_before = page.inner_text("#zoom-level")
+    page.evaluate("""() => {
+      const c=document.getElementById('canvas-area');
+      const r=c.getBoundingClientRect(), cx=r.x+r.width/2, cy=r.y+r.height/2;
+      const pe=(type,x,y,id) => new PointerEvent(type,{bubbles:true,cancelable:true,pointerId:id,
+        pointerType:'touch',isPrimary:id===1,button:0,buttons:type==='pointerup'?0:1,clientX:x,clientY:y});
+      c.dispatchEvent(pe('pointerdown',cx-50,cy,1));
+      c.dispatchEvent(pe('pointerdown',cx+50,cy,2));
+      window.dispatchEvent(pe('pointermove',cx-100,cy,1));
+      window.dispatchEvent(pe('pointermove',cx+100,cy,2));
+    }""")
+    page.wait_for_timeout(350)
+    pinch_after = page.inner_text("#zoom-level")
+    page.evaluate("""() => {
+      const c=document.getElementById('canvas-area');
+      const r=c.getBoundingClientRect(), cx=r.x+r.width/2, cy=r.y+r.height/2;
+      const pe=(type,x,y,id) => new PointerEvent(type,{bubbles:true,cancelable:true,pointerId:id,
+        pointerType:'touch',isPrimary:id===1,button:0,buttons:0,clientX:x,clientY:y});
+      window.dispatchEvent(pe('pointerup',cx-100,cy,1));
+      window.dispatchEvent(pe('pointerup',cx+100,cy,2));
+    }""")
+    page.wait_for_timeout(200)
+    record("two-finger pinch zooms", pinch_before == "100%" and pinch_after == "200%",
+           f"{pinch_before} -> {pinch_after}")
+    page.keyboard.press("0")
+    page.wait_for_timeout(250)
+
     # Sticky action bar: opaque, full panel width, nothing shows through the gap.
     page.evaluate("() => { document.querySelector('.panel-content').scrollTop = 900; }")
     page.wait_for_timeout(300)
