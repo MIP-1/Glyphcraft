@@ -1810,6 +1810,7 @@ function setupEventListeners() {
       else if (action === "zoom-100") setZoom(1);
       else if (action === "zoom-200") setZoom(2);
       else if (action === "panel") togglePanel();
+      else if (action === "theme") toggleTheme();
     });
     if (item.dataset.action === "original") {
       item.addEventListener("pointerdown", e => { e.preventDefault(); state.showOriginal = true; scheduleRender(0); });

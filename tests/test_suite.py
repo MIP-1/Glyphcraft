@@ -714,10 +714,20 @@ with sync_playwright() as p:
     zsmall = page.inner_text("#zoom-level")
     record("fit small ~ half of fit", abs(int(zsmall[:-1]) - int(zfit[:-1]) / 2) <= 3, f"{zfit} -> {zsmall}")
 
-    # Round 1 Tasks 4/5/6: no theme item, inverse menu palette, zoom borders.
+    # Round 2 Phase 4: View > Theme is present and switches the theme.
     page.keyboard.press("Escape")
-    record("theme item removed from View menu", page.locator('[data-action="theme"]').count() == 0,
-           f"count={page.locator('[data-action="theme"]').count()}")
+    set_theme(True)
+    open_menu("view")
+    theme_item = page.locator('#dropdown-view [data-action="theme"]')
+    theme_before = page.evaluate("() => document.documentElement.dataset.theme")
+    theme_label = theme_item.inner_text() if theme_item.count() else ""
+    theme_item.click()
+    page.wait_for_timeout(300)
+    theme_after = page.evaluate("() => document.documentElement.dataset.theme")
+    record("theme item present in View menu",
+           theme_item.count() == 1 and "Theme" in theme_label and theme_before == "dark" and theme_after == "light",
+           f"count={theme_item.count()}, label={theme_label!r}, {theme_before} -> {theme_after}")
+    set_theme(True)
 
     def menu_palette(dark):
         set_theme(dark)
