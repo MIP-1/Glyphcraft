@@ -175,6 +175,21 @@ def run_theme(browser, theme, width, height):
     results += audit(page)
     page.keyboard.press("Escape")
 
+    # Size preset picker: collapsed and expanded (inverse palette).
+    page.locator("#output-preset-trigger").scroll_into_view_if_needed()
+    page.click("#output-preset-trigger")
+    page.wait_for_timeout(300)
+    results += audit(page)
+    more = page.locator("[data-preset-more]")
+    if more.count():
+        more.scroll_into_view_if_needed()
+        more.click()
+        page.wait_for_timeout(450)
+        results += audit(page)
+        more.click()
+        page.wait_for_timeout(350)
+    page.keyboard.press("Escape")
+
     # Error state on the home screen.
     page.evaluate("""() => {
       document.getElementById('canvas-area').classList.remove('has-content');

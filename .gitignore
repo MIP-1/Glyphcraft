@@ -11,3 +11,6 @@ Thumbs.db
 *.bak
 *.bak/
 tests/reports/
+
+__pycache__/
+*.pyc

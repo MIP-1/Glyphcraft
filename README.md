@@ -5,8 +5,8 @@ photo or a clip, tune the ramp, dithering, palette and effects, then export a
 still (PNG / JPG / WebP / SVG / TXT) or a WebM clip.
 
 Everything runs locally. There is no build step, no npm install and no server
-side: plain HTML, CSS and three classic scripts loaded in order
-(`engine.js` → `effects.js` → `app.js`).
+side: plain HTML, CSS and four classic scripts loaded in order
+(`engine.js` → `effects.js` → `reorder.js` → `app.js`).
 
 ## Run it
 
@@ -30,7 +30,9 @@ clipboard and font loading on `file://`.
 
 Twenty-two stackable effects (CRT, glitch, halftone, VHS, bloom, …) are
 available in every mode, plus adjustments (brightness, contrast, saturation,
-hue, highlights, shadows, sharpen, blur, invert, sepia).
+hue, highlights, shadows, sharpen, blur, invert, sepia). Drag a box by its
+six-dot handle (or focus the handle and press `Alt+Up` / `Alt+Down`) to change
+the render order.
 
 ## Home screen
 
@@ -55,6 +57,7 @@ and the layout becomes right-to-left.
 | `Space` + drag | Pan |
 | `\` | Toggle the controls panel |
 | `T` | Toggle theme |
+| `Alt+Up` / `Alt+Down` | Move the focused effect up / down |
 | `Esc` | Close menu / compare / full page |
 | `?` | Shortcut list |
 
@@ -68,7 +71,7 @@ borders in both themes at 360 px and 1280 px.
 ## Tests
 
 ```bash
-python tests/test_suite.py     # 131 checks, headless Chromium via Playwright
+python tests/test_suite.py     # 167 checks, headless Chromium via Playwright
 python tests/test_contrast.py  # WCAG contrast audit, both themes, 2 widths
 ```
 

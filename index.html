@@ -46,7 +46,6 @@
             <button class="menu-item" type="button" role="menuitem" data-action="zoom-200"><span>200%</span><kbd class="menu-key">2</kbd></button>
             <hr class="menu-sep">
             <button class="menu-item" type="button" role="menuitem" data-action="panel"><span>Toggle controls panel</span><kbd class="menu-key">\</kbd></button>
-            <button class="menu-item" type="button" role="menuitem" data-action="theme"><span id="menu-theme-label">Light theme</span><kbd class="menu-key">T</kbd></button>
           </div>
         </div>
         <div class="menu">
@@ -427,10 +426,21 @@
               </div>
             </div>
             <div class="control">
-              <label class="control-label" for="output-preset">Size Preset</label>
-              <div class="preset-select-wrap">
-                <input type="search" id="output-preset-search" placeholder="Search presets…" class="preset-search" aria-label="Search size presets">
-                <select id="output-preset"></select>
+              <span class="control-label" id="output-preset-label">Size Preset</span>
+              <div class="preset-picker" id="preset-picker">
+                <select id="output-preset" class="preset-native" tabindex="-1" aria-hidden="true"></select>
+                <button class="preset-trigger" type="button" id="output-preset-trigger"
+                        aria-haspopup="listbox" aria-expanded="false"
+                        aria-labelledby="output-preset-label output-preset-value">
+                  <span class="preset-trigger-swatch" id="output-preset-swatch" aria-hidden="true"></span>
+                  <span class="preset-trigger-value" id="output-preset-value">Original</span>
+                  <span class="preset-trigger-chevron" aria-hidden="true">⌄</span>
+                </button>
+                <div class="preset-popup" id="output-preset-popup" hidden>
+                  <input type="search" id="output-preset-search" placeholder="Search presets…" class="preset-search"
+                         aria-label="Search size presets" autocomplete="off">
+                  <div class="preset-list" id="output-preset-list" role="listbox" aria-labelledby="output-preset-label"></div>
+                </div>
               </div>
             </div>
             <div class="control-row" id="output-custom-row" hidden>
@@ -470,6 +480,7 @@
   <input type="file" id="file-input" accept="image/*,video/*" hidden>
   <script src="engine.js"></script>
   <script src="effects.js"></script>
+  <script src="reorder.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

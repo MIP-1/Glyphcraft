@@ -1,5 +1,18 @@
 const DEFAULT_ADJ = { brightness: 0, contrast: 0, saturation: 0, hue: 0, highlights: 0, shadows: 0, sharpen: 0, blur: 0, invert: false, sepia: false };
 
+// Snap a value to the control's own step grid so 0.1 + 0.2 never becomes
+// 0.30000000004, then clamp to the control's own range.
+function roundToStep(value, step, base) {
+  if (!Number.isFinite(value)) return base;
+  const size = step > 0 ? step : 1;
+  const decimals = (String(size).split(".")[1] || "").length;
+  const snapped = Math.round((value - base) / size) * size + base;
+  return parseFloat(snapped.toFixed(decimals));
+}
+function clampToParam(value, param) {
+  return Math.min(param.max, Math.max(param.min, roundToStep(value, param.step, param.min)));
+}
+
 function defaultEffects() {
   return (typeof EFFECTS !== "undefined" ? EFFECTS : []).map(e => makeEffect(e.id, false));
 }
@@ -63,6 +76,8 @@ const state = {
   compare: false,
   compareFrac: 0.5,
   showOriginal: false,
+  presetOpen: false,
+  presetExpanded: false,
   videoExporting: false,
   videoExportFrames: 0,
   videoExportTotal: 0,
@@ -148,6 +163,12 @@ function initEls() {
   els.compareOverlay = $("compare-overlay");
   els.compareSlider = $("compare-slider");
   els.outputPresetSearch = $("output-preset-search");
+  els.outputPresetTrigger = $("output-preset-trigger");
+  els.outputPresetPopup = $("output-preset-popup");
+  els.outputPresetList = $("output-preset-list");
+  els.outputPresetValue = $("output-preset-value");
+  els.outputPresetSwatch = $("output-preset-swatch");
+  els.presetPicker = $("preset-picker");
   els.outputCustomRow = $("output-custom-row");
   els.outputLockRatio = $("output-lock-ratio");
   els.outputWarn = $("output-warn");
@@ -176,7 +197,6 @@ function initEls() {
   els.dropError = document.querySelector("#drop-zone .drop-error");
   els.dropLoadingText = document.querySelector("#drop-zone .drop-loading-text");
   els.themeToggle = $("theme-toggle");
-  els.menuThemeLabel = $("menu-theme-label");
   els.zoomIn = $("zoom-in");
   els.zoomOut = $("zoom-out");
   els.zoomLevel = $("zoom-level");
@@ -201,9 +221,6 @@ function setTheme(theme) {
   if (els.themeToggle) {
     els.themeToggle.setAttribute("aria-label", label);
     els.themeToggle.title = label;
-  }
-  if (els.menuThemeLabel) {
-    els.menuThemeLabel.textContent = target === "light" ? "Light theme" : "Dark theme";
   }
   applyZoomUI();
 }
@@ -1138,7 +1155,9 @@ function syncUIFromState() {
   });
   els.adjInvert.checked = o.adj.invert;
   els.adjSepia.checked = o.adj.sepia;
+  if (!SIZE_PRESETS.some(p => p.id === o.outputPreset)) o.outputPreset = "original";
   els.outputPreset.value = o.outputPreset;
+  syncPresetPicker();
   els.outputWidth.value = o.outputWidth;
   els.outputHeight.value = o.outputHeight;
   els.outputFit.value = o.outputFit;
@@ -1176,14 +1195,15 @@ function renderEffectsList() {
     if (!def) return;
     const item = document.createElement("div");
     item.className = "effect-item";
-    item.draggable = true;
     item.dataset.index = index;
     item.dataset.id = fx.id;
 
-    const handle = document.createElement("span");
+    const handle = document.createElement("button");
+    handle.type = "button";
     handle.className = "drag-handle";
     handle.textContent = "⠿";
-    handle.title = "Drag to reorder";
+    handle.title = "Drag, or press Alt+Up / Alt+Down, to reorder";
+    handle.setAttribute("aria-label", "Reorder " + def.name + ". Press Alt+Up or Alt+Down to move.");
 
     const check = document.createElement("input");
     check.type = "checkbox";
@@ -1279,26 +1299,69 @@ function renderEffectsList() {
           numInput.min = p.min; numInput.max = p.max; numInput.step = p.step;
           numInput.value = fx.params[p.key];
 
-          const sync = (val) => {
-            const clamped = Math.max(p.min, Math.min(p.max, val));
-            input.value = clamped;
-            numInput.value = clamped;
-            fx.params[p.key] = clamped;
+          // Commit a finished value: clamp, snap to the step grid, rewrite both
+          // controls, and re-render. Typing uses a separate path so a partial
+          // entry ("" or "1" on the way to "12") is never rewritten mid-typing.
+          const commit = (value, history) => {
+            const next = clampToParam(Number.isFinite(value) ? value : p.def, p);
+            fx.params[p.key] = next;
+            input.value = next;
+            numInput.value = next;
+            numInput.removeAttribute("aria-invalid");
+            if (history) pushHistory("fx-" + fx.id + "-" + p.key);
+            scheduleRender(40);
+            return next;
+          };
+          const finishTyping = () => {
+            const raw = parseFloat(numInput.value);
+            commit(Number.isFinite(raw) ? raw : fx.params[p.key], true);
           };
 
-          input.addEventListener("input", () => sync(+input.value));
+          input.addEventListener("input", () => {
+            const next = clampToParam(+input.value, p);
+            fx.params[p.key] = next;
+            numInput.value = next;
+            scheduleRender(40);
+          });
+          input.addEventListener("change", () => pushHistory("fx-" + fx.id + "-" + p.key));
+
           numInput.addEventListener("input", () => {
-            const v = parseFloat(numInput.value);
-            if (!isNaN(v)) sync(v);
+            const text = numInput.value.trim();
+            if (text === "" || text === "-" || text === "." || text === "-.") {
+              numInput.setAttribute("aria-invalid", "true");
+              return;
+            }
+            const raw = parseFloat(text);
+            if (!Number.isFinite(raw)) return;
+            if (raw < p.min || raw > p.max) {
+              numInput.setAttribute("aria-invalid", "true");
+              return;
+            }
+            // Live preview while typing, but leave the text exactly as typed.
+            fx.params[p.key] = raw;
+            input.value = raw;
+            numInput.removeAttribute("aria-invalid");
+            scheduleRender(40);
           });
-          numInput.addEventListener("blur", () => {
-            if (isNaN(parseFloat(numInput.value))) numInput.value = fx.params[p.key];
-          });
+          numInput.addEventListener("blur", finishTyping);
           numInput.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowUp") { e.preventDefault(); sync(fx.params[p.key] + p.step * (e.shiftKey ? 10 : 1)); }
-            if (e.key === "ArrowDown") { e.preventDefault(); sync(fx.params[p.key] - p.step * (e.shiftKey ? 10 : 1)); }
+            if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+              e.preventDefault();
+              const base = Number.isFinite(parseFloat(numInput.value)) ? parseFloat(numInput.value) : fx.params[p.key];
+              commit(base + (e.key === "ArrowUp" ? p.step : -p.step), true);
+            } else if (e.key === "Enter") {
+              e.preventDefault();
+              finishTyping();
+            }
           });
-          input.addEventListener("dblclick", () => sync(p.def));
+          numInput.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            const base = Number.isFinite(parseFloat(numInput.value)) ? parseFloat(numInput.value) : fx.params[p.key];
+            commit(base + (e.deltaY < 0 ? p.step : -p.step), true);
+          }, { passive: false });
+
+          input.addEventListener("dblclick", () => commit(p.def, true));
+          numInput.addEventListener("dblclick", () => commit(p.def, true));
 
           inputWrap.appendChild(input);
           inputWrap.appendChild(numInput);
@@ -1317,27 +1380,185 @@ function renderEffectsList() {
       item.appendChild(params);
     }
 
-    item.addEventListener("dragstart", e => {
-      state.dragIndex = index;
-      item.classList.add("dragging");
-      if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
-    });
-    item.addEventListener("dragend", () => { item.classList.remove("dragging"); state.dragIndex = null; });
-    item.addEventListener("dragover", e => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = "move"; });
-    item.addEventListener("drop", e => {
-      e.preventDefault();
-      const from = state.dragIndex;
-      if (from == null || from === index) return;
-      const list = state.opts.effects;
-      const [moved] = list.splice(from, 1);
-      list.splice(index, 0, moved);
-      state.dragIndex = null;
-      renderEffectsList();
-      pushHistory("fx-reorder");
-      scheduleRender(60);
-    });
     els.effectsList.appendChild(item);
   });
+}
+
+function escHtml(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[ch]));
+}
+
+// Draw the true aspect ratio, scaled into a 16x16 box.
+function presetSwatch(w, h) {
+  if (!w || !h) {
+    return '<svg viewBox="0 0 16 16" focusable="false" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 2"/></svg>';
+  }
+  const ratio = w / h;
+  let rw, rh;
+  if (ratio >= 1) { rw = 13; rh = Math.max(2.5, 13 / ratio); }
+  else { rh = 13; rw = Math.max(2.5, 13 * ratio); }
+  const x = (16 - rw) / 2, y = (16 - rh) / 2;
+  return '<svg viewBox="0 0 16 16" focusable="false" aria-hidden="true"><rect x="' + x.toFixed(2) +
+    '" y="' + y.toFixed(2) + '" width="' + rw.toFixed(2) + '" height="' + rh.toFixed(2) +
+    '" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
+}
+
+function presetLabelParts(preset) {
+  const match = String(preset.label).match(/^(.*?)\s*(\d+×\d+)$/);
+  if (!match) return { name: preset.label, dim: "" };
+  return match[1] ? { name: match[1], dim: match[2] } : { name: match[2], dim: "" };
+}
+
+function presetOptionHtml(preset) {
+  const selected = preset.id === els.outputPreset.value;
+  const parts = presetLabelParts(preset);
+  let name = parts.name;
+  if (preset.brand === "iPhone") name = name.replace(/^iPhone\s+/, "");
+  if (preset.brand === "Galaxy") name = name.replace(/^Galaxy\s+/, "");
+  const dim = parts.dim ? '<span class="preset-option-dim">' + escHtml(parts.dim) + "</span>" : "";
+  const unverified = preset.unverified
+    ? '<span class="preset-unverified" title="Resolution unverified" aria-label="unverified resolution">*</span>'
+    : "";
+  return '<div class="preset-option" role="option" tabindex="-1" data-preset-id="' + escHtml(preset.id) +
+    '" aria-selected="' + selected + '"' + (preset.unverified ? ' title="Resolution unverified"' : "") + ">" +
+    '<span class="preset-swatch" aria-hidden="true">' + presetSwatch(preset.w, preset.h) + "</span>" +
+    '<span class="preset-option-label"><span class="preset-option-name">' + escHtml(name) + "</span>" +
+    dim + "</span>" + unverified + '<span class="preset-check" aria-hidden="true">✓</span></div>';
+}
+
+function renderPresetList() {
+  const list = els.outputPresetList;
+  if (!list) return;
+  const query = (els.outputPresetSearch ? els.outputPresetSearch.value : "").trim().toLowerCase();
+  const groups = [];
+  SIZE_PRESETS.forEach(preset => {
+    let group = groups.find(item => item.name === preset.group);
+    if (!group) { group = { name: preset.group, items: [] }; groups.push(group); }
+    group.items.push(preset);
+  });
+
+  let html = "";
+  groups.forEach(group => {
+    const matches = group.items.filter(preset =>
+      !query || preset.label.toLowerCase().includes(query) || group.name.toLowerCase().includes(query)
+    );
+    if (!matches.length) return;
+    html += '<div class="preset-group" role="group" aria-label="' + escHtml(group.name) + '">';
+    html += '<div class="preset-group-label">' + escHtml(group.name) + "</div>";
+
+    if (group.name === "Phone wallpaper") {
+      const iphone = matches.filter(preset => preset.brand === "iPhone");
+      const galaxy = matches.filter(preset => preset.brand === "Galaxy");
+      if (query) {
+        if (iphone.length) {
+          html += '<div class="preset-brand-label">iPhone</div>' + iphone.map(presetOptionHtml).join("");
+        }
+        if (galaxy.length) {
+          html += '<div class="preset-brand-label">Galaxy</div>' + galaxy.map(presetOptionHtml).join("");
+        }
+      } else {
+        const expanded = state.presetExpanded;
+        html += '<div class="preset-brand-label">iPhone</div>';
+        html += iphone.slice(0, 3).map(presetOptionHtml).join("");
+        html += '<div class="preset-phone-extra' + (expanded ? " expanded" : "") + '"' + (expanded ? "" : " inert") + '><div class="preset-phone-inner">';
+        html += iphone.slice(3).map(presetOptionHtml).join("");
+        if (galaxy.length) {
+          html += '<div class="preset-brand-label">Galaxy</div>' + galaxy.map(presetOptionHtml).join("");
+        }
+        html += "</div></div>";
+        html += '<button class="preset-more" type="button" data-preset-more aria-expanded="' + expanded + '">' +
+          (expanded ? "View less" : "View more") + "</button>";
+        html += '<div class="preset-note">* Resolution unverified — check before export.</div>';
+      }
+    } else {
+      html += matches.map(presetOptionHtml).join("");
+    }
+    html += "</div>";
+  });
+
+  list.innerHTML = html || '<div class="preset-empty">No presets found</div>';
+}
+
+function syncPresetPicker() {
+  if (!els.outputPreset) return;
+  const preset = SIZE_PRESETS.find(item => item.id === els.outputPreset.value) ||
+    SIZE_PRESETS.find(item => item.id === "original");
+  if (els.outputPresetValue) els.outputPresetValue.textContent = preset ? preset.label : "";
+  if (els.outputPresetSwatch) els.outputPresetSwatch.innerHTML = presetSwatch(preset && preset.w, preset && preset.h);
+  if (els.outputPresetList) {
+    els.outputPresetList.querySelectorAll(".preset-option").forEach(option => {
+      option.setAttribute("aria-selected", String(option.dataset.presetId === els.outputPreset.value));
+    });
+  }
+}
+
+function visiblePresetOptions() {
+  if (!els.outputPresetList) return [];
+  return Array.from(els.outputPresetList.querySelectorAll(".preset-option")).filter(option => {
+    if (option.closest("[inert]")) return false;
+    const rect = option.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  });
+}
+
+function openPresetPicker() {
+  if (!els.outputPresetPopup || !els.outputPresetTrigger) return;
+  const current = SIZE_PRESETS.find(preset => preset.id === els.outputPreset.value);
+  if (current && current.group === "Phone wallpaper") {
+    const iphones = SIZE_PRESETS.filter(preset => preset.group === "Phone wallpaper" && preset.brand === "iPhone");
+    if (current.brand === "Galaxy" || iphones.indexOf(current) >= 3) state.presetExpanded = true;
+  }
+  els.outputPresetPopup.hidden = false;
+  state.presetOpen = true;
+  els.outputPresetTrigger.setAttribute("aria-expanded", "true");
+  renderPresetList();
+  syncPresetPicker();
+  requestAnimationFrame(() => {
+    const selected = els.outputPresetList && els.outputPresetList.querySelector('[aria-selected="true"]');
+    if (selected) selected.scrollIntoView({ block: "nearest" });
+    if (els.outputPresetSearch) els.outputPresetSearch.focus();
+  });
+}
+
+function closePresetPicker(focusTrigger) {
+  if (!els.outputPresetPopup || els.outputPresetPopup.hidden) return;
+  els.outputPresetPopup.hidden = true;
+  state.presetOpen = false;
+  els.outputPresetTrigger.setAttribute("aria-expanded", "false");
+  if (els.outputPresetSearch) els.outputPresetSearch.value = "";
+  if (focusTrigger !== false) els.outputPresetTrigger.focus();
+}
+
+function choosePreset(id) {
+  if (!SIZE_PRESETS.some(preset => preset.id === id)) return;
+  if (els.outputPreset.value !== id) {
+    els.outputPreset.value = id;
+    els.outputPreset.dispatchEvent(new Event("change", { bubbles: true }));
+  } else {
+    updateOutputCustomVisibility();
+    syncPresetPicker();
+  }
+  closePresetPicker();
+}
+
+function togglePresetExpanded() {
+  const extra = els.outputPresetList && els.outputPresetList.querySelector(".preset-phone-extra");
+  const more = els.outputPresetList && els.outputPresetList.querySelector("[data-preset-more]");
+  if (!extra || !more) return;
+  state.presetExpanded = !state.presetExpanded;
+  if (state.presetExpanded) {
+    extra.removeAttribute("inert");
+    requestAnimationFrame(() => extra.classList.add("expanded"));
+    more.textContent = "View less";
+    more.setAttribute("aria-expanded", "true");
+  } else {
+    extra.classList.remove("expanded");
+    extra.setAttribute("inert", "");
+    more.textContent = "View more";
+    more.setAttribute("aria-expanded", "false");
+  }
 }
 
 function populateOutputPresets() {
@@ -1354,10 +1575,13 @@ function populateOutputPresets() {
     }
     const opt = document.createElement("option");
     opt.value = p.id; opt.textContent = p.label;
-    if (p.w && p.h) opt.dataset.w = p.w; opt.dataset.h = p.h;
+    if (p.w && p.h) { opt.dataset.w = p.w; opt.dataset.h = p.h; }
     optgroup.appendChild(opt);
   });
+  if (!SIZE_PRESETS.some(p => p.id === state.opts.outputPreset)) state.opts.outputPreset = "original";
   select.value = state.opts.outputPreset;
+  renderPresetList();
+  syncPresetPicker();
   updateOutputCustomVisibility();
 }
 
@@ -1383,6 +1607,7 @@ function updateOutputCustomVisibility() {
     els.outputHeight.value = state.opts.outputHeight;
   }
   checkOutputSizeWarning();
+  syncPresetPicker();
 }
 
 function checkOutputSizeWarning() {
@@ -1412,6 +1637,7 @@ function toggleCompare() {
 }
 
 function closeAllMenus(except) {
+  if (state.presetOpen) closePresetPicker(false);
   document.querySelectorAll(".menu-dropdown.open, .zoom-menu.open").forEach(dd => {
     if (dd === except) return;
     dd.classList.remove("open");
@@ -1562,7 +1788,7 @@ function setupEventListeners() {
   });
 
   document.addEventListener("click", e => {
-    if (!e.target.closest(".menu") && !e.target.closest(".zoom-menu-wrap")) closeAllMenus();
+    if (!e.target.closest(".menu") && !e.target.closest(".zoom-menu-wrap") && !e.target.closest(".preset-picker")) closeAllMenus();
   });
 
   /* ---- Menu actions ---- */
@@ -1584,7 +1810,6 @@ function setupEventListeners() {
       else if (action === "zoom-100") setZoom(1);
       else if (action === "zoom-200") setZoom(2);
       else if (action === "panel") togglePanel();
-      else if (action === "theme") toggleTheme();
     });
     if (item.dataset.action === "original") {
       item.addEventListener("pointerdown", e => { e.preventDefault(); state.showOriginal = true; scheduleRender(0); });
@@ -1796,12 +2021,58 @@ function setupEventListeners() {
     updateOutputSizeFromPreset();
     pushHistory("outputPreset"); scheduleRender();
   });
-  on(els.outputPresetSearch, "input", () => {
-    const query = els.outputPresetSearch.value.toLowerCase();
-    Array.from(els.outputPreset.options).forEach(opt => {
-      const match = !query || opt.textContent.toLowerCase().includes(query);
-      opt.style.display = match ? "" : "none";
-    });
+  on(els.outputPresetSearch, "input", renderPresetList);
+
+  on(els.outputPresetTrigger, "click", () => {
+    if (state.presetOpen) closePresetPicker();
+    else openPresetPicker();
+  });
+  on(els.outputPresetTrigger, "keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      openPresetPicker();
+    }
+  });
+  on(els.outputPresetSearch, "keydown", (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const options = visiblePresetOptions();
+      if (options.length) { options[0].focus(); options[0].scrollIntoView({ block: "nearest" }); }
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      closePresetPicker();
+    } else if (e.key === "Enter") {
+      const options = visiblePresetOptions();
+      if (options.length === 1) { e.preventDefault(); choosePreset(options[0].dataset.presetId); }
+    }
+  });
+  on(els.outputPresetList, "click", (e) => {
+    const more = e.target.closest("[data-preset-more]");
+    if (more) { togglePresetExpanded(); return; }
+    const option = e.target.closest(".preset-option");
+    if (option) choosePreset(option.dataset.presetId);
+  });
+  on(els.outputPresetList, "keydown", (e) => {
+    const options = visiblePresetOptions();
+    const index = options.indexOf(document.activeElement);
+    if (e.key === "Escape") { e.preventDefault(); closePresetPicker(); return; }
+    if (e.key === "Tab") { closePresetPicker(false); return; }
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
+      if ((e.key === "Enter" || e.key === " ") && index >= 0) {
+        e.preventDefault();
+        choosePreset(options[index].dataset.presetId);
+      }
+      return;
+    }
+    if (!options.length) return;
+    e.preventDefault();
+    let next = index;
+    if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = options.length - 1;
+    else if (e.key === "ArrowDown") next = index < 0 ? 0 : Math.min(options.length - 1, index + 1);
+    else next = index < 0 ? 0 : Math.max(0, index - 1);
+    options[next].focus();
+    options[next].scrollIntoView({ block: "nearest" });
   });
   on(els.outputLockRatio, "change", () => {
     state.opts.outputLockRatio = els.outputLockRatio.checked;
@@ -1890,6 +2161,30 @@ function setupEventListeners() {
   });
 }
 
+function initReorder() {
+  if (!els.effectsList || typeof createReorderList !== "function") return;
+  createReorderList({
+    container: els.effectsList,
+    itemSelector: ".effect-item",
+    handleSelector: ".drag-handle",
+    onReorder(from, to) {
+      const list = state.opts.effects;
+      if (from < 0 || from >= list.length || to < 0 || to >= list.length || from === to) return;
+      const [moved] = list.splice(from, 1);
+      list.splice(to, 0, moved);
+      pushHistory("fx-reorder");
+      renderEffectsList();
+      scheduleRender(40);
+      requestAnimationFrame(() => {
+        const nextHandle = els.effectsList.querySelector('[data-id="' + moved.id + '"] .drag-handle');
+        if (nextHandle) nextHandle.focus({ preventScroll: true });
+      });
+      const def = EFFECTS.find(e => e.id === moved.id);
+      showToast((def ? def.name : "Effect") + " moved " + (to < from ? "up" : "down"));
+    }
+  });
+}
+
 function init() {
   initEls();
   loadTheme();
@@ -1900,11 +2195,16 @@ function init() {
   setupEventListeners();
   loadSectionCollapse();
   syncUIFromState();
+  initReorder();
   state.history.undo.push(snapshot());
   if (els.outputWidth) els.outputWidth.disabled = true;
   if (els.outputHeight) els.outputHeight.disabled = true;
   applyZoomUI();
   updateStatus();
 }
+
+document.addEventListener("pointerdown", (e) => {
+  if (state.presetOpen && els.presetPicker && !els.presetPicker.contains(e.target)) closePresetPicker(false);
+});
 
 document.addEventListener("DOMContentLoaded", init);
