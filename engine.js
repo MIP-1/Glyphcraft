@@ -411,20 +411,55 @@ function canvasToTxt(canvas, opts) {
 }
 
 const SIZE_PRESETS = [
-  { id: "original", label: "Original", w: null, h: null },
-  { id: "1:1", label: "1:1 1080×1080", w: 1080, h: 1080 },
-  { id: "4:5", label: "4:5 1080×1350", w: 1080, h: 1350 },
-  { id: "3:4", label: "3:4 1080×1440", w: 1080, h: 1440 },
-  { id: "2:3", label: "2:3 1200×1800", w: 1200, h: 1800 },
-  { id: "9:16", label: "9:16 1080×1920", w: 1080, h: 1920 },
-  { id: "16:9", label: "16:9 1920×1080", w: 1920, h: 1080 },
-  { id: "4:3", label: "4:3 1600×1200", w: 1600, h: 1200 },
-  { id: "3:2", label: "3:2 1800×1200", w: 1800, h: 1200 },
-  { id: "5:4", label: "5:4 1350×1080", w: 1350, h: 1080 },
-  { id: "21:9", label: "21:9 2560×1080", w: 2560, h: 1080 },
-  { id: "a4p", label: "A4 Portrait 2480×3508", w: 2480, h: 3508 },
-  { id: "a4l", label: "A4 Landscape 3508×2480", w: 3508, h: 2480 },
-  { id: "custom", label: "Custom…", w: null, h: null }
+  // Video
+  { group: "Video", id: "720p", label: "720p 1280×720", w: 1280, h: 720 },
+  { group: "Video", id: "1080p", label: "1080p 1920×1080", w: 1920, h: 1080 },
+  { group: "Video", id: "2k", label: "2K 2560×1440", w: 2560, h: 1440 },
+  { group: "Video", id: "4k", label: "4K 3840×2160", w: 3840, h: 2160 },
+  { group: "Video", id: "8k", label: "8K 7680×4320", w: 7680, h: 4320 },
+  { group: "Video", id: "vertical-1080", label: "Vertical 1080×1920", w: 1080, h: 1920 },
+  // Desktop wallpaper
+  { group: "Desktop wallpaper", id: "hd", label: "1366×768", w: 1366, h: 768 },
+  { group: "Desktop wallpaper", id: "wxga", label: "1920×1200", w: 1920, h: 1200 },
+  { group: "Desktop wallpaper", id: "1440p", label: "2560×1600", w: 2560, h: 1600 },
+  { group: "Desktop wallpaper", id: "ultrawide", label: "3440×1440", w: 3440, h: 1440 },
+  { group: "Desktop wallpaper", id: "5k", label: "5120×1440", w: 5120, h: 1440 },
+  // Phone wallpaper
+  { group: "Phone wallpaper", id: "fhd-plus", label: "FHD+ 1080×2400", w: 1080, h: 2400 },
+  { group: "Phone wallpaper", id: "qhd-plus", label: "QHD+ 1440×3200", w: 1440, h: 3200 },
+  { group: "Phone wallpaper", id: "iphone-pro", label: "iPhone Pro 1179×2556", w: 1179, h: 2556 },
+  { group: "Phone wallpaper", id: "iphone-pro-max", label: "iPhone Pro Max 1290×2796", w: 1290, h: 2796 },
+  { group: "Phone wallpaper", id: "samsung-s", label: "Samsung S 1080×2340", w: 1080, h: 2340 },
+  // Instagram
+  { group: "Instagram", id: "ig-portrait", label: "Portrait 1080×1350", w: 1080, h: 1350 },
+  { group: "Instagram", id: "ig-square", label: "Square 1080×1080", w: 1080, h: 1080 },
+  { group: "Instagram", id: "ig-story", label: "Story/Reel 1080×1920", w: 1080, h: 1920 },
+  // YouTube
+  { group: "YouTube", id: "yt-thumb", label: "Thumbnail 1280×720", w: 1280, h: 720 },
+  { group: "YouTube", id: "yt-thumb-4k", label: "Thumbnail 4K 3840×2160", w: 3840, h: 2160 },
+  { group: "YouTube", id: "yt-banner", label: "Banner 2048×1152", w: 2048, h: 1152 },
+  { group: "YouTube", id: "yt-icon", label: "Icon 800×800", w: 800, h: 800 },
+  // Link preview
+  { group: "Link preview", id: "og", label: "OG 1200×630", w: 1200, h: 630 },
+  { group: "Link preview", id: "linkedin", label: "LinkedIn 1200×627", w: 1200, h: 627 },
+  // Avatar
+  { group: "Avatar", id: "avatar-400", label: "400×400", w: 400, h: 400 },
+  { group: "Avatar", id: "avatar-800", label: "800×800", w: 800, h: 800 },
+  // Logo / icon
+  { group: "Logo / icon", id: "favicon-32", label: "Favicon 32", w: 32, h: 32 },
+  { group: "Logo / icon", id: "favicon-64", label: "Favicon 64", w: 64, h: 64 },
+  { group: "Logo / icon", id: "apple-touch", label: "Apple Touch 180", w: 180, h: 180 },
+  { group: "Logo / icon", id: "pwa-192", label: "PWA 192", w: 192, h: 192 },
+  { group: "Logo / icon", id: "pwa-512", label: "PWA 512", w: 512, h: 512 },
+  { group: "Logo / icon", id: "app-icon", label: "App Icon 1024", w: 1024, h: 1024 },
+  { group: "Logo / icon", id: "logo-1000", label: "Logo 1000×1000", w: 1000, h: 1000 },
+  // Print
+  { group: "Print", id: "a4-150", label: "A4 @150dpi 1240×1754", w: 1240, h: 1754 },
+  { group: "Print", id: "a4-300", label: "A4 @300dpi 2480×3508", w: 2480, h: 3508 },
+  // Original
+  { group: "Original", id: "original", label: "Original", w: null, h: null },
+  // Custom
+  { group: "Custom", id: "custom", label: "Custom…", w: null, h: null }
 ];
 
 function computeOutputSize(sourceW, sourceH, preset, customW, customH, fit) {
@@ -433,7 +468,7 @@ function computeOutputSize(sourceW, sourceH, preset, customW, customH, fit) {
   if (!p || (p.w === null && preset !== "custom")) return { w: sourceW, h: sourceH };
   let w = preset === "custom" ? customW : p.w;
   let h = preset === "custom" ? customH : p.h;
-  w = Math.min(w, 4096); h = Math.min(h, 4096);
+  w = Math.min(w, 8192); h = Math.min(h, 8192);
   return { w, h };
 }
 

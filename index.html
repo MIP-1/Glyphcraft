@@ -310,25 +310,38 @@
             </div>
             <div class="control">
               <label class="control-label">Size Preset</label>
-              <select id="output-preset"></select>
+              <div class="preset-select-wrap">
+                <input type="search" id="output-preset-search" placeholder="Search presets…" class="preset-search">
+                <select id="output-preset"></select>
+              </div>
             </div>
-            <div class="control-row">
+            <div class="control-row" id="output-custom-row" style="display: none;">
               <div class="control half">
                 <label class="control-label">Width</label>
-                <input type="number" id="output-width" min="1" max="4096" value="1920">
+                <input type="number" id="output-width" min="1" max="8192" value="1920">
               </div>
               <div class="control half">
                 <label class="control-label">Height</label>
-                <input type="number" id="output-height" min="1" max="4096" value="1080">
+                <input type="number" id="output-height" min="1" max="8192" value="1080">
               </div>
             </div>
-            <div class="control">
-              <label class="control-label">Fit</label>
-              <select id="output-fit">
-                <option value="contain">Contain</option>
-                <option value="cover">Cover</option>
-                <option value="stretch">Stretch</option>
-              </select>
+            <div class="control-row">
+              <div class="control half">
+                <label class="control-label">Fit</label>
+                <select id="output-fit">
+                  <option value="contain">Contain</option>
+                  <option value="cover">Cover</option>
+                  <option value="stretch">Stretch</option>
+                </select>
+              </div>
+              <div class="control half">
+                <label class="control-label checkbox">
+                  <input type="checkbox" id="output-lock-ratio" checked> Lock Ratio
+                </label>
+              </div>
+            </div>
+            <div class="control hidden" id="output-warn">
+              <span style="color: var(--accent); font-size: 12px;">⚠ Large output may be slow to render/export</span>
             </div>
           </section>
         </div>

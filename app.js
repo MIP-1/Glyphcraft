@@ -28,6 +28,7 @@ function defaultOpts() {
     outputWidth: 1920,
     outputHeight: 1080,
     outputFit: "contain",
+    outputLockRatio: true,
     exportFormat: "png",
     effects: defaultEffects()
   };
@@ -137,6 +138,10 @@ function initEls() {
   els.presetsBar = $("presets-bar");
   els.compareOverlay = $("compare-overlay");
   els.compareSlider = $("compare-slider");
+  els.outputPresetSearch = $("output-preset-search");
+  els.outputCustomRow = $("output-custom-row");
+  els.outputLockRatio = $("output-lock-ratio");
+  els.outputWarn = $("output-warn");
 }
 
 function setTheme(dark) {
@@ -742,7 +747,9 @@ function syncUIFromState() {
   els.outputWidth.value = o.outputWidth;
   els.outputHeight.value = o.outputHeight;
   els.outputFit.value = o.outputFit;
+  els.outputLockRatio.checked = o.outputLockRatio;
   els.exportFormat.value = o.exportFormat;
+  updateOutputCustomVisibility();
   toggleModeSections();
   renderEffectsList();
   updatePaletteSwatches();
@@ -964,12 +971,22 @@ function renderEffectsList() {
 function populateOutputPresets() {
   const select = els.outputPreset;
   select.innerHTML = "";
+  let currentGroup = null;
+  let optgroup = null;
   SIZE_PRESETS.forEach(p => {
+    if (p.group !== currentGroup) {
+      currentGroup = p.group;
+      optgroup = document.createElement("optgroup");
+      optgroup.label = currentGroup;
+      select.appendChild(optgroup);
+    }
     const opt = document.createElement("option");
     opt.value = p.id; opt.textContent = p.label;
-    select.appendChild(opt);
+    if (p.w && p.h) opt.dataset.w = p.w; opt.dataset.h = p.h;
+    optgroup.appendChild(opt);
   });
   select.value = state.opts.outputPreset;
+  updateOutputCustomVisibility();
 }
 
 function filterControls(q) {
@@ -984,6 +1001,36 @@ function filterControls(q) {
     });
     sec.style.display = (!query || visible > 0) ? "" : "none";
   });
+}
+
+function updateOutputCustomVisibility() {
+  const isCustom = els.outputPreset.value === "custom";
+  els.outputCustomRow.style.display = isCustom ? "flex" : "none";
+  if (isCustom) {
+    els.outputWidth.value = state.opts.outputWidth;
+    els.outputHeight.value = state.opts.outputHeight;
+  }
+  checkOutputSizeWarning();
+}
+
+function checkOutputSizeWarning() {
+  const w = +els.outputWidth.value;
+  const h = +els.outputHeight.value;
+  const isLarge = w * h > 4000000 || w > 4096 || h > 4096;
+  els.outputWarn.classList.toggle("hidden", !isLarge);
+}
+
+function updateOutputSizeFromPreset() {
+  const opt = els.outputPreset.options[els.outputPreset.selectedIndex];
+  if (opt && opt.dataset.w && opt.dataset.h) {
+    const w = +opt.dataset.w;
+    const h = +opt.dataset.h;
+    state.opts.outputWidth = w;
+    state.opts.outputHeight = h;
+    els.outputWidth.value = w;
+    els.outputHeight.value = h;
+    checkOutputSizeWarning();
+  }
 }
 
 function toggleCompare() {
@@ -1196,17 +1243,50 @@ function setupEventListeners() {
 
   on(els.outputPreset, "change", () => {
     state.opts.outputPreset = els.outputPreset.value;
-    const custom = state.opts.outputPreset === "custom";
-    els.outputWidth.disabled = !custom;
-    els.outputHeight.disabled = !custom;
+    updateOutputCustomVisibility();
+    updateOutputSizeFromPreset();
     pushHistory("outputPreset"); scheduleRender();
   });
-  on(els.outputWidth, "change", () => { state.opts.outputWidth = Math.min(4096, Math.max(1, +els.outputWidth.value)); pushHistory("outW"); scheduleRender(); });
-  on(els.outputHeight, "change", () => { state.opts.outputHeight = Math.min(4096, Math.max(1, +els.outputHeight.value)); pushHistory("outH"); scheduleRender(); });
+  on(els.outputPresetSearch, "input", () => {
+    const query = els.outputPresetSearch.value.toLowerCase();
+    Array.from(els.outputPreset.options).forEach(opt => {
+      const match = !query || opt.textContent.toLowerCase().includes(query);
+      opt.style.display = match ? "" : "none";
+    });
+  });
+  on(els.outputLockRatio, "change", () => {
+    state.opts.outputLockRatio = els.outputLockRatio.checked;
+  });
+  on(els.outputWidth, "change", () => {
+    state.opts.outputWidth = Math.min(8192, Math.max(1, +els.outputWidth.value));
+    if (state.opts.outputLockRatio && els.outputPreset.value !== "custom") {
+      const opt = els.outputPreset.options[els.outputPreset.selectedIndex];
+      if (opt && opt.dataset.w && opt.dataset.h) {
+        const ratio = +opt.dataset.w / +opt.dataset.h;
+        state.opts.outputHeight = Math.round(state.opts.outputWidth / ratio);
+        els.outputHeight.value = state.opts.outputHeight;
+      }
+    }
+    checkOutputSizeWarning();
+    pushHistory("outW"); scheduleRender();
+  });
+  on(els.outputHeight, "change", () => {
+    state.opts.outputHeight = Math.min(8192, Math.max(1, +els.outputHeight.value));
+    if (state.opts.outputLockRatio && els.outputPreset.value !== "custom") {
+      const opt = els.outputPreset.options[els.outputPreset.selectedIndex];
+      if (opt && opt.dataset.w && opt.dataset.h) {
+        const ratio = +opt.dataset.w / +opt.dataset.h;
+        state.opts.outputWidth = Math.round(state.opts.outputHeight * ratio);
+        els.outputWidth.value = state.opts.outputWidth;
+      }
+    }
+    checkOutputSizeWarning();
+    pushHistory("outH"); scheduleRender();
+  });
   on(els.outputFit, "change", () => { state.opts.outputFit = els.outputFit.value; pushHistory("fit"); scheduleRender(); });
   on(els.exportFormat, "change", () => { state.opts.exportFormat = els.exportFormat.value; pushHistory("format"); });
   on(els.ditherKernel, "change", () => { state.opts.ditherKernel = els.ditherKernel.value; pushHistory("kernel"); scheduleRender(); });
-  on(els.ditherDepth, "input", () => { state.opts.ditherDepth = +els.ditherDepth.value; els.valColorDepth.textContent = state.opts.ditherDepth; pushHistory("ditherDepth"); scheduleRender(); });
+  on(els.ditherDepth, "input", () => { state.opts.ditherDepth = +els.ditherDepth.value; els.valColorDepth.textContent = state.opts.ditherDepth; els.ditherDepthNum.value = state.opts.ditherDepth; pushHistory("ditherDepth"); scheduleRender(); });
 
   document.querySelectorAll(".preset-btn").forEach(btn => {
     btn.addEventListener("click", () => {
