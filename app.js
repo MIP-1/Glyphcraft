@@ -55,7 +55,9 @@ const state = {
   videoExporting: false,
   videoExportFrames: 0,
   videoExportTotal: 0,
-  history: { undo: [], redo: [], lastKey: "", lastAt: 0 }
+  history: { undo: [], redo: [], lastKey: "", lastAt: 0 },
+  pendingReset: false,
+  exportProgress: { active: false, format: "", progress: 0, total: 0 }
 };
 
 const PREVIEW_MAX = 1100;
@@ -513,11 +515,13 @@ async function exportImage() {
   if (format === "svg") {
     const svg = canvasToSvg(base, { ...opts, preApplied: true });
     saveBlob(new Blob([svg], { type: "image/svg+xml" }), "glyphcraft.svg");
+    showToast("SVG exported");
     return;
   }
   if (format === "txt") {
     const txt = canvasToTxt(base, { ...opts, preApplied: true });
     saveBlob(new Blob([txt], { type: "text/plain" }), "glyphcraft.txt");
+    showToast("TXT exported");
     return;
   }
   if (format === "webm") {
@@ -531,6 +535,7 @@ async function exportImage() {
   const typeMap = { png: "image/png", jpg: "image/jpeg", webp: "image/webp" };
   const blob = await canvasToBlob(canvas, typeMap[format] || "image/png", 0.95);
   saveBlob(blob, `glyphcraft.${format}`);
+  showToast(`${format.toUpperCase()} exported`);
 }
 
 function saveBlob(blob, filename) {
@@ -546,6 +551,7 @@ function saveBlob(blob, filename) {
 async function exportVideo(full, opts) {
   if (!window.MediaRecorder) { alert("WebM export is not supported in this browser"); return; }
   state.videoExporting = true;
+  state.exportProgress = { active: true, format: "webm", progress: 0, total: 0 };
   const canvas = document.createElement("canvas");
   canvas.width = full.w; canvas.height = full.h;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -555,6 +561,7 @@ async function exportVideo(full, opts) {
   const total = Math.max(1, Math.ceil(duration * fps));
   state.videoExportTotal = total;
   state.videoExportFrames = 0;
+  state.exportProgress.total = total;
 
   if (video) { video.pause(); video.currentTime = 0; }
 
@@ -567,7 +574,10 @@ async function exportVideo(full, opts) {
     recorder.onstop = () => {
       saveBlob(new Blob(chunks, { type: mimeType }), "glyphcraft.webm");
       state.videoExporting = false;
+      state.exportProgress.active = false;
       updateStatus();
+      updateExportButton();
+      showToast("WebM exported");
       resolve();
     };
   });
@@ -581,7 +591,9 @@ async function exportVideo(full, opts) {
     const base = prepareBase(video || state.source, full.w, full.h, opts);
     renderToContext(base, ctx, full.w, full.h, opts);
     state.videoExportFrames = i + 1;
+    state.exportProgress.progress = i + 1;
     updateStatus();
+    updateExportButton();
     await new Promise(r => setTimeout(r, 1000 / fps));
   }
   recorder.stop();
@@ -589,14 +601,65 @@ async function exportVideo(full, opts) {
   await done;
 }
 
+function showToast(message, duration = 2500) {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--panel2); color: var(--text);
+    padding: 10px 16px; border-radius: 8px; border: 1px solid var(--line);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 1000;
+    font-family: var(--font-ui); font-size: 13px;
+    animation: toast-in 0.2s ease-out;
+  `;
+  if (!document.getElementById("toast-style")) {
+    const style = document.createElement("style");
+    style.id = "toast-style";
+    style.textContent = `
+      @keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+      @keyframes toast-out { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(16px); } }
+    `;
+    document.head.appendChild(style);
+  }
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.animation = "toast-out 0.2s ease-in forwards";
+    setTimeout(() => toast.remove(), 200);
+  }, duration);
+}
+
+function updateExportButton() {
+  if (!els.btnExport) return;
+  if (state.exportProgress.active) {
+    const pct = Math.round((state.exportProgress.progress / state.exportProgress.total) * 100);
+    els.btnExport.textContent = `Exporting ${state.exportProgress.format.toUpperCase()} ${pct}%`;
+    els.btnExport.disabled = true;
+  } else if (state.videoExporting) {
+    els.btnExport.textContent = "Exporting...";
+    els.btnExport.disabled = true;
+  } else {
+    els.btnExport.textContent = "Export Image";
+    els.btnExport.disabled = false;
+  }
+}
+
 function resetAll() {
-  state.opts = defaultOpts();
-  state.compare = false;
-  rebuildRamp();
-  updatePaletteSwatches();
-  syncUIFromState();
-  pushHistory("reset");
-  if (state.source) { scheduleRender(0); requestAnimationFrame(fitToWindow); }
+  if (state.pendingReset) {
+    state.opts = defaultOpts();
+    state.compare = false;
+    rebuildRamp();
+    updatePaletteSwatches();
+    syncUIFromState();
+    pushHistory("reset");
+    state.pendingReset = false;
+    if (state.source) { scheduleRender(0); requestAnimationFrame(fitToWindow); }
+    showToast("All settings reset");
+    return;
+  }
+  state.pendingReset = true;
+  showToast("Press Reset All again to confirm");
+  setTimeout(() => { state.pendingReset = false; }, 3000);
 }
 
 function resetSection(name) {

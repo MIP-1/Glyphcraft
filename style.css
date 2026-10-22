@@ -179,6 +179,17 @@ body {
 }
 .panel-search:focus { outline: none; border-color: var(--focus); }
 
+.panel-actionbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; gap: 8px; padding: 12px 0 8px;
+  background: linear-gradient(180deg, var(--panel) 0%, var(--panel) 60%, transparent 100%);
+  border-bottom: 1px solid var(--line);
+  margin: 0 -14px 8px; padding-left: 14px; padding-right: 14px;
+}
+.panel-actionbar .btn {
+  flex: 1; min-height: 44px; min-width: 44px;
+}
+
 .control { margin-bottom: 12px; transition: opacity 0.2s, height 0.2s; overflow: hidden; }
 .control.hidden { display: none; }
 .control-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-size: 12px; color: var(--text); }
