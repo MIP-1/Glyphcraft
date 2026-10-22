@@ -74,6 +74,7 @@ function initEls() {
   els.fileInput = $("file-input");
   els.panel = $("panel");
   els.panelToggle = $("panel-toggle");
+  els.panelToggleBtn = $("panel-toggle-btn");
   els.panelSearch = $("panel-search");
   els.btnExport = $("btn-export");
   els.btnReset = $("btn-reset");
@@ -601,6 +602,25 @@ async function exportVideo(full, opts) {
   await done;
 }
 
+function saveSectionCollapse() {
+  try {
+    const collapsed = {};
+    document.querySelectorAll(".panel-section").forEach(sec => {
+      collapsed[sec.id] = sec.classList.contains("collapsed");
+    });
+    localStorage.setItem("glyphcraft-section-collapse", JSON.stringify(collapsed));
+  } catch (e) {}
+}
+function loadSectionCollapse() {
+  try {
+    const collapsed = JSON.parse(localStorage.getItem("glyphcraft-section-collapse") || "{}");
+    Object.entries(collapsed).forEach(([id, isCollapsed]) => {
+      const sec = document.getElementById(id);
+      if (sec && isCollapsed) sec.classList.add("collapsed");
+    });
+  } catch (e) {}
+}
+
 function showToast(message, duration = 2500) {
   const toast = document.createElement("div");
   toast.className = "toast";
@@ -727,6 +747,14 @@ function toggleModeSections() {
 function renderEffectsList() {
   if (!els.effectsList) return;
   els.effectsList.innerHTML = "";
+  if (state.opts.effects.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "effect-empty";
+    empty.style.cssText = "padding: var(--space-4); text-align: center; color: var(--muted); font-size: 13px;";
+    empty.textContent = "No effects added. Enable effects from the presets or add them manually.";
+    els.effectsList.appendChild(empty);
+    return;
+  }
   state.opts.effects.forEach((fx, index) => {
     const def = EFFECTS.find(e => e.id === fx.id);
     if (!def) return;
@@ -755,12 +783,46 @@ function renderEffectsList() {
     name.className = "effect-name";
     name.textContent = def.name;
 
+    const actions = document.createElement("div");
+    actions.style.display = "flex";
+    actions.style.gap = "4px";
+    actions.style.marginInlineStart = "auto";
+
+    const resetBtn = document.createElement("button");
+    resetBtn.className = "btn btn-small";
+    resetBtn.textContent = "Reset";
+    resetBtn.title = "Reset to defaults";
+    resetBtn.style.padding = "4px 8px";
+    resetBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      Object.assign(fx.params, effectDefaults(fx.id));
+      renderEffectsList();
+      pushHistory("fx-reset-" + fx.id);
+      scheduleRender(80);
+    });
+
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "btn btn-small";
+    removeBtn.textContent = "Remove";
+    removeBtn.title = "Remove effect";
+    removeBtn.style.padding = "4px 8px";
+    removeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      state.opts.effects.splice(index, 1);
+      pushHistory("fx-remove-" + fx.id);
+      renderEffectsList();
+      scheduleRender(80);
+    });
+
+    actions.appendChild(resetBtn);
+    actions.appendChild(removeBtn);
+
     const head = document.createElement("div");
     head.style.display = "flex";
     head.style.alignItems = "center";
     head.style.gap = "8px";
     head.style.flex = "1";
-    head.append(handle, check, name);
+    head.append(handle, check, name, actions);
     item.appendChild(head);
 
     if (def.params.length) {
@@ -788,21 +850,68 @@ function renderEffectsList() {
           input.value = fx.params[p.key];
           input.style.width = "90px"; input.style.padding = "3px 20px 3px 6px";
         } else {
+          // Create wrapper for slider + number input
+          const inputWrap = document.createElement("div");
+          inputWrap.className = "control-input-wrap";
+          inputWrap.style.display = "flex";
+          inputWrap.style.alignItems = "center";
+          inputWrap.style.gap = "8px";
+          inputWrap.style.width = "100%";
+
           input = document.createElement("input");
           input.type = "range";
           input.min = p.min; input.max = p.max; input.step = p.step;
           input.value = fx.params[p.key];
+          input.style.flex = "1";
+
+          const numInput = document.createElement("input");
+          numInput.type = "number";
+          numInput.min = p.min; numInput.max = p.max; numInput.step = p.step;
+          numInput.value = fx.params[p.key];
+          numInput.style.width = "60px";
+          numInput.style.height = "28px";
+          numInput.style.padding = "4px 8px";
+          numInput.style.fontSize = "11px";
+          numInput.style.fontFamily = "var(--font-ui)";
+          numInput.style.color = "var(--text)";
+          numInput.style.background = "var(--bg)";
+          numInput.style.border = "1px solid var(--line)";
+          numInput.style.borderRadius = "var(--radius-sm)";
+
           const out = document.createElement("span");
           out.className = "param-value";
           out.textContent = fx.params[p.key];
-          input.addEventListener("input", () => { out.textContent = input.value; });
-          wrap.appendChild(input);
-          wrap.appendChild(out);
-          input.addEventListener("input", () => {
-            fx.params[p.key] = +input.value;
-            pushHistory("fx-" + fx.id + "-" + p.key);
-            scheduleRender(100);
+          out.style.fontFamily = "var(--font-mono)";
+          out.style.fontSize = "10px";
+          out.style.minWidth = "30px";
+          out.style.color = "var(--muted)";
+
+          const sync = (val) => {
+            const clamped = Math.max(p.min, Math.min(p.max, val));
+            input.value = clamped;
+            numInput.value = clamped;
+            out.textContent = clamped;
+            fx.params[p.key] = clamped;
+          };
+
+          input.addEventListener("input", () => sync(+input.value));
+          numInput.addEventListener("input", () => {
+            const v = parseFloat(numInput.value);
+            if (!isNaN(v)) sync(v);
           });
+          numInput.addEventListener("blur", () => {
+            if (isNaN(parseFloat(numInput.value))) numInput.value = fx.params[p.key];
+          });
+          numInput.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp") { e.preventDefault(); sync(fx.params[p.key] + p.step * (e.shiftKey ? 10 : 1)); }
+            if (e.key === "ArrowDown") { e.preventDefault(); sync(fx.params[p.key] - p.step * (e.shiftKey ? 10 : 1)); }
+          });
+          input.addEventListener("dblclick", () => sync(p.def));
+
+          inputWrap.appendChild(input);
+          inputWrap.appendChild(numInput);
+          inputWrap.appendChild(out);
+          wrap.appendChild(inputWrap);
           params.appendChild(wrap);
           return;
         }
@@ -912,17 +1021,31 @@ function setupEventListeners() {
     if (typing) return;
     if (e.code === "KeyF") { e.preventDefault(); fitToWindow(); }
     if (e.code === "KeyO") { if (!state.showOriginal) { state.showOriginal = true; scheduleRender(0); } }
-    if (e.code === "Escape" && state.compare) { state.compare = false; scheduleRender(0); }
+    if (e.code === "Escape") {
+      if (state.compare) { state.compare = false; scheduleRender(0); }
+      // Close open menus
+      document.querySelectorAll(".menu-dropdown.open").forEach(d => d.classList.remove("open"));
+      // Close mobile panel
+      if (els.panel.classList.contains("open")) { els.panel.classList.remove("open"); }
+    }
   });
   window.addEventListener("keyup", e => {
     if (e.code === "Space") { state.spaceDown = false; if (!isPanning) els.canvasArea.style.cursor = ""; }
     if (e.code === "KeyO" && state.showOriginal) { state.showOriginal = false; scheduleRender(0); }
   });
 
-  on(els.panelToggle, "click", () => {
-    els.panel.classList.toggle("collapsed");
-    els.workspace.classList.toggle("panel-collapsed");
-  });
+  function togglePanel() {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      els.panel.classList.toggle("open");
+    } else {
+      els.panel.classList.toggle("collapsed");
+      els.workspace.classList.toggle("panel-collapsed");
+    }
+  }
+
+  on(els.panelToggle, "click", togglePanel);
+  on(els.panelToggleBtn, "click", togglePanel);
 
   document.querySelectorAll(".menu-btn").forEach(btn => {
     btn.addEventListener("click", e => {
@@ -965,7 +1088,10 @@ function setupEventListeners() {
   document.querySelectorAll(".section-title").forEach(title => {
     title.addEventListener("click", () => {
       const sec = title.closest(".panel-section");
-      if (sec) sec.classList.toggle("collapsed");
+      if (sec) {
+        sec.classList.toggle("collapsed");
+        saveSectionCollapse();
+      }
     });
   });
   document.querySelectorAll(".section-reset").forEach(btn => {
@@ -1074,6 +1200,7 @@ function init() {
   populateOutputPresets();
   rebuildRamp();
   setupEventListeners();
+  loadSectionCollapse();
   syncUIFromState();
   state.history.undo.push(snapshot());
   updateStatus();
