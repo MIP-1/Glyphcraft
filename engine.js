@@ -482,6 +482,10 @@ const DITHER_KERNELS = {
     [1/8, 1/8, 1/8, 0],
     [0, 1/8, 0, 0]
   ],
+  "bayer2": [
+    [0, 2],
+    [3, 1]
+  ].map(row => row.map(v => v / 4)),
   "bayer4": [
     [0, 8, 2, 10],
     [12, 4, 14, 6],
@@ -497,7 +501,26 @@ const DITHER_KERNELS = {
     [51, 19, 59, 27, 49, 17, 57, 25],
     [15, 47, 7, 39, 13, 45, 5, 37],
     [63, 31, 55, 23, 61, 29, 53, 21]
-  ].map(row => row.map(v => v / 64))
+  ].map(row => row.map(v => v / 64)),
+  "sierra": [
+    [0, 0, 0, 5/32, 3/32],
+    [2/32, 4/32, 5/32, 4/32, 2/32],
+    [0, 2/32, 3/32, 2/32, 0]
+  ],
+  "stucki": [
+    [0, 0, 0, 8/42, 4/42],
+    [2/42, 4/42, 8/42, 4/42, 2/42],
+    [1/42, 2/42, 4/42, 2/42, 1/42]
+  ],
+  "burkes": [
+    [0, 0, 0, 8/32, 4/32],
+    [2/32, 4/32, 8/32, 4/32, 2/32]
+  ],
+  "jarvis-judice-ninke": [
+    [0, 0, 0, 7/48, 5/48],
+    [3/48, 5/48, 7/48, 5/48, 3/48],
+    [1/48, 3/48, 5/48, 3/48, 1/48]
+  ]
 };
 
 function renderDither(sourceCanvas, destCtx, destW, destH, opts) {
@@ -516,6 +539,10 @@ function renderDither(sourceCanvas, destCtx, destW, destH, opts) {
     workData = halftoneDither(data, destW, destH, colorDepth, opts);
   } else if (ditherKernel === "threshold") {
     workData = thresholdDither(data, destW, destH, colorDepth, opts);
+  } else if (ditherKernel === "blue-noise") {
+    workData = blueNoiseDither(data, destW, destH, colorDepth, opts);
+  } else if (ditherKernel === "random") {
+    workData = randomDither(data, destW, destH, colorDepth, opts);
   } else if (ditherKernel.startsWith("bayer")) {
     workData = orderedDither(data, destW, destH, DITHER_KERNELS[ditherKernel], colorDepth, opts);
   } else {
@@ -573,8 +600,13 @@ function errorDiffusionDither(data, w, h, kernel, colorDepth, opts) {
   const kw = kernel[0].length;
   const kcy = Math.floor(kh / 2);
   const kcx = Math.floor(kw / 2);
+  const serpentine = opts.ditherSerpentine !== false;
   for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
+    const leftToRight = !serpentine || y % 2 === 0;
+    const xStart = leftToRight ? 0 : w - 1;
+    const xEnd = leftToRight ? w : -1;
+    const xStep = leftToRight ? 1 : -1;
+    for (let x = xStart; x !== xEnd; x += xStep) {
       const idx = (y * w + x) * 4;
       for (let c = 0; c < 3; c++) {
         const oldVal = work[idx + c];
@@ -669,6 +701,48 @@ function thresholdDither(data, w, h, colorDepth, opts) {
     for (let c = 0; c < 3; c++) {
       const val = data[i + c];
       result[j + c] = Math.round(val / step) * step;
+    }
+  }
+  return result;
+}
+
+function blueNoiseDither(data, w, h, colorDepth, opts) {
+  const levels = colorDepth;
+  const step = 255 / (levels - 1);
+  const result = new Uint8ClampedArray(w * h * 3);
+  const patternSize = 64;
+  const pattern = new Uint8Array(patternSize * patternSize);
+  for (let i = 0; i < pattern.length; i++) pattern[i] = Math.random() * 255;
+  
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = (y * w + x) * 4;
+      const px = x % patternSize, py = y % patternSize;
+      const threshold = pattern[py * patternSize + px] / 255;
+      for (let c = 0; c < 3; c++) {
+        const val = data[idx + c];
+        const quantized = Math.round(val / step) * step;
+        const adjusted = val + (threshold - 0.5) * step;
+        const final = Math.round(adjusted / step) * step;
+        result[(y * w + x) * 3 + c] = Math.max(0, Math.min(255, final));
+      }
+    }
+  }
+  return result;
+}
+
+function randomDither(data, w, h, colorDepth, opts) {
+  const levels = colorDepth;
+  const step = 255 / (levels - 1);
+  const result = new Uint8ClampedArray(w * h * 3);
+  for (let i = 0, j = 0; i < data.length; i += 4, j += 3) {
+    for (let c = 0; c < 3; c++) {
+      const val = data[i + c];
+      const threshold = Math.random();
+      const quantized = Math.round(val / step) * step;
+      const adjusted = val + (threshold - 0.5) * step;
+      const final = Math.round(adjusted / step) * step;
+      result[j + c] = Math.max(0, Math.min(255, final));
     }
   }
   return result;

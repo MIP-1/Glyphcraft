@@ -171,12 +171,25 @@
             <div class="control">
               <label class="control-label">Kernel</label>
               <select id="dither-kernel">
-                <option value="floyd-steinberg">Floyd–Steinberg</option>
-                <option value="atkinson">Atkinson</option>
-                <option value="bayer4">Bayer 4×4</option>
-                <option value="bayer8">Bayer 8×8</option>
-                <option value="halftone">Halftone Dot Grid</option>
-                <option value="threshold">Threshold</option>
+                <optgroup label="Error Diffusion">
+                  <option value="floyd-steinberg">Floyd–Steinberg</option>
+                  <option value="atkinson">Atkinson</option>
+                  <option value="sierra">Sierra</option>
+                  <option value="stucki">Stucki</option>
+                  <option value="burkes">Burkes</option>
+                  <option value="jarvis-judice-ninke">Jarvis-Judice-Ninke</option>
+                </optgroup>
+                <optgroup label="Ordered">
+                  <option value="bayer2">Bayer 2×2</option>
+                  <option value="bayer4">Bayer 4×4</option>
+                  <option value="bayer8">Bayer 8×8</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="halftone">Halftone Dot Grid</option>
+                  <option value="threshold">Threshold</option>
+                  <option value="blue-noise">Blue Noise</option>
+                  <option value="random">Random</option>
+                </optgroup>
               </select>
             </div>
             <div class="control">
@@ -185,6 +198,9 @@
                 <input type="range" id="dither-depth" min="2" max="16" value="4" step="1">
                 <input type="number" id="dither-depth-num" min="2" max="16" value="4" step="1">
               </div>
+            </div>
+            <div class="control checkboxes">
+              <label class="checkbox"><input type="checkbox" id="dither-serpentine" checked> Serpentine (boustrophedon)</label>
             </div>
           </section>
 

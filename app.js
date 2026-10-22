@@ -23,6 +23,7 @@ function defaultOpts() {
     monoColor: "#e9dfc8",
     ditherKernel: "floyd-steinberg",
     ditherDepth: 4,
+    ditherSerpentine: true,
     adj: { ...DEFAULT_ADJ },
     outputPreset: "original",
     outputWidth: 1920,
@@ -142,6 +143,7 @@ function initEls() {
   els.outputCustomRow = $("output-custom-row");
   els.outputLockRatio = $("output-lock-ratio");
   els.outputWarn = $("output-warn");
+  els.ditherSerpentine = $("dither-serpentine");
 }
 
 function setTheme(dark) {
@@ -734,6 +736,7 @@ function syncUIFromState() {
   els.paletteSelect.value = o.palette;
   els.ditherKernel.value = o.ditherKernel;
   els.ditherDepth.value = o.ditherDepth; els.valColorDepth.textContent = o.ditherDepth; els.ditherDepthNum.value = o.ditherDepth;
+  els.ditherSerpentine.checked = o.ditherSerpentine;
   const names = ["Brightness", "Contrast", "Saturation", "Hue", "Highlights", "Shadows", "Sharpen", "Blur"];
   names.forEach(n => {
     const key = n.toLowerCase();
@@ -1256,6 +1259,10 @@ function setupEventListeners() {
   });
   on(els.outputLockRatio, "change", () => {
     state.opts.outputLockRatio = els.outputLockRatio.checked;
+  });
+  on(els.ditherSerpentine, "change", () => {
+    state.opts.ditherSerpentine = els.ditherSerpentine.checked;
+    pushHistory("ditherSerpentine"); scheduleRender();
   });
   on(els.outputWidth, "change", () => {
     state.opts.outputWidth = Math.min(8192, Math.max(1, +els.outputWidth.value));
