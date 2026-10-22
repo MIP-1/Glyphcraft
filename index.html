@@ -1,9 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark light">
   <title>Glyphcraft</title>
+  <script>
+    /* Set the theme before first paint to avoid a flash. */
+    (function () {
+      var theme = null;
+      try { theme = localStorage.getItem("glyphcraft-theme"); } catch (e) {}
+      if (theme !== "dark" && theme !== "light") {
+        theme = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+      }
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:ital,wght@0,700;1,700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -14,85 +26,112 @@
     <header class="menubar">
       <div class="menubar-left">
         <div class="menu">
-          <button class="menu-btn" id="menu-file">File</button>
-          <div class="menu-dropdown" id="dropdown-file">
-            <button class="menu-item" data-action="open">Open Image…</button>
-            <button class="menu-item" data-action="export">Export Image…</button>
-            <button class="menu-item" data-action="reset">Reset All</button>
-            <hr class="menu-sep">
-            <button class="menu-item" data-action="load-preset">Load Preset…</button>
-            <button class="menu-item" data-action="save-preset">Save Preset…</button>
+          <button class="menu-btn" id="menu-file" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="dropdown-file">File</button>
+          <div class="menu-dropdown" id="dropdown-file" role="menu" aria-label="File">
+            <button class="menu-item" type="button" role="menuitem" data-action="open"><span>Open file…</span><kbd class="menu-key">Ctrl O</kbd></button>
+            <button class="menu-item" type="button" role="menuitem" data-action="export"><span>Export Image…</span><kbd class="menu-key">E</kbd></button>
+            <button class="menu-item" type="button" role="menuitem" data-action="reset"><span>Reset All</span><kbd class="menu-key">R</kbd></button>
           </div>
         </div>
         <div class="menu">
-          <button class="menu-btn" id="menu-view">View</button>
-          <div class="menu-dropdown" id="dropdown-view">
-            <label class="menu-item checkbox">
-              <input type="checkbox" id="toggle-theme" checked> Dark Theme
-            </label>
+          <button class="menu-btn" id="menu-view" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="dropdown-view">View</button>
+          <div class="menu-dropdown" id="dropdown-view" role="menu" aria-label="View">
+            <button class="menu-item" type="button" role="menuitem" data-action="zoom-in"><span>Zoom in</span><kbd class="menu-key">+</kbd></button>
+            <button class="menu-item" type="button" role="menuitem" data-action="zoom-out"><span>Zoom out</span><kbd class="menu-key">−</kbd></button>
             <hr class="menu-sep">
-            <button class="menu-item" data-action="fit">Fit to Window</button>
-            <button class="menu-item" data-action="compare">Compare (Split View)</button>
-            <button class="menu-item" data-action="original">Show Original (Hold)</button>
+            <button class="menu-item" type="button" role="menuitem" data-action="fit"><span>Fit window</span><kbd class="menu-key">0</kbd></button>
+            <button class="menu-item" type="button" role="menuitem" data-action="fullpage"><span>Full page</span><kbd class="menu-key">⇧F</kbd></button>
+            <button class="menu-item" type="button" role="menuitem" data-action="fit-small"><span>Fit small</span><kbd class="menu-key">⇧S</kbd></button>
+            <button class="menu-item" type="button" role="menuitem" data-action="zoom-100"><span>100%</span><kbd class="menu-key">1</kbd></button>
+            <button class="menu-item" type="button" role="menuitem" data-action="zoom-200"><span>200%</span><kbd class="menu-key">2</kbd></button>
+            <hr class="menu-sep">
+            <button class="menu-item" type="button" role="menuitem" data-action="panel"><span>Toggle controls panel</span><kbd class="menu-key">\</kbd></button>
+            <button class="menu-item" type="button" role="menuitem" data-action="theme"><span id="menu-theme-label">Light theme</span><kbd class="menu-key">T</kbd></button>
           </div>
         </div>
         <div class="menu">
-          <button class="menu-btn" id="menu-edit">Edit</button>
-          <div class="menu-dropdown" id="dropdown-edit">
-            <button class="menu-item" data-action="undo">Undo</button>
-            <button class="menu-item" data-action="redo">Redo</button>
+          <button class="menu-btn" id="menu-edit" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="dropdown-edit">Edit</button>
+          <div class="menu-dropdown" id="dropdown-edit" role="menu" aria-label="Edit">
+            <button class="menu-item" type="button" role="menuitem" data-action="undo"><span>Undo</span><kbd class="menu-key">Ctrl Z</kbd></button>
+            <button class="menu-item" type="button" role="menuitem" data-action="redo"><span>Redo</span><kbd class="menu-key">Ctrl ⇧ Z</kbd></button>
+            <hr class="menu-sep">
+            <button class="menu-item" type="button" role="menuitem" data-action="compare"><span>Compare</span><kbd class="menu-key">C</kbd></button>
           </div>
         </div>
       </div>
       <div class="menubar-right">
-        <button class="menu-btn panel-toggle-btn" id="panel-toggle-btn" aria-label="Toggle panel" style="display: none;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg>
-        </button>
         <span class="status" id="status-bar" aria-live="polite" aria-atomic="true">No image loaded</span>
+        <div class="zoom-controls" role="group" aria-label="Zoom">
+          <button class="icon-btn" id="zoom-out" type="button" aria-label="Zoom out" title="Zoom out (−)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/><path d="M8 11h6"/></svg>
+          </button>
+          <div class="zoom-menu-wrap">
+            <button class="zoom-level" id="zoom-level" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="zoom-menu" aria-label="Zoom level" title="Zoom level">100%</button>
+            <div class="zoom-menu" id="zoom-menu" role="menu" aria-label="Zoom level">
+              <button class="menu-item" type="button" role="menuitem" data-zoom="fit"><span>Fit window</span><kbd class="menu-key">0</kbd></button>
+              <button class="menu-item" type="button" role="menuitem" data-zoom="fullpage"><span>Full page</span><kbd class="menu-key">⇧F</kbd></button>
+              <button class="menu-item" type="button" role="menuitem" data-zoom="small"><span>Fit small</span><kbd class="menu-key">⇧S</kbd></button>
+              <hr class="menu-sep">
+              <button class="menu-item" type="button" role="menuitem" data-zoom="0.25"><span>25%</span></button>
+              <button class="menu-item" type="button" role="menuitem" data-zoom="0.5"><span>50%</span></button>
+              <button class="menu-item" type="button" role="menuitem" data-zoom="1"><span>100%</span><kbd class="menu-key">1</kbd></button>
+              <button class="menu-item" type="button" role="menuitem" data-zoom="2"><span>200%</span><kbd class="menu-key">2</kbd></button>
+              <button class="menu-item" type="button" role="menuitem" data-zoom="4"><span>400%</span></button>
+            </div>
+          </div>
+          <button class="icon-btn" id="zoom-in" type="button" aria-label="Zoom in" title="Zoom in (+)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/><path d="M8 11h6"/><path d="M11 8v6"/></svg>
+          </button>
+        </div>
+        <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Switch to light theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.5 14.7A8.5 8.5 0 0 1 9.3 3.5 8.5 8.5 0 1 0 20.5 14.7z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></svg>
+        </button>
+        <button class="menu-btn panel-toggle-btn" id="panel-toggle-btn" type="button" aria-label="Toggle controls panel" title="Toggle controls panel">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg>
+        </button>
       </div>
     </header>
 
     <main class="workspace">
-      <section class="canvas-area" id="canvas-area">
-        <canvas id="canvas"></canvas>
+      <section class="canvas-area" id="canvas-area" tabindex="0" aria-label="Image preview">
+        <canvas id="canvas" role="img" aria-label="Rendered preview"></canvas>
         <div class="drop-zone" id="drop-zone" data-state="idle">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          <span class="hint">Drop image or video here, or click to open</span>
-          <span class="drop-error" style="display:none; color:var(--accent); font-size:12px; margin-top:8px;"></span>
-          <div class="drop-loading" style="display:none; margin-top:8px;">
-            <div class="spinner" style="width:24px;height:24px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto;"></div>
+          <div class="drop-status" id="drop-status" aria-live="polite" aria-atomic="true">
+            <p class="drop-hint">Drop an image or video here, paste it (Ctrl+V), or open a file.</p>
+            <p class="drop-error" role="alert"></p>
+          </div>
+          <button class="btn btn-primary drop-open" id="open-file-btn" type="button">Open file</button>
+          <div class="drop-loading">
+            <div class="spinner"></div>
+            <span class="drop-loading-text">Loading…</span>
           </div>
         </div>
-        <div class="compare-overlay" id="compare-overlay" style="display:none;">
-          <div class="compare-slider" id="compare-slider"></div>
+        <div class="compare-overlay" id="compare-overlay" hidden>
+          <div class="compare-slider" id="compare-slider" role="separator" aria-orientation="vertical" aria-label="Compare split position"></div>
         </div>
       </section>
 
       <aside class="panel" id="panel">
-        <button class="panel-toggle" id="panel-toggle" aria-label="Collapse panel">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
         <div class="panel-content">
           <header class="panel-header">
             <h1 class="logo">Glyphcraft</h1>
           </header>
 
           <div class="panel-actionbar" id="panel-actionbar">
-            <button class="btn btn-primary" id="btn-export">Export Image</button>
-            <button class="btn btn-secondary" id="btn-reset">Reset All</button>
+            <button class="btn btn-primary" id="btn-export" type="button">Export Image</button>
+            <button class="btn btn-secondary" id="btn-reset" type="button">Reset All</button>
           </div>
 
-          <input type="search" class="panel-search" id="panel-search" placeholder="Search controls…">
+          <input type="search" class="panel-search" id="panel-search" placeholder="Search controls…" aria-label="Search controls">
 
           <section class="panel-section" id="section-mode">
             <div class="section-header">
-              <h2 class="section-title">Mode</h2>
-              <button class="section-reset" data-section="mode">Reset</button>
+              <h2 class="section-heading"><button class="section-title" type="button" aria-expanded="true">Mode</button></h2>
+              <button class="section-reset" type="button" data-section="mode">Reset</button>
             </div>
             <div class="dropdown-wrap">
-              <select id="select-mode">
+              <select id="select-mode" aria-label="Mode">
                 <option value="script">Script</option>
                 <option value="dither">Dither</option>
                 <option value="effects">Effects Only</option>
@@ -102,19 +141,19 @@
 
           <section class="panel-section" id="section-script">
             <div class="section-header">
-              <h2 class="section-title">Script Options</h2>
-              <button class="section-reset" data-section="script">Reset</button>
+              <h2 class="section-heading"><button class="section-title" type="button" aria-expanded="true">Script Options</button></h2>
+              <button class="section-reset" type="button" data-section="script">Reset</button>
             </div>
             <div class="control">
-              <label class="control-label"><span>Depth</span><span class="control-value" id="val-depth">80</span></label>
+              <label class="control-label" for="depth">Depth</label>
               <div class="control-input-wrap">
-                <input type="range" id="depth" min="20" max="240" value="80" step="1">
-                <input type="number" id="depth-num" min="20" max="240" value="80" step="1">
+                <input type="range" id="depth" min="20" max="240" value="80" step="1" aria-label="Depth slider">
+                <input type="number" id="depth-num" min="20" max="240" value="80" step="1" aria-label="Depth value">
               </div>
             </div>
             <div class="control-row">
               <div class="control half">
-                <label class="control-label">Category</label>
+                <label class="control-label" for="char-category">Category</label>
                 <select id="char-category">
                   <option value="all">All</option>
                   <option value="letters">Letters</option>
@@ -124,7 +163,7 @@
                 </select>
               </div>
               <div class="control half">
-                <label class="control-label">Set</label>
+                <label class="control-label" for="char-set">Set</label>
                 <select id="char-set">
                   <option value="all">All</option>
                   <option value="consonants">Consonants</option>
@@ -136,19 +175,19 @@
               </div>
             </div>
             <div class="control">
-              <label class="control-label">Inject Characters</label>
+              <label class="control-label" for="char-inject">Inject Characters</label>
               <input type="text" id="char-inject" placeholder="Extra glyphs to add" spellcheck="false">
             </div>
             <div class="control">
-              <label class="control-label"><span>Offset</span><span class="control-value" id="val-offset">0</span></label>
+              <label class="control-label" for="char-offset">Offset</label>
               <div class="control-input-wrap">
-                <input type="range" id="char-offset" min="-50" max="50" value="0" step="1">
-                <input type="number" id="char-offset-num" min="-50" max="50" value="0" step="1">
+                <input type="range" id="char-offset" min="-50" max="50" value="0" step="1" aria-label="Offset slider">
+                <input type="number" id="char-offset-num" min="-50" max="50" value="0" step="1" aria-label="Offset value">
               </div>
             </div>
             <div class="control-row">
               <div class="control half">
-                <label class="control-label">Text Style</label>
+                <label class="control-label" for="text-style">Text Style</label>
                 <select id="text-style">
                   <option value="regular">Regular</option>
                   <option value="bold">Bold</option>
@@ -162,11 +201,11 @@
               <label class="checkbox"><input type="checkbox" id="auto-levels" checked> Auto Levels</label>
             </div>
             <div class="control">
-              <label class="control-label">Background Color</label>
+              <label class="control-label" for="bg-color">Background Color</label>
               <input type="color" id="bg-color" value="#0b0b0c">
             </div>
             <div class="control">
-              <label class="control-label">Charset Preset</label>
+              <label class="control-label" for="char-preset">Charset Preset</label>
               <select id="char-preset">
                 <option value="custom">Custom</option>
                 <option value="ascii">ASCII (95 chars)</option>
@@ -177,46 +216,39 @@
                 <option value="dense">Dense (█▓▒░)</option>
               </select>
             </div>
-            <div class="control" id="custom-charset-row" style="display: none;">
-              <label class="control-label">Custom Charset</label>
+            <div class="control" id="custom-charset-row" hidden>
+              <label class="control-label" for="custom-charset">Custom Charset</label>
               <input type="text" id="custom-charset" placeholder="Custom characters for ramp" spellcheck="false">
             </div>
             <div class="control-row">
               <div class="control half">
-                <label class="control-label"><span>Cell Size</span><span class="control-value" id="val-cell-size">8</span></label>
+                <label class="control-label" for="cell-size">Cell Size</label>
                 <div class="control-input-wrap">
-                  <input type="range" id="cell-size" min="4" max="32" value="8" step="1">
-                  <input type="number" id="cell-size-num" min="4" max="32" value="8" step="1">
+                  <input type="range" id="cell-size" min="4" max="32" value="8" step="1" aria-label="Cell size slider">
+                  <input type="number" id="cell-size-num" min="4" max="32" value="8" step="1" aria-label="Cell size value">
                 </div>
               </div>
               <div class="control half">
-                <label class="control-label"><span>Weight</span><span class="control-value" id="val-weight">400</span></label>
+                <label class="control-label" for="glyph-weight">Weight</label>
                 <div class="control-input-wrap">
-                  <input type="range" id="glyph-weight" min="100" max="900" value="400" step="100">
-                  <input type="number" id="glyph-weight-num" min="100" max="900" value="400" step="100">
+                  <input type="range" id="glyph-weight" min="100" max="900" value="400" step="100" aria-label="Glyph weight slider">
+                  <input type="number" id="glyph-weight-num" min="100" max="900" value="400" step="100" aria-label="Glyph weight value">
                 </div>
               </div>
             </div>
             <div class="control checkboxes">
               <label class="checkbox"><input type="checkbox" id="glyph-invert"> Invert Ramp</label>
               <label class="checkbox"><input type="checkbox" id="glyph-color"> Color Mode</label>
-              <label class="checkbox"><input type="checkbox" id="use-palette" checked> Use Palette</label>
-              <label class="checkbox"><input type="checkbox" id="transparent-bg"> Transparent Background</label>
-              <label class="checkbox"><input type="checkbox" id="auto-levels" checked> Auto Levels</label>
-            </div>
-            <div class="control">
-              <label class="control-label">Background Color</label>
-              <input type="color" id="bg-color" value="#0b0b0c">
             </div>
           </section>
 
           <section class="panel-section" id="section-dither">
             <div class="section-header">
-              <h2 class="section-title">Dither Options</h2>
-              <button class="section-reset" data-section="dither">Reset</button>
+              <h2 class="section-heading"><button class="section-title" type="button" aria-expanded="true">Dither Options</button></h2>
+              <button class="section-reset" type="button" data-section="dither">Reset</button>
             </div>
             <div class="control">
-              <label class="control-label">Kernel</label>
+              <label class="control-label" for="dither-kernel">Kernel</label>
               <select id="dither-kernel">
                 <optgroup label="Error Diffusion">
                   <option value="floyd-steinberg">Floyd–Steinberg</option>
@@ -240,10 +272,10 @@
               </select>
             </div>
             <div class="control">
-              <label class="control-label"><span>Color Depth</span><span class="control-value" id="val-color-depth">4</span></label>
+              <label class="control-label" for="dither-depth">Color Depth</label>
               <div class="control-input-wrap">
-                <input type="range" id="dither-depth" min="2" max="16" value="4" step="1">
-                <input type="number" id="dither-depth-num" min="2" max="16" value="4" step="1">
+                <input type="range" id="dither-depth" min="2" max="16" value="4" step="1" aria-label="Color depth slider">
+                <input type="number" id="dither-depth-num" min="2" max="16" value="4" step="1" aria-label="Color depth value">
               </div>
             </div>
             <div class="control checkboxes">
@@ -253,11 +285,11 @@
 
           <section class="panel-section" id="section-color">
             <div class="section-header">
-              <h2 class="section-title">Color</h2>
-              <button class="section-reset" data-section="color">Reset</button>
+              <h2 class="section-heading"><button class="section-title" type="button" aria-expanded="true">Color</button></h2>
+              <button class="section-reset" type="button" data-section="color">Reset</button>
             </div>
             <div class="control">
-              <label class="control-label">Mode</label>
+              <label class="control-label" for="color-mode">Mode</label>
               <select id="color-mode">
                 <option value="spectrum">Full Spectrum</option>
                 <option value="palette">Palette</option>
@@ -265,19 +297,19 @@
               </select>
             </div>
             <div class="control" id="control-palette">
-              <label class="control-label">Palette</label>
+              <label class="control-label" for="palette-select">Palette</label>
               <select id="palette-select"></select>
             </div>
-            <div class="palette-swatches" id="palette-swatches"></div>
-            <div class="control" id="custom-palette-builder" style="display: none;">
+            <div class="palette-swatches" id="palette-swatches" aria-label="Palette swatches"></div>
+            <div class="control" id="custom-palette-builder" hidden>
               <label class="control-label">Custom Palette</label>
               <div class="palette-builder" id="palette-builder"></div>
               <div class="control-row">
                 <div class="control half">
-                  <button class="btn btn-small" id="palette-add-color">Add Color</button>
+                  <button class="btn btn-small" id="palette-add-color" type="button">Add Color</button>
                 </div>
                 <div class="control half">
-                  <button class="btn btn-small" id="palette-save-custom">Save as Preset</button>
+                  <button class="btn btn-small" id="palette-save-custom" type="button">Save as Preset</button>
                 </div>
               </div>
             </div>
@@ -285,63 +317,63 @@
 
           <section class="panel-section" id="section-adjustments">
             <div class="section-header">
-              <h2 class="section-title">Adjustments</h2>
-              <button class="section-reset" data-section="adjustments">Reset</button>
+              <h2 class="section-heading"><button class="section-title" type="button" aria-expanded="true">Adjustments</button></h2>
+              <button class="section-reset" type="button" data-section="adjustments">Reset</button>
             </div>
             <div class="control">
-              <label class="control-label"><span>Brightness</span><span class="control-value" id="val-brightness">0</span><span class="control-unit">%</span></label>
+              <label class="control-label" for="adj-brightness">Brightness <span class="control-unit">%</span></label>
               <div class="control-input-wrap">
-                <input type="range" id="adj-brightness" min="-100" max="100" value="0" step="1">
-                <input type="number" id="adj-brightness-num" min="-100" max="100" value="0" step="1">
+                <input type="range" id="adj-brightness" min="-100" max="100" value="0" step="1" aria-label="Brightness slider">
+                <input type="number" id="adj-brightness-num" min="-100" max="100" value="0" step="1" aria-label="Brightness value">
               </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Contrast</span><span class="control-value" id="val-contrast">0</span><span class="control-unit">%</span></label>
+              <label class="control-label" for="adj-contrast">Contrast <span class="control-unit">%</span></label>
               <div class="control-input-wrap">
-                <input type="range" id="adj-contrast" min="-100" max="100" value="0" step="1">
-                <input type="number" id="adj-contrast-num" min="-100" max="100" value="0" step="1">
+                <input type="range" id="adj-contrast" min="-100" max="100" value="0" step="1" aria-label="Contrast slider">
+                <input type="number" id="adj-contrast-num" min="-100" max="100" value="0" step="1" aria-label="Contrast value">
               </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Saturation</span><span class="control-value" id="val-saturation">0</span><span class="control-unit">%</span></label>
+              <label class="control-label" for="adj-saturation">Saturation <span class="control-unit">%</span></label>
               <div class="control-input-wrap">
-                <input type="range" id="adj-saturation" min="-100" max="100" value="0" step="1">
-                <input type="number" id="adj-saturation-num" min="-100" max="100" value="0" step="1">
+                <input type="range" id="adj-saturation" min="-100" max="100" value="0" step="1" aria-label="Saturation slider">
+                <input type="number" id="adj-saturation-num" min="-100" max="100" value="0" step="1" aria-label="Saturation value">
               </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Hue</span><span class="control-value" id="val-hue">0</span><span class="control-unit">°</span></label>
+              <label class="control-label" for="adj-hue">Hue <span class="control-unit">°</span></label>
               <div class="control-input-wrap">
-                <input type="range" id="adj-hue" min="-180" max="180" value="0" step="1">
-                <input type="number" id="adj-hue-num" min="-180" max="180" value="0" step="1">
+                <input type="range" id="adj-hue" min="-180" max="180" value="0" step="1" aria-label="Hue slider">
+                <input type="number" id="adj-hue-num" min="-180" max="180" value="0" step="1" aria-label="Hue value">
               </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Highlights</span><span class="control-value" id="val-highlights">0</span><span class="control-unit">%</span></label>
+              <label class="control-label" for="adj-highlights">Highlights <span class="control-unit">%</span></label>
               <div class="control-input-wrap">
-                <input type="range" id="adj-highlights" min="-100" max="100" value="0" step="1">
-                <input type="number" id="adj-highlights-num" min="-100" max="100" value="0" step="1">
+                <input type="range" id="adj-highlights" min="-100" max="100" value="0" step="1" aria-label="Highlights slider">
+                <input type="number" id="adj-highlights-num" min="-100" max="100" value="0" step="1" aria-label="Highlights value">
               </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Shadows</span><span class="control-value" id="val-shadows">0</span><span class="control-unit">%</span></label>
+              <label class="control-label" for="adj-shadows">Shadows <span class="control-unit">%</span></label>
               <div class="control-input-wrap">
-                <input type="range" id="adj-shadows" min="-100" max="100" value="0" step="1">
-                <input type="number" id="adj-shadows-num" min="-100" max="100" value="0" step="1">
+                <input type="range" id="adj-shadows" min="-100" max="100" value="0" step="1" aria-label="Shadows slider">
+                <input type="number" id="adj-shadows-num" min="-100" max="100" value="0" step="1" aria-label="Shadows value">
               </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Sharpen</span><span class="control-value" id="val-sharpen">0</span><span class="control-unit">%</span></label>
+              <label class="control-label" for="adj-sharpen">Sharpen <span class="control-unit">%</span></label>
               <div class="control-input-wrap">
-                <input type="range" id="adj-sharpen" min="0" max="100" value="0" step="1">
-                <input type="number" id="adj-sharpen-num" min="0" max="100" value="0" step="1">
+                <input type="range" id="adj-sharpen" min="0" max="100" value="0" step="1" aria-label="Sharpen slider">
+                <input type="number" id="adj-sharpen-num" min="0" max="100" value="0" step="1" aria-label="Sharpen value">
               </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Blur</span><span class="control-value" id="val-blur">0</span><span class="control-unit">px</span></label>
+              <label class="control-label" for="adj-blur">Blur <span class="control-unit">px</span></label>
               <div class="control-input-wrap">
-                <input type="range" id="adj-blur" min="0" max="20" value="0" step="1">
-                <input type="number" id="adj-blur-num" min="0" max="20" value="0" step="1">
+                <input type="range" id="adj-blur" min="0" max="20" value="0" step="1" aria-label="Blur slider">
+                <input type="number" id="adj-blur-num" min="0" max="20" value="0" step="1" aria-label="Blur value">
               </div>
             </div>
             <div class="control checkboxes">
@@ -352,28 +384,32 @@
 
           <section class="panel-section" id="section-effects">
             <div class="section-header">
-              <h2 class="section-title">Effects</h2>
-              <button class="section-reset" data-section="effects">Reset</button>
+              <h2 class="section-heading"><button class="section-title" type="button" aria-expanded="true">Effects</button></h2>
+              <button class="section-reset" type="button" data-section="effects">Reset</button>
             </div>
             <div class="presets-bar" id="presets-bar">
-              <button class="preset-btn" data-preset="terminal">Terminal Green</button>
-              <button class="preset-btn" data-preset="newsprint">Newsprint</button>
-              <button class="preset-btn" data-preset="cyber">Cyber Glitch</button>
-              <button class="preset-btn" data-preset="gameboy">Game Boy</button>
-              <button class="preset-btn" data-preset="blueprint">Blueprint</button>
-              <button class="preset-btn" data-preset="oldphoto">Old Photo</button>
-              <button class="preset-btn" data-preset="thermal">Neon Thermal</button>
+              <button class="preset-btn" type="button" data-preset="terminal">Terminal Green</button>
+              <button class="preset-btn" type="button" data-preset="newsprint">Newsprint</button>
+              <button class="preset-btn" type="button" data-preset="cyber">Cyber Glitch</button>
+              <button class="preset-btn" type="button" data-preset="gameboy">Game Boy</button>
+              <button class="preset-btn" type="button" data-preset="blueprint">Blueprint</button>
+              <button class="preset-btn" type="button" data-preset="oldphoto">Old Photo</button>
+              <button class="preset-btn" type="button" data-preset="thermal">Neon Thermal</button>
+            </div>
+            <div class="presets-actions">
+              <button class="btn btn-small" id="btn-save-preset" type="button">Save preset…</button>
+              <button class="btn btn-small" id="btn-load-preset" type="button">Load preset…</button>
             </div>
             <div class="effects-list" id="effects-list"></div>
           </section>
 
           <section class="panel-section" id="section-output">
             <div class="section-header">
-              <h2 class="section-title">Output</h2>
-              <button class="section-reset" data-section="output">Reset</button>
+              <h2 class="section-heading"><button class="section-title" type="button" aria-expanded="true">Output</button></h2>
+              <button class="section-reset" type="button" data-section="output">Reset</button>
             </div>
             <div class="control">
-              <label class="control-label">Format</label>
+              <label class="control-label" for="export-format">Format</label>
               <select id="export-format">
                 <option value="png">PNG</option>
                 <option value="jpg">JPG</option>
@@ -383,33 +419,33 @@
                 <option value="webm">WebM Video</option>
               </select>
             </div>
-            <div class="control" id="jpg-quality-control" style="display: none;">
-              <label class="control-label"><span>JPG Quality</span><span class="control-value" id="val-jpg-quality">90</span><span class="control-unit">%</span></label>
+            <div class="control" id="jpg-quality-control" hidden>
+              <label class="control-label" for="jpg-quality">JPG Quality <span class="control-unit">%</span></label>
               <div class="control-input-wrap">
-                <input type="range" id="jpg-quality" min="10" max="100" value="90" step="1">
-                <input type="number" id="jpg-quality-num" min="10" max="100" value="90" step="1">
+                <input type="range" id="jpg-quality" min="10" max="100" value="90" step="1" aria-label="JPG quality slider">
+                <input type="number" id="jpg-quality-num" min="10" max="100" value="90" step="1" aria-label="JPG quality value">
               </div>
             </div>
             <div class="control">
-              <label class="control-label">Size Preset</label>
+              <label class="control-label" for="output-preset">Size Preset</label>
               <div class="preset-select-wrap">
-                <input type="search" id="output-preset-search" placeholder="Search presets…" class="preset-search">
+                <input type="search" id="output-preset-search" placeholder="Search presets…" class="preset-search" aria-label="Search size presets">
                 <select id="output-preset"></select>
               </div>
             </div>
-            <div class="control-row" id="output-custom-row" style="display: none;">
+            <div class="control-row" id="output-custom-row" hidden>
               <div class="control half">
-                <label class="control-label">Width</label>
+                <label class="control-label" for="output-width">Width</label>
                 <input type="number" id="output-width" min="1" max="8192" value="1920">
               </div>
               <div class="control half">
-                <label class="control-label">Height</label>
+                <label class="control-label" for="output-height">Height</label>
                 <input type="number" id="output-height" min="1" max="8192" value="1080">
               </div>
             </div>
             <div class="control-row">
               <div class="control half">
-                <label class="control-label">Fit</label>
+                <label class="control-label" for="output-fit">Fit</label>
                 <select id="output-fit">
                   <option value="contain">Contain</option>
                   <option value="cover">Cover</option>
@@ -423,7 +459,7 @@
               </div>
             </div>
             <div class="control hidden" id="output-warn">
-              <span style="color: var(--accent); font-size: 12px;">⚠ Large output may be slow to render/export</span>
+              <span class="output-warning">⚠ Large output may be slow to render/export</span>
             </div>
           </section>
         </div>
@@ -431,7 +467,7 @@
     </main>
   </div>
 
-  <input type="file" id="file-input" accept="image/*,video/*" style="display:none">
+  <input type="file" id="file-input" accept="image/*,video/*" hidden>
   <script src="engine.js"></script>
   <script src="effects.js"></script>
   <script src="app.js"></script>

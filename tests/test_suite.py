@@ -1,11 +1,13 @@
 from playwright.sync_api import sync_playwright
-import os, json, base64, subprocess, struct, time
+import os, sys, json, base64, subprocess, struct, time
 
 ROOT = "/home/mustafa/glyphcraft"
 URL = f"file://{ROOT}/index.html"
 SHOT = "/tmp/glyphcraft_shots"
 EXP = "/tmp/glyphcraft_exports"
+REPORTS = f"{ROOT}/tests/reports"
 os.makedirs(SHOT, exist_ok=True)
+os.makedirs(REPORTS, exist_ok=True)
 os.makedirs(EXP, exist_ok=True)
 
 TEST_IMG = "/tmp/glyphcraft_test.png"
@@ -39,21 +41,21 @@ with sync_playwright() as p:
     page.on("pageerror", lambda e: page_errors.append(str(e)))
 
     def open_menu(name):
-        if not page.is_visible("#dropdown-" + name):
+        is_open = page.evaluate("(sel) => document.querySelector(sel).classList.contains('open')", "#dropdown-" + name)
+        if not is_open:
             page.click("#menu-" + name)
-        page.wait_for_timeout(200)
+        page.wait_for_timeout(250)
 
     def close_menus():
         page.evaluate("() => document.querySelectorAll('.menu-dropdown').forEach(d => d.classList.remove('open'))")
 
     def set_theme(dark):
-        open_menu("view")
-        if dark:
-            page.check("#toggle-theme")
-        else:
-            page.uncheck("#toggle-theme")
-        close_menus()
-        page.wait_for_timeout(300)
+        target = "dark" if dark else "light"
+        current = page.evaluate("() => document.documentElement.dataset.theme")
+        if current != target:
+            page.click("#theme-toggle")
+            page.wait_for_timeout(250)
+        assert page.evaluate("() => document.documentElement.dataset.theme") == target, current
 
     def sig():
         return page.evaluate("""() => {
@@ -245,9 +247,9 @@ with sync_playwright() as p:
     page.click("#section-script .section-title")
     record("section collapse", collapsed)
 
-    page.click("#panel-toggle")
+    page.click("#panel-toggle-btn")
     panel_collapsed = page.evaluate("() => document.querySelector('.workspace').classList.contains('panel-collapsed')")
-    page.click("#panel-toggle")
+    page.click("#panel-toggle-btn")
     record("panel collapse", panel_collapsed)
 
     # 4. Undo / redo
@@ -280,20 +282,18 @@ with sync_playwright() as p:
 
     # save / load preset
     page.once("dialog", lambda d: d.accept("mytest"))
-    open_menu("file")
-    page.click('[data-action="save-preset"]')
+    page.click("#btn-save-preset")
     page.wait_for_timeout(400)
     saved = page.evaluate("() => JSON.parse(localStorage.getItem('glyphcraft-presets') || '{}').mytest ? true : false")
     page.locator("#depth").fill("150")
     page.wait_for_timeout(500)
     page.once("dialog", lambda d: d.accept("mytest"))
-    open_menu("file")
-    page.click('[data-action="load-preset"]')
+    page.click("#btn-load-preset")
     page.wait_for_timeout(600)
     record("save/load custom preset", saved and page.input_value("#depth") == "80", f"saved={saved}, depth={page.input_value('#depth')}")
 
     # 6. Compare split + hold original
-    open_menu("view")
+    open_menu("edit")
     page.click('[data-action="compare"]')
     page.wait_for_timeout(600)
     overlay = page.is_visible("#compare-overlay")
@@ -323,7 +323,7 @@ with sync_playwright() as p:
     page.keyboard.up("o")
     page.wait_for_timeout(300)
     record("hold original differs", hold_sig != preset_sig, "original image shown")
-    open_menu("view")
+    open_menu("edit")
     page.click('[data-action="compare"]')
     page.wait_for_timeout(300)
 
@@ -418,34 +418,186 @@ with sync_playwright() as p:
     except Exception as e:
         record("video load", False, str(e)[:120])
 
+    # 11. Round 2: zoom toolbar, menus, touch targets, action bar
+    page.click("#zoom-level")
+    page.wait_for_timeout(250)
+    record("zoom menu opens", page.is_visible("#zoom-menu"))
+    page.click('[data-zoom="4"]')
+    page.wait_for_timeout(350)
+    z400 = page.inner_text("#zoom-level")
+    ir = page.evaluate("() => getComputedStyle(document.getElementById('canvas')).imageRendering")
+    record("zoom preset 400% is crisp", z400 == "400%" and ir == "pixelated", f"{z400}, {ir}")
+
+    for _ in range(20):
+        if page.is_disabled("#zoom-in"):
+            break
+        page.click("#zoom-in")
+    page.wait_for_timeout(300)
+    zmax = page.inner_text("#zoom-level")
+    record("zoom max 800%, + disabled", zmax == "800%" and page.is_disabled("#zoom-in"), zmax)
+
+    for _ in range(40):
+        if page.is_disabled("#zoom-out"):
+            break
+        page.click("#zoom-out")
+    page.wait_for_timeout(300)
+    zmin = page.inner_text("#zoom-level")
+    record("zoom min 10%, - disabled", zmin == "10%" and page.is_disabled("#zoom-out"), zmin)
+
+    page.locator("#canvas-area").click(position={"x": 200, "y": 150})
+    page.keyboard.press("0")
+    page.wait_for_timeout(300)
+    zfit = page.inner_text("#zoom-level")
+    record("0 = fit window", zfit != "10%" and zfit != "800%", zfit)
+    open_menu("view")
+    page.click('[data-action="fit-small"]')
+    page.wait_for_timeout(350)
+    zsmall = page.inner_text("#zoom-level")
+    record("fit small ~ half of fit", abs(int(zsmall[:-1]) - int(zfit[:-1]) / 2) <= 3, f"{zfit} -> {zsmall}")
+
+    open_menu("view")
+    page.click('[data-action="fullpage"]')
+    page.wait_for_timeout(400)
+    full_on = page.evaluate("() => document.querySelector('.workspace').classList.contains('fullpage')")
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(400)
+    full_off = page.evaluate("() => document.querySelector('.workspace').classList.contains('fullpage')")
+    record("full page hides panel, Esc restores", full_on and not full_off)
+
+    z_before_wheel = page.inner_text("#zoom-level")
+    area_box = page.locator("#canvas-area").bounding_box()
+    page.mouse.move(area_box["x"] + 240, area_box["y"] + 180)
+    page.keyboard.down("Control")
+    page.mouse.wheel(0, -300)
+    page.keyboard.up("Control")
+    page.wait_for_timeout(300)
+    z_after_wheel = page.inner_text("#zoom-level")
+    record("Ctrl + wheel zooms", z_before_wheel != z_after_wheel, f"{z_before_wheel} -> {z_after_wheel}")
+
+    # Sticky action bar: opaque, full panel width, nothing shows through the gap.
+    page.evaluate("() => { document.querySelector('.panel-content').scrollTop = 900; }")
+    page.wait_for_timeout(300)
+    abar = page.evaluate("""() => {
+      const b = document.getElementById('panel-actionbar');
+      const r = b.getBoundingClientRect();
+      const p = document.getElementById('panel').getBoundingClientRect();
+      const cs = getComputedStyle(b);
+      const gap = document.elementFromPoint(r.x + 6, r.y + r.height / 2);
+      return {w: r.width, pw: p.width, bg: cs.backgroundColor, z: cs.zIndex,
+              gapId: gap ? (gap.id || gap.className) : 'none'};
+    }""")
+    record("action bar solid + full width",
+           abar["bg"].startswith("rgb(") and abar["w"] >= abar["pw"] - 2 and int(abar["z"]) >= 10 and "actionbar" in str(abar["gapId"]),
+           json.dumps(abar))
+
+    # Menus: keyboard navigation and Esc.
+    page.evaluate("() => { document.querySelector('.panel-content').scrollTop = 0; }")
+    page.click("#menu-file")
+    page.wait_for_timeout(250)
+    first_item = page.evaluate("() => document.activeElement.dataset.action")
+    page.keyboard.press("ArrowDown")
+    second_item = page.evaluate("() => document.activeElement.dataset.action")
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(250)
+    menu_closed = page.evaluate("() => !document.getElementById('dropdown-file').classList.contains('open')")
+    record("menu arrow keys + Esc", first_item == "open" and second_item == "export" and menu_closed,
+           f"{first_item} -> {second_item}, closed={menu_closed}")
+
+    # Touch targets in the panel and toolbar.
+    small_targets = page.evaluate("""() => {
+      const out = [];
+      document.querySelectorAll('.panel-content button, .panel-content input, .panel-content select, .menubar button').forEach(el => {
+        if (el.closest('[hidden]') || el.offsetParent === null) return;
+        if (el.id === 'panel-toggle' || el.classList.contains('drag-handle')) return;
+        const r = el.getBoundingClientRect();
+        if (r.width < 44 || r.height < 44) {
+          out.push({tag: el.tagName, id: el.id, cls: String(el.className), w: Math.round(r.width), h: Math.round(r.height)});
+        }
+      });
+      return out;
+    }""")
+    record("touch targets >= 44px", len(small_targets) == 0, json.dumps(small_targets[:8]))
+
+    # Theme toggle: icon + label reflect the current theme.
+    set_theme(False)
+    light_icons = page.evaluate("""() => ({
+      sun: getComputedStyle(document.querySelector('.theme-toggle .icon-sun')).display,
+      moon: getComputedStyle(document.querySelector('.theme-toggle .icon-moon')).display,
+      label: document.getElementById('theme-toggle').getAttribute('aria-label')
+    })""")
+    record("light theme: sun icon, action label", light_icons["sun"] != "none" and light_icons["moon"] == "none" and light_icons["label"] == "Switch to dark theme", json.dumps(light_icons))
+    set_theme(True)
+    dark_icons = page.evaluate("""() => ({
+      sun: getComputedStyle(document.querySelector('.theme-toggle .icon-sun')).display,
+      moon: getComputedStyle(document.querySelector('.theme-toggle .icon-moon')).display,
+      label: document.getElementById('theme-toggle').getAttribute('aria-label')
+    })""")
+    record("dark theme: moon icon, action label", dark_icons["moon"] != "none" and dark_icons["sun"] == "none" and dark_icons["label"] == "Switch to light theme", json.dumps(dark_icons))
+
     page.reload(wait_until="load")
     page.wait_for_timeout(700)
     theme = page.evaluate("() => document.documentElement.dataset.theme")
     record("theme persists after reload", theme == "dark", theme)
     record("empty state after reload", page.is_visible("#drop-zone") and page.inner_text("#status-bar") == "No image loaded")
+    with page.expect_file_chooser() as chooser:
+        page.click("#open-file-btn")
+    chooser.value.set_files(TEST_IMG)
+    page.wait_for_timeout(900)
+    record("Open file button works", "900×600" in page.inner_text("#status-bar"), page.inner_text("#status-bar"))
     page.wait_for_timeout(300)
     record("zero console errors", len(console_errors) == 0, json.dumps(console_errors[:3]))
     record("zero page errors", len(page_errors) == 0, json.dumps(page_errors[:3]))
 
+    # Arabic home screen (separate locale context).
+    actx = browser.new_context(viewport={"width": 390, "height": 820}, locale="ar-SA")
+    apage = actx.new_page()
+    arabic_errors = []
+    apage.on("pageerror", lambda e: arabic_errors.append(str(e)))
+    apage.goto(URL, wait_until="load")
+    apage.wait_for_timeout(500)
+    arabic_ok = apage.evaluate("""() => ({
+      dir: document.documentElement.dir,
+      hint: document.querySelector('.drop-hint').textContent,
+      open: document.getElementById('open-file-btn').textContent,
+      status: document.getElementById('status-bar').textContent
+    })""")
+    apage.evaluate("() => window.showDropError('errSize', {size: '50 MB', max: '40 MB'})")
+    apage.wait_for_timeout(200)
+    arabic_err = apage.inner_text(".drop-error")
+    apage.screenshot(path=f"{SHOT}/home_arabic.png")
+    record("Arabic home screen",
+           arabic_ok["dir"] == "rtl" and "أفلت" in arabic_ok["hint"] and arabic_ok["open"] == "فتح ملف",
+           json.dumps(arabic_ok, ensure_ascii=False))
+    record("Arabic honest error message", "كبير" in arabic_err and "40 MB" in arabic_err, arabic_err)
+    actx.close()
+
     browser.close()
 
-with open(f"{ROOT}/TEST_RESULTS.json", "w") as f:
+# Automated contrast audit, both themes at 1280 and 360.
+contrast = subprocess.run([sys.executable, f"{ROOT}/tests/test_contrast.py"], capture_output=True, text=True)
+summary = (contrast.stdout.strip().splitlines() or [contrast.stderr[-200:]])[-1]
+record("contrast audit (both themes, 360+1280)", contrast.returncode == 0, summary)
+
+with open(f"{REPORTS}/TEST_RESULTS.json", "w") as f:
     json.dump({"rows": rows, "warnings": warns[:5]}, f, indent=2)
 
 lines = ["# Glyphcraft Test Report", "", f"Run: {time.strftime('%Y-%m-%d %H:%M:%S')}",
-         "", "Command: `python3 test_suite.py` (headless Chromium via Playwright, file:// URL)", "",
+         "", "Command: `python tests/test_suite.py` (headless Chromium via Playwright, file:// URL)", "",
          f"Total: {len(rows)} | Pass: {sum(1 for _,ok,_ in rows if ok)} | Fail: {sum(1 for _,ok,_ in rows if not ok)}", "",
          "| Check | Result | Detail |", "|---|---|---|"]
 for name, ok, detail in rows:
     lines.append(f"| {name} | {'PASS' if ok else 'FAIL'} | {str(detail).replace('|','/')} |")
-lines += ["", "## Screenshots", f"- Empty state: `{SHOT}/empty_dark.png`, `{SHOT}/empty_light.png`",
+lines += ["", "## Screenshots", f"- Contrast: `{REPORTS}/contrast-<theme>-<width>.png`",
+          f"- Empty state: `{SHOT}/empty_dark.png`, `{SHOT}/empty_light.png`",
           f"- Loaded: `{SHOT}/loaded_dark.png`, `{SHOT}/loaded_light.png`",
+          f"- Arabic home: `{SHOT}/home_arabic.png`",
           f"- Per-effect (script): `{SHOT}/fx_<id>.png`",
           f"- Compare: `{SHOT}/compare.png`", f"- Video: `{SHOT}/video_loaded.png`", "",
-          "## Not tested", "- Firefox rendering (only headless Chromium was available).",
+          "## Not tested", "- Firefox/Safari rendering (only headless Chromium was available).",
+          "- Two-finger pinch zoom is implemented with Pointer Events but could only be simulated, not tested on physical hardware.",
           "- Full-resolution WebM export of a moving video (WebM export was exercised on a still image; video input was loaded and rendered).",
-          "- Web Worker chunking: not implemented. Heavy effects run synchronously on the reduced preview (<=1100px), so a ~0.5-1s UI pause is possible on the largest previews.",
+          "- Web Worker chunking: not implemented. Heavy effects run synchronously on the reduced preview (<=1600px), so a ~0.5-1s UI pause is possible on the largest previews.",
           "- CRT curvature is a scanline/row-warp approximation, not a true lens model.",
           "- Only headless Chromium was run; no interactive browser was used."]
-open(f"{ROOT}/TEST_REPORT.md", "w").write("\n".join(lines) + "\n")
+open(f"{REPORTS}/TEST_REPORT.md", "w").write("\n".join(lines) + "\n")
 print("REPORT WRITTEN", len(rows), "checks,", sum(1 for _,ok,_ in rows if not ok), "failures")

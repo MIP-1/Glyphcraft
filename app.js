@@ -53,6 +53,8 @@ const state = {
   renderId: null,
   pan: { x: 0, y: 0 },
   scale: 1,
+  zoom: 1,
+  fullPage: false,
   spaceDown: false,
   opts: defaultOpts(),
   ramp: null,
@@ -83,18 +85,17 @@ function initEls() {
   els.ctx = els.canvas.getContext("2d", { willReadFrequently: true });
   els.fileInput = $("file-input");
   els.panel = $("panel");
-  els.panelToggle = $("panel-toggle");
   els.panelToggleBtn = $("panel-toggle-btn");
   els.panelSearch = $("panel-search");
   els.btnExport = $("btn-export");
   els.btnReset = $("btn-reset");
   els.selectMode = $("select-mode");
-  els.depth = $("depth"); els.valDepth = $("val-depth");
+  els.depth = $("depth");
   els.depthNum = $("depth-num");
   els.charCategory = $("char-category");
   els.charSet = $("char-set");
   els.charInject = $("char-inject");
-  els.charOffset = $("char-offset"); els.valOffset = $("val-offset");
+  els.charOffset = $("char-offset");
   els.charOffsetNum = $("char-offset-num");
   els.textStyle = $("text-style");
   els.usePalette = $("use-palette");
@@ -105,21 +106,21 @@ function initEls() {
   els.paletteSelect = $("palette-select");
   els.controlPalette = $("control-palette");
   els.paletteSwatches = $("palette-swatches");
-  els.adjBrightness = $("adj-brightness"); els.valBrightness = $("val-brightness");
+  els.adjBrightness = $("adj-brightness");
   els.adjBrightnessNum = $("adj-brightness-num");
-  els.adjContrast = $("adj-contrast"); els.valContrast = $("val-contrast");
+  els.adjContrast = $("adj-contrast");
   els.adjContrastNum = $("adj-contrast-num");
-  els.adjSaturation = $("adj-saturation"); els.valSaturation = $("val-saturation");
+  els.adjSaturation = $("adj-saturation");
   els.adjSaturationNum = $("adj-saturation-num");
-  els.adjHue = $("adj-hue"); els.valHue = $("val-hue");
+  els.adjHue = $("adj-hue");
   els.adjHueNum = $("adj-hue-num");
-  els.adjHighlights = $("adj-highlights"); els.valHighlights = $("val-highlights");
+  els.adjHighlights = $("adj-highlights");
   els.adjHighlightsNum = $("adj-highlights-num");
-  els.adjShadows = $("adj-shadows"); els.valShadows = $("val-shadows");
+  els.adjShadows = $("adj-shadows");
   els.adjShadowsNum = $("adj-shadows-num");
-  els.adjSharpen = $("adj-sharpen"); els.valSharpen = $("val-sharpen");
+  els.adjSharpen = $("adj-sharpen");
   els.adjSharpenNum = $("adj-sharpen-num");
-  els.adjBlur = $("adj-blur"); els.valBlur = $("val-blur");
+  els.adjBlur = $("adj-blur");
   els.adjBlurNum = $("adj-blur-num");
   els.adjInvert = $("adj-invert");
   els.adjSepia = $("adj-sepia");
@@ -131,12 +132,11 @@ function initEls() {
   els.ditherKernel = $("dither-kernel");
   els.ditherDepth = $("dither-depth");
   els.ditherDepthNum = $("dither-depth-num");
-  els.valColorDepth = $("val-color-depth");
+ 
   els.statusBar = $("status-bar");
   els.menuFile = $("menu-file"); els.dropdownFile = $("dropdown-file");
   els.menuView = $("menu-view"); els.dropdownView = $("dropdown-view");
   els.menuEdit = $("menu-edit"); els.dropdownEdit = $("dropdown-edit");
-  els.toggleTheme = $("toggle-theme");
   els.sectionScript = $("section-script");
   els.sectionDither = $("section-dither");
   els.sectionColor = $("section-color");
@@ -161,30 +161,121 @@ function initEls() {
   els.customCharset = $("custom-charset");
   els.cellSize = $("cell-size");
   els.cellSizeNum = $("cell-size-num");
-  els.valCellSize = $("val-cell-size");
+ 
   els.glyphWeight = $("glyph-weight");
   els.glyphWeightNum = $("glyph-weight-num");
-  els.valWeight = $("val-weight");
+ 
   els.glyphInvert = $("glyph-invert");
   els.glyphColor = $("glyph-color");
   els.jpgQuality = $("jpg-quality");
   els.jpgQualityNum = $("jpg-quality-num");
-  els.valJpgQuality = $("val-jpg-quality");
+ 
   els.jpgQualityControl = $("jpg-quality-control");
+  els.openFileBtn = $("open-file-btn");
+  els.dropHint = document.querySelector("#drop-zone .drop-hint");
+  els.dropError = document.querySelector("#drop-zone .drop-error");
+  els.dropLoadingText = document.querySelector("#drop-zone .drop-loading-text");
+  els.themeToggle = $("theme-toggle");
+  els.menuThemeLabel = $("menu-theme-label");
+  els.zoomIn = $("zoom-in");
+  els.zoomOut = $("zoom-out");
+  els.zoomLevel = $("zoom-level");
+  els.zoomMenu = $("zoom-menu");
+  els.btnSavePreset = $("btn-save-preset");
+  els.btnLoadPreset = $("btn-load-preset");
 }
 
-function setTheme(dark) {
-  document.documentElement.dataset.theme = dark ? "dark" : "light";
-  if (els.toggleTheme) els.toggleTheme.checked = dark;
-  try { localStorage.setItem("glyphcraft-theme", dark ? "dark" : "light"); } catch (e) {}
+/* ---------------- Theme ---------------- */
+
+function currentTheme() {
+  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
+}
+
+function setTheme(theme) {
+  const next = theme === "light" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("glyphcraft-theme", next); } catch (e) {}
+
+  const target = next === "dark" ? "light" : "dark";
+  const label = target === "light" ? "Switch to light theme" : "Switch to dark theme";
+  if (els.themeToggle) {
+    els.themeToggle.setAttribute("aria-label", label);
+    els.themeToggle.title = label;
+  }
+  if (els.menuThemeLabel) {
+    els.menuThemeLabel.textContent = target === "light" ? "Light theme" : "Dark theme";
+  }
+  applyZoomUI();
+}
+
+function toggleTheme() {
+  setTheme(currentTheme() === "dark" ? "light" : "dark");
 }
 
 function loadTheme() {
-  try {
-    const saved = localStorage.getItem("glyphcraft-theme");
-    if (saved) { setTheme(saved === "dark"); return; }
-  } catch (e) {}
-  setTheme(!window.matchMedia || window.matchMedia("(prefers-color-scheme: dark)").matches);
+  let saved = null;
+  try { saved = localStorage.getItem("glyphcraft-theme"); } catch (e) {}
+  if (saved === "dark" || saved === "light") { setTheme(saved); return; }
+  const dark = !window.matchMedia || window.matchMedia("(prefers-color-scheme: dark)").matches;
+  setTheme(dark ? "dark" : "light");
+}
+
+/* ---------------- Localisation (home screen) ---------------- */
+
+const STRINGS = {
+  en: {
+    idle: "Drop an image or video here, paste it (Ctrl+V), or open a file.",
+    hover: "Release to load it.",
+    loading: "Loading {name}…",
+    open: "Open file",
+    noImage: "No image loaded",
+    errType: "That file type is not supported. Try a PNG, JPG or WebP image, or a WebM/MP4 video.",
+    errSize: "This file is too large ({size}). Try a smaller file (under {max}).",
+    errDecode: "Couldn’t decode this file. Try re-saving it as PNG or MP4, then open it again.",
+    errVideo: "Couldn’t play this video. Try MP4 (H.264) or WebM (VP9).",
+    resetConfirm: "Press Reset All again to confirm",
+    resetDone: "All settings reset"
+  },
+  ar: {
+    idle: "أفلت صورة أو فيديو هنا، أو الصقه (Ctrl+V)، أو افتح ملفًا.",
+    hover: "أفلت الملف لتحميله.",
+    loading: "جارٍ تحميل {name}…",
+    open: "فتح ملف",
+    noImage: "لم يتم تحميل صورة",
+    errType: "نوع الملف غير مدعوم. جرّب صورة PNG أو JPG أو WebP، أو فيديو WebM أو MP4.",
+    errSize: "الملف كبير جدًا ({size}). جرّب ملفًا أصغر (أقل من {max}).",
+    errDecode: "تعذّر فك ترميز هذا الملف. جرّب حفظه بصيغة PNG أو MP4 ثم افتحه مجددًا.",
+    errVideo: "تعذّر تشغيل هذا الفيديو. جرّب MP4 (H.264) أو WebM (VP9).",
+    resetConfirm: "اضغط على «إعادة تعيين الكل» مرة أخرى للتأكيد",
+    resetDone: "تمت إعادة تعيين كل الإعدادات"
+  }
+};
+
+const LANG = (navigator.language || "en").toLowerCase().startsWith("ar") ? "ar" : "en";
+
+function t(key, vars) {
+  let out = (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key] || key;
+  if (vars) Object.keys(vars).forEach(k => {
+    const value = String(vars[k]);
+    // Keep measurements and file names LTR inside Arabic sentences.
+    const safe = /[0-9A-Za-z]/.test(value) ? "\u2066" + value + "\u2069" : value;
+    out = out.replace(new RegExp("\\{" + k + "\\}", "g"), safe);
+  });
+  return out;
+}
+
+function applyLanguage() {
+  document.documentElement.lang = LANG;
+  document.documentElement.dir = LANG === "ar" ? "rtl" : "ltr";
+  if (els.openFileBtn) els.openFileBtn.textContent = t("open");
+  if (els.dropHint) els.dropHint.textContent = t("idle");
+  if (els.statusBar && !state.source) els.statusBar.textContent = t("noImage");
+}
+
+function formatBytes(bytes) {
+  if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  if (bytes >= 1024) return Math.round(bytes / 1024) + " KB";
+  return bytes + " B";
 }
 
 function populatePalettes() {
@@ -243,10 +334,10 @@ function updateCustomPaletteBuilder() {
   const isCustom = paletteName === "__custom__";
   
   if (isEditable || isCustom) {
-    els.customPaletteBuilder.style.display = "";
+    els.customPaletteBuilder.hidden = false;
     renderPaletteBuilder(paletteName);
   } else {
-    els.customPaletteBuilder.style.display = "none";
+    els.customPaletteBuilder.hidden = true;
   }
 }
 
@@ -459,6 +550,7 @@ function render() {
 
   els.canvas.width = pv.w;
   els.canvas.height = pv.h;
+  state.scale = scaleForZoom(state.zoom);
   const base = prepareBase(state.source, pv.w, pv.h, opts);
   renderToContext(base, els.ctx, pv.w, pv.h, opts);
 
@@ -469,8 +561,49 @@ function render() {
   }
 
   state.lastRender = performance.now() - start;
+  applyTransform();
+  applyZoomUI();
   updateCompareUI();
   updateStatus(full);
+}
+
+function outputMeta() {
+  const full = computeOutputSize(state.sourceW, state.sourceH, state.opts.outputPreset, state.opts.outputWidth, state.opts.outputHeight, state.opts.outputFit);
+  const pv = previewSize(full);
+  return { full, pv };
+}
+
+/* Zoom is stored relative to the output image's real pixels (1 = 100%). */
+function zoomForScale(scale) {
+  const { full, pv } = outputMeta();
+  if (!full.w || !pv.w) return scale;
+  return scale * (full.w / pv.w);
+}
+
+function scaleForZoom(zoom) {
+  const { full, pv } = outputMeta();
+  if (!full.w || !pv.w) return zoom;
+  return zoom * (pv.w / full.w);
+}
+
+function applyZoomUI() {
+  const z = Math.max(0.01, state.zoom || 1);
+  const pct = Math.round(z * 100);
+  if (els.zoomLevel) {
+    els.zoomLevel.textContent = pct + "%";
+    els.zoomLevel.setAttribute("aria-label", "Zoom level: " + pct + "%");
+  }
+  if (els.zoomIn) els.zoomIn.disabled = !state.source || z >= 8 - 0.001;
+  if (els.zoomOut) els.zoomOut.disabled = !state.source || z <= 0.1 + 0.001;
+  if (els.zoomLevel) els.zoomLevel.disabled = !state.source;
+  if (els.canvas) els.canvas.style.imageRendering = state.scale > 1.001 ? "pixelated" : "auto";
+  if (els.zoomMenu) {
+    els.zoomMenu.querySelectorAll("[data-zoom]").forEach(item => {
+      const v = parseFloat(item.dataset.zoom);
+      const active = isFinite(v) && Math.abs(z - v) < 0.005;
+      item.setAttribute("aria-checked", active ? "true" : "false");
+    });
+  }
 }
 
 function updateStatus(full) {
@@ -479,17 +612,16 @@ function updateStatus(full) {
     els.statusBar.textContent = `Exporting video: ${state.videoExportFrames}/${state.videoExportTotal} frames`;
     return;
   }
-  if (!state.source) { els.statusBar.textContent = "No image loaded"; return; }
-  const zoom = Math.round(state.scale * 100);
+  if (!state.source) { els.statusBar.textContent = t("noImage"); return; }
+  const zoom = Math.round(state.zoom * 100);
   els.statusBar.textContent = `${zoom}%  ${state.sourceW}×${state.sourceH}  ${Math.round(state.lastRender)}ms`;
 }
 
 function updateCompareUI() {
   if (!els.compareOverlay || !els.compareSlider) return;
   const active = state.compare && state.source && !state.showOriginal;
-  els.compareOverlay.style.display = active ? "flex" : "none";
+  els.compareOverlay.hidden = !active;
   if (!active) return;
-  const area = els.canvasArea.getBoundingClientRect();
   const left = state.pan.x + els.canvas.width * state.scale * state.compareFrac;
   els.compareSlider.style.left = `${left}px`;
   els.compareSlider.style.top = `${state.pan.y}px`;
@@ -497,14 +629,62 @@ function updateCompareUI() {
   els.compareSlider.style.bottom = "auto";
 }
 
-function fitToWindow() {
+function centerCanvas() {
+  const area = els.canvasArea.getBoundingClientRect();
+  state.pan.x = (area.width - els.canvas.width * state.scale) / 2;
+  state.pan.y = (area.height - els.canvas.height * state.scale) / 2;
+}
+
+function setZoom(zoom, anchor) {
   if (!state.source) return;
+  const next = Math.max(0.1, Math.min(8, zoom));
+  if (!isFinite(next) || next <= 0) return;
+  const area = els.canvasArea.getBoundingClientRect();
+  const ax = anchor && isFinite(anchor.x) ? anchor.x : area.width / 2;
+  const ay = anchor && isFinite(anchor.y) ? anchor.y : area.height / 2;
+  const nextScale = scaleForZoom(next);
+  const curScale = state.scale || 1;
+  const dx = (ax - state.pan.x) / curScale;
+  const dy = (ay - state.pan.y) / curScale;
+  state.scale = nextScale;
+  state.zoom = next;
+  state.pan.x = ax - dx * nextScale;
+  state.pan.y = ay - dy * nextScale;
+  applyTransform();
+  applyZoomUI();
+  updateStatus();
+}
+
+function zoomBy(factor) { setZoom(state.zoom * factor); }
+
+function fitScaleValue() {
   const area = els.canvasArea.getBoundingClientRect();
   const w = els.canvas.width || 1, h = els.canvas.height || 1;
-  state.scale = Math.min(area.width / w, area.height / h, 1) * 0.94;
-  state.pan.x = (area.width - w * state.scale) / 2;
-  state.pan.y = (area.height - h * state.scale) / 2;
+  if (!area.width || !area.height) return 1;
+  return Math.min(area.width / w, area.height / h) * 0.94;
+}
+
+function fitToWindow() {
+  if (!state.source) return;
+  state.scale = fitScaleValue();
+  state.zoom = Math.max(0.01, Math.min(1, zoomForScale(state.scale)));
+  state.scale = scaleForZoom(state.zoom);
+  centerCanvas();
   applyTransform();
+  applyZoomUI();
+  updateStatus();
+}
+
+function fitSmall() {
+  if (!state.source) return;
+  fitToWindow();
+  setZoom(state.zoom * 0.5);
+}
+
+function setFullPage(on) {
+  state.fullPage = !!on;
+  if (els.workspace) els.workspace.classList.toggle("fullpage", state.fullPage);
+  requestAnimationFrame(() => { if (state.source) fitToWindow(); });
 }
 
 function applyTransform() {
@@ -517,52 +697,104 @@ function handleWheel(e) {
   e.preventDefault();
   const rect = els.canvasArea.getBoundingClientRect();
   const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  const factor = e.deltaY > 0 ? 0.9 : 1.1;
-  const newScale = Math.max(0.05, Math.min(20, state.scale * factor));
-  const dx = mx - state.pan.x, dy = my - state.pan.y;
-  state.pan.x = mx - dx * (newScale / state.scale);
-  state.pan.y = my - dy * (newScale / state.scale);
-  state.scale = newScale;
-  applyTransform();
+  const factor = e.deltaY > 0 ? 1 / 1.12 : 1.12;
+  setZoom(state.zoom * factor, { x: mx, y: my });
 }
 
 let isPanning = false, panStart = { x: 0, y: 0 };
+const activePointers = new Map();
+let pinchStart = null;
+
+function canvasFitsView() {
+  const area = els.canvasArea.getBoundingClientRect();
+  const w = els.canvas.width * state.scale;
+  const h = els.canvas.height * state.scale;
+  return w <= area.width + 1 && h <= area.height + 1;
+}
+
 function handlePointerDown(e) {
-  if (!state.source || e.button === 2) return;
-  if (!(state.spaceDown || e.button === 1)) return;
+  if (!state.source) return;
+  if (e.pointerType === "touch") {
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (activePointers.size === 2) {
+      const pts = Array.from(activePointers.values());
+      pinchStart = {
+        dist: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y),
+        zoom: state.zoom,
+        cx: (pts[0].x + pts[1].x) / 2,
+        cy: (pts[0].y + pts[1].y) / 2
+      };
+      isPanning = false;
+      return;
+    }
+  }
+  if (e.button === 2) return;
+  const canPan = e.button === 1 || state.spaceDown || (!canvasFitsView() && e.button === 0);
+  if (!canPan) return;
   e.preventDefault();
   isPanning = true;
   panStart = { x: e.clientX - state.pan.x, y: e.clientY - state.pan.y };
-  els.canvasArea.style.cursor = "grabbing";
+  els.canvasArea.classList.add("panning");
+  if (els.canvasArea.setPointerCapture) { try { els.canvasArea.setPointerCapture(e.pointerId); } catch (err) {} }
 }
+
 function handlePointerMove(e) {
+  if (e.pointerType === "touch" && activePointers.has(e.pointerId)) {
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  }
+  if (pinchStart && activePointers.size === 2) {
+    const pts = Array.from(activePointers.values());
+    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    if (pinchStart.dist > 0 && dist > 0) {
+      const rect = els.canvasArea.getBoundingClientRect();
+      setZoom(pinchStart.zoom * (dist / pinchStart.dist), { x: pinchStart.cx - rect.left, y: pinchStart.cy - rect.top });
+    }
+    return;
+  }
   if (!isPanning) return;
   state.pan.x = e.clientX - panStart.x;
   state.pan.y = e.clientY - panStart.y;
   applyTransform();
 }
-function handlePointerUp() {
-  if (isPanning) { isPanning = false; els.canvasArea.style.cursor = state.spaceDown ? "grab" : ""; }
-}
 
-function setDropZoneState(state) {
-  if (els.dropZone) els.dropZone.dataset.state = state;
-}
-
-function showDropError(message) {
-  if (els.dropZone) {
-    const errorEl = els.dropZone.querySelector(".drop-error");
-    if (errorEl) errorEl.textContent = message;
-    setDropZoneState("error");
+function handlePointerUp(e) {
+  if (e && e.pointerType === "touch") activePointers.delete(e.pointerId);
+  if (activePointers.size < 2) pinchStart = null;
+  if (isPanning) {
+    isPanning = false;
+    els.canvasArea.classList.remove("panning");
   }
-  setTimeout(() => setDropZoneState("idle"), 3000);
+}
+
+const MAX_FILE_BYTES = 40 * 1024 * 1024;
+
+function setDropZoneState(stateName, detail) {
+  if (!els.dropZone) return;
+  els.dropZone.dataset.state = stateName;
+  if (stateName === "idle" && els.dropHint) els.dropHint.textContent = t("idle");
+  if (stateName === "hover" && els.dropHint) els.dropHint.textContent = t("hover");
+  if (stateName === "loading" && els.dropLoadingText) {
+    els.dropLoadingText.textContent = t("loading", { name: (detail && detail.name) || "…" });
+  }
+}
+
+function showDropError(key, vars) {
+  if (!els.dropZone) return;
+  if (els.dropError) els.dropError.textContent = t(key, vars);
+  setDropZoneState("error");
 }
 
 function loadFile(file) {
   if (!file) return;
-  setDropZoneState("loading");
+  const type = file.type || "";
+  if (!/^(image|video)\//.test(type)) { showDropError("errType"); return; }
+  if (file.size > MAX_FILE_BYTES) {
+    showDropError("errSize", { size: formatBytes(file.size), max: formatBytes(MAX_FILE_BYTES) });
+    return;
+  }
+  setDropZoneState("loading", { name: file.name });
   const url = URL.createObjectURL(file);
-  const isVideo = file.type.startsWith("video/");
+  const isVideo = type.startsWith("video/");
   if (isVideo) {
     const vid = document.createElement("video");
     vid.src = url; vid.muted = true; vid.playsInline = true; vid.loop = true;
@@ -580,7 +812,7 @@ function loadFile(file) {
       setTimeout(fitToWindow, 30);
       setDropZoneState("idle");
     }, { once: true });
-    vid.addEventListener("error", () => { URL.revokeObjectURL(url); showDropError("Unsupported video codec"); }, { once: true });
+    vid.addEventListener("error", () => { URL.revokeObjectURL(url); showDropError("errVideo"); }, { once: true });
   } else {
     const img = new Image();
     img.onload = () => {
@@ -595,7 +827,7 @@ function loadFile(file) {
       requestAnimationFrame(() => { render(); fitToWindow(); pushHistory("load"); });
       setDropZoneState("idle");
     };
-    img.onerror = () => { URL.revokeObjectURL(url); showDropError("Unsupported image format"); };
+    img.onerror = () => { URL.revokeObjectURL(url); showDropError("errDecode"); };
     img.src = url;
   }
 }
@@ -805,14 +1037,6 @@ function showToast(message, duration = 2500) {
   const toast = document.createElement("div");
   toast.className = "toast";
   toast.textContent = message;
-  toast.style.cssText = `
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: var(--panel2); color: var(--text);
-    padding: 10px 16px; border-radius: 8px; border: 1px solid var(--line);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 1000;
-    font-family: var(--font-ui); font-size: 13px;
-    animation: toast-in 0.2s ease-out;
-  `;
   if (!document.getElementById("toast-style")) {
     const style = document.createElement("style");
     style.id = "toast-style";
@@ -884,17 +1108,17 @@ function resetSection(name) {
 function syncUIFromState() {
   const o = state.opts;
   els.selectMode.value = o.mode;
-  els.depth.value = o.depth; els.valDepth.textContent = o.depth; els.depthNum.value = o.depth;
+  els.depth.value = o.depth; els.depthNum.value = o.depth;
   els.charCategory.value = o.charCategory;
   els.charSet.value = o.charSet;
   els.charInject.value = o.charInject;
-  els.charOffset.value = o.charOffset; els.valOffset.textContent = o.charOffset; els.charOffsetNum.value = o.charOffset;
+  els.charOffset.value = o.charOffset; els.charOffsetNum.value = o.charOffset;
   els.textStyle.value = o.textStyle;
   els.charPreset.value = o.charPreset;
   els.customCharset.value = o.customCharset;
-  els.customCharsetRow.style.display = o.charPreset === "custom" ? "" : "none";
-  els.cellSize.value = o.cellSize; els.valCellSize.textContent = o.cellSize; els.cellSizeNum.value = o.cellSize;
-  els.glyphWeight.value = o.glyphWeight; els.valWeight.textContent = o.glyphWeight; els.glyphWeightNum.value = o.glyphWeight;
+  els.customCharsetRow.hidden = o.charPreset !== "custom";
+  els.cellSize.value = o.cellSize; els.cellSizeNum.value = o.cellSize;
+  els.glyphWeight.value = o.glyphWeight; els.glyphWeightNum.value = o.glyphWeight;
   els.glyphInvert.checked = o.glyphInvert;
   els.glyphColor.checked = o.glyphColor;
   els.usePalette.checked = o.usePalette;
@@ -904,13 +1128,12 @@ function syncUIFromState() {
   els.colorMode.value = o.colorMode;
   els.paletteSelect.value = o.palette;
   els.ditherKernel.value = o.ditherKernel;
-  els.ditherDepth.value = o.ditherDepth; els.valColorDepth.textContent = o.ditherDepth; els.ditherDepthNum.value = o.ditherDepth;
+  els.ditherDepth.value = o.ditherDepth; els.ditherDepthNum.value = o.ditherDepth;
   els.ditherSerpentine.checked = o.ditherSerpentine;
   const names = ["Brightness", "Contrast", "Saturation", "Hue", "Highlights", "Shadows", "Sharpen", "Blur"];
   names.forEach(n => {
     const key = n.toLowerCase();
     els["adj" + n].value = o.adj[key];
-    els["val" + n].textContent = o.adj[key];
     els["adj" + n + "Num"].value = o.adj[key];
   });
   els.adjInvert.checked = o.adj.invert;
@@ -921,8 +1144,8 @@ function syncUIFromState() {
   els.outputFit.value = o.outputFit;
   els.outputLockRatio.checked = o.outputLockRatio;
   els.exportFormat.value = o.exportFormat;
-  els.jpgQuality.value = o.jpgQuality; els.valJpgQuality.textContent = o.jpgQuality; els.jpgQualityNum.value = o.jpgQuality;
-  els.jpgQualityControl.style.display = o.exportFormat === "jpg" ? "" : "none";
+  els.jpgQuality.value = o.jpgQuality; els.jpgQualityNum.value = o.jpgQuality;
+  els.jpgQualityControl.hidden = o.exportFormat !== "jpg";
   updateOutputCustomVisibility();
   toggleModeSections();
   renderEffectsList();
@@ -934,7 +1157,7 @@ function toggleModeSections() {
   els.sectionScript.style.display = mode === "script" ? "" : "none";
   els.sectionDither.style.display = mode === "dither" ? "" : "none";
   els.sectionColor.style.display = mode === "script" ? "" : "none";
-  els.controlPalette.style.display = state.opts.colorMode === "palette" ? "" : "none";
+  els.controlPalette.hidden = state.opts.colorMode !== "palette";
 }
 
 function renderEffectsList() {
@@ -966,6 +1189,7 @@ function renderEffectsList() {
     check.type = "checkbox";
     check.checked = fx.enabled;
     check.title = "Enable " + def.name;
+    check.setAttribute("aria-label", "Enable " + def.name);
     check.addEventListener("change", () => {
       fx.enabled = check.checked;
       pushHistory("fx-toggle-" + fx.id);
@@ -977,15 +1201,13 @@ function renderEffectsList() {
     name.textContent = def.name;
 
     const actions = document.createElement("div");
-    actions.style.display = "flex";
-    actions.style.gap = "4px";
-    actions.style.marginInlineStart = "auto";
+    actions.className = "effect-actions";
 
     const resetBtn = document.createElement("button");
     resetBtn.className = "btn btn-small";
     resetBtn.textContent = "Reset";
     resetBtn.title = "Reset to defaults";
-    resetBtn.style.padding = "4px 8px";
+    resetBtn.setAttribute("aria-label", "Reset " + def.name);
     resetBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       Object.assign(fx.params, effectDefaults(fx.id));
@@ -998,7 +1220,7 @@ function renderEffectsList() {
     removeBtn.className = "btn btn-small";
     removeBtn.textContent = "Remove";
     removeBtn.title = "Remove effect";
-    removeBtn.style.padding = "4px 8px";
+    removeBtn.setAttribute("aria-label", "Remove " + def.name);
     removeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       state.opts.effects.splice(index, 1);
@@ -1011,10 +1233,7 @@ function renderEffectsList() {
     actions.appendChild(removeBtn);
 
     const head = document.createElement("div");
-    head.style.display = "flex";
-    head.style.alignItems = "center";
-    head.style.gap = "8px";
-    head.style.flex = "1";
+    head.className = "effect-head";
     head.append(handle, check, name, actions);
     item.appendChild(head);
 
@@ -1032,7 +1251,6 @@ function renderEffectsList() {
           input = document.createElement("input");
           input.type = "color";
           input.value = fx.params[p.key];
-          input.style.width = "34px"; input.style.height = "24px"; input.style.padding = "1px";
         } else if (p.type === "select") {
           input = document.createElement("select");
           (p.options || []).forEach(([val, text]) => {
@@ -1041,7 +1259,6 @@ function renderEffectsList() {
             input.appendChild(opt);
           });
           input.value = fx.params[p.key];
-          input.style.width = "90px"; input.style.padding = "3px 20px 3px 6px";
         } else {
           // Create wrapper for slider + number input
           const inputWrap = document.createElement("div");
@@ -1061,29 +1278,11 @@ function renderEffectsList() {
           numInput.type = "number";
           numInput.min = p.min; numInput.max = p.max; numInput.step = p.step;
           numInput.value = fx.params[p.key];
-          numInput.style.width = "60px";
-          numInput.style.height = "28px";
-          numInput.style.padding = "4px 8px";
-          numInput.style.fontSize = "11px";
-          numInput.style.fontFamily = "var(--font-ui)";
-          numInput.style.color = "var(--text)";
-          numInput.style.background = "var(--bg)";
-          numInput.style.border = "1px solid var(--line)";
-          numInput.style.borderRadius = "var(--radius-sm)";
-
-          const out = document.createElement("span");
-          out.className = "param-value";
-          out.textContent = fx.params[p.key];
-          out.style.fontFamily = "var(--font-mono)";
-          out.style.fontSize = "10px";
-          out.style.minWidth = "30px";
-          out.style.color = "var(--muted)";
 
           const sync = (val) => {
             const clamped = Math.max(p.min, Math.min(p.max, val));
             input.value = clamped;
             numInput.value = clamped;
-            out.textContent = clamped;
             fx.params[p.key] = clamped;
           };
 
@@ -1103,7 +1302,6 @@ function renderEffectsList() {
 
           inputWrap.appendChild(input);
           inputWrap.appendChild(numInput);
-          inputWrap.appendChild(out);
           wrap.appendChild(inputWrap);
           params.appendChild(wrap);
           return;
@@ -1179,7 +1377,7 @@ function filterControls(q) {
 
 function updateOutputCustomVisibility() {
   const isCustom = els.outputPreset.value === "custom";
-  els.outputCustomRow.style.display = isCustom ? "flex" : "none";
+  els.outputCustomRow.hidden = !isCustom;
   if (isCustom) {
     els.outputWidth.value = state.opts.outputWidth;
     els.outputHeight.value = state.opts.outputHeight;
@@ -1213,13 +1411,77 @@ function toggleCompare() {
   scheduleRender(0);
 }
 
+function closeAllMenus(except) {
+  document.querySelectorAll(".menu-dropdown.open, .zoom-menu.open").forEach(dd => {
+    if (dd === except) return;
+    dd.classList.remove("open");
+    const owner = dd.parentElement && dd.parentElement.querySelector('[aria-controls="' + dd.id + '"]');
+    if (owner) owner.setAttribute("aria-expanded", "false");
+  });
+}
+
+function menuItems(dd) {
+  return Array.from(dd.querySelectorAll(".menu-item")).filter(item => !item.disabled && item.offsetParent !== null);
+}
+
+function focusFirstMenuItem(dd) {
+  const items = menuItems(dd);
+  if (items.length) items[0].focus();
+}
+
+function moveMenuFocus(e, dd) {
+  if (!["ArrowDown", "ArrowUp", "Home", "End", "Escape", "Tab"].includes(e.key)) return;
+  const items = menuItems(dd);
+  if (!items.length) return;
+  const index = items.indexOf(document.activeElement);
+  if (e.key === "Escape") {
+    e.preventDefault();
+    closeAllMenus();
+    const owner = dd.parentElement && dd.parentElement.querySelector('[aria-controls="' + dd.id + '"]');
+    if (owner) owner.focus();
+    return;
+  }
+  if (e.key === "Tab") { closeAllMenus(); return; }
+  e.preventDefault();
+  if (e.key === "Home") { items[0].focus(); return; }
+  if (e.key === "End") { items[items.length - 1].focus(); return; }
+  const delta = e.key === "ArrowDown" ? 1 : -1;
+  const next = index < 0 ? (delta > 0 ? 0 : items.length - 1) : (index + delta + items.length) % items.length;
+  items[next].focus();
+}
+
+function togglePanel() {
+  if (state.fullPage) { setFullPage(false); return; }
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    els.panel.classList.toggle("open");
+  } else {
+    els.panel.classList.toggle("collapsed");
+    els.workspace.classList.toggle("panel-collapsed");
+  }
+  requestAnimationFrame(() => {
+    if (!state.source) return;
+    centerCanvas();
+    applyTransform();
+    updateCompareUI();
+  });
+}
+
+function zoomToPreset(value) {
+  if (value === "fit") fitToWindow();
+  else if (value === "fullpage") setFullPage(true);
+  else if (value === "small") fitSmall();
+  else setZoom(parseFloat(value));
+}
+
 function setupEventListeners() {
   on(els.fileInput, "change", e => {
     const file = e.target.files && e.target.files[0];
     if (file) loadFile(file);
     e.target.value = "";
   });
-  on(els.dropZone, "click", openFile);
+  on(els.openFileBtn, "click", e => { e.stopPropagation(); openFile(); });
+  on(els.dropZone, "click", e => { if (e.target.closest("button")) return; openFile(); });
 
   window.addEventListener("dragover", e => { e.preventDefault(); if (els.dropZone) setDropZoneState("hover"); });
   window.addEventListener("dragleave", e => {
@@ -1235,136 +1497,201 @@ function setupEventListeners() {
   on(els.canvasArea, "pointerdown", handlePointerDown);
   window.addEventListener("pointermove", handlePointerMove);
   window.addEventListener("pointerup", handlePointerUp);
+  window.addEventListener("pointercancel", handlePointerUp);
 
   function showShortcuts() {
+    if (document.querySelector(".modal-backdrop")) return;
     const modal = document.createElement("div");
-    modal.className = "shortcuts-modal";
-    modal.style.cssText = `
-      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000;
-      display: flex; align-items: center; justify-content: center;
-      animation: fade-in 0.2s ease-out;
-    `;
+    modal.className = "modal-backdrop";
     modal.innerHTML = `
-      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-6); max-width: 400px; width: 90%; max-height: 80vh; overflow: auto;">
-        <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: var(--space-4); color: var(--text);">Keyboard Shortcuts</h3>
-        <dl style="display: grid; grid-template-columns: auto 1fr; gap: var(--space-2) var(--space-4); font-family: var(--font-ui); font-size: 13px; color: var(--text);">
-          <dt style="color: var(--muted); font-family: var(--font-mono);">E</dt><dd>Export image</dd>
-          <dt style="color: var(--muted); font-family: var(--font-mono);">R</dt><dd>Reset all (with confirmation)</dd>
-          <dt style="color: var(--muted); font-family: var(--font-mono);">Z</dt><dd>Undo</dd>
-          <dt style="color: var(--muted); font-family: var(--font-mono);">Shift+Z</dt><dd>Redo</dd>
-          <dt style="color: var(--muted); font-family: var(--font-mono);">C</dt><dd>Toggle compare split</dd>
-          <dt style="color: var(--muted); font-family: var(--font-mono);">O</dt><dd>Hold to show original</dd>
-          <dt style="color: var(--muted); font-family: var(--font-mono);">F</dt><dd>Fit to window</dd>
-          <dt style="color: var(--muted); font-family: var(--font-mono);">Space</dt><dd>Hold to pan (drag)</dd>
-          <dt style="color: var(--muted); font-family: var(--font-mono);">Esc</dt><dd>Close menus / compare / mobile panel</dd>
-          <dt style="color: var(--muted); font-family: var(--font-mono);">?</dt><dd>Show this help</dd>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+        <h3 class="modal-title" id="shortcuts-title">Keyboard shortcuts</h3>
+        <dl class="shortcut-list">
+          <dt>Ctrl O</dt><dd>Open a file</dd>
+          <dt>E</dt><dd>Export image</dd>
+          <dt>R</dt><dd>Reset all (press twice)</dd>
+          <dt>Ctrl Z</dt><dd>Undo</dd>
+          <dt>Ctrl ⇧ Z</dt><dd>Redo</dd>
+          <dt>C</dt><dd>Toggle compare split</dd>
+          <dt>O</dt><dd>Hold to show original</dd>
+          <dt>+ / −</dt><dd>Zoom in / out</dd>
+          <dt>0 / F</dt><dd>Fit window</dd>
+          <dt>⇧F</dt><dd>Full page</dd>
+          <dt>⇧S</dt><dd>Fit small</dd>
+          <dt>1 / 2</dt><dd>100% / 200% zoom</dd>
+          <dt>Space</dt><dd>Hold to pan (drag)</dd>
+          <dt>\\</dt><dd>Toggle controls panel</dd>
+          <dt>T</dt><dd>Toggle theme</dd>
+          <dt>Esc</dt><dd>Close menus / compare / full page</dd>
+          <dt>?</dt><dd>Show this help</dd>
         </dl>
-        <button class="btn btn-primary" style="margin-top: var(--space-5); width: 100%;" onclick="this.closest('.shortcuts-modal').remove()">Got it</button>
+        <button class="btn btn-primary" type="button" data-close-modal>Got it</button>
       </div>
     `;
     document.body.appendChild(modal);
-    modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal || e.target.hasAttribute("data-close-modal")) modal.remove();
+    });
+    const closeBtn = modal.querySelector("[data-close-modal]");
+    if (closeBtn) closeBtn.focus();
   }
 
-  window.addEventListener("keydown", e => {
-    const target = e.target;
-    const typing = target && target.matches && target.matches("input, select, textarea");
-    const textEntry = target && target.matches && target.matches('input[type="text"], input[type="search"], input[type="number"], textarea');
-    if ((e.ctrlKey || e.metaKey) && e.code === "KeyZ" && !textEntry) {
-      e.preventDefault();
-      if (e.shiftKey) redo(); else undo();
-      return;
-    }
-    if ((e.ctrlKey || e.metaKey) && e.code === "KeyY" && !textEntry) { e.preventDefault(); redo(); return; }
-    if (e.code === "Space" && !typing) {
-      e.preventDefault();
-      state.spaceDown = true;
-      els.canvasArea.style.cursor = "grab";
-    }
-    if (e.code === "Slash" && !textEntry && !typing) {
-      e.preventDefault();
-      showShortcuts();
-      return;
-    }
-    if (e.code === "KeyE" && !textEntry && !typing) { e.preventDefault(); exportImage(); return; }
-    if (e.code === "KeyR" && !textEntry && !typing) { e.preventDefault(); resetAll(); return; }
-    if (e.code === "KeyC" && !textEntry && !typing) { e.preventDefault(); toggleCompare(); return; }
-    if (typing) return;
-    if (e.code === "KeyF") { e.preventDefault(); fitToWindow(); }
-    if (e.code === "KeyO") { if (!state.showOriginal) { state.showOriginal = true; scheduleRender(0); } }
-    if (e.code === "Escape") {
-      if (state.compare) { state.compare = false; scheduleRender(0); }
-      document.querySelectorAll(".menu-dropdown.open").forEach(d => d.classList.remove("open"));
-      if (els.panel.classList.contains("open")) { els.panel.classList.remove("open"); }
-    }
-  });
-  window.addEventListener("keyup", e => {
-    if (e.code === "Space") { state.spaceDown = false; if (!isPanning) els.canvasArea.style.cursor = ""; }
-    if (e.code === "KeyO" && state.showOriginal) { state.showOriginal = false; scheduleRender(0); }
-  });
-
-  function togglePanel() {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-      els.panel.classList.toggle("open");
-    } else {
-      els.panel.classList.toggle("collapsed");
-      els.workspace.classList.toggle("panel-collapsed");
-    }
-  }
-
-  on(els.panelToggle, "click", togglePanel);
-  on(els.panelToggleBtn, "click", togglePanel);
-
-  document.querySelectorAll(".menu-btn").forEach(btn => {
+  /* ---- Menus: click to open, outside click / Esc to close, arrow keys ---- */
+  document.querySelectorAll(".menubar .menu").forEach(menu => {
+    const btn = menu.querySelector(".menu-btn");
+    const dd = menu.querySelector(".menu-dropdown");
+    if (!btn || !dd) return;
     btn.addEventListener("click", e => {
       e.stopPropagation();
-      const dd = $("dropdown-" + btn.id.replace("menu-", ""));
-      document.querySelectorAll(".menu-dropdown").forEach(d => { if (d !== dd) d.classList.remove("open"); });
-      if (dd) dd.classList.toggle("open");
+      const willOpen = !dd.classList.contains("open");
+      closeAllMenus(willOpen ? dd : null);
+      dd.classList.toggle("open", willOpen);
+      btn.setAttribute("aria-expanded", String(willOpen));
+      if (willOpen) requestAnimationFrame(() => focusFirstMenuItem(dd));
     });
-  });
-  document.addEventListener("click", e => {
-    if (!e.target.closest(".menu")) document.querySelectorAll(".menu-dropdown").forEach(d => d.classList.remove("open"));
+    btn.addEventListener("keydown", e => {
+      if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        closeAllMenus(dd);
+        dd.classList.add("open");
+        btn.setAttribute("aria-expanded", "true");
+        requestAnimationFrame(() => focusFirstMenuItem(dd));
+      }
+    });
+    dd.addEventListener("keydown", e => moveMenuFocus(e, dd));
   });
 
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".menu") && !e.target.closest(".zoom-menu-wrap")) closeAllMenus();
+  });
+
+  /* ---- Menu actions ---- */
   document.querySelectorAll(".menu-item[data-action]").forEach(item => {
-    const action = item.dataset.action;
     item.addEventListener("click", () => {
+      const action = item.dataset.action;
+      closeAllMenus();
       if (action === "open") openFile();
       else if (action === "export") exportImage();
       else if (action === "reset") resetAll();
-      else if (action === "fit") fitToWindow();
-      else if (action === "compare") toggleCompare();
       else if (action === "undo") undo();
       else if (action === "redo") redo();
-      else if (action === "save-preset") savePreset();
-      else if (action === "load-preset") loadPreset();
-      document.querySelectorAll(".menu-dropdown").forEach(d => d.classList.remove("open"));
+      else if (action === "compare") toggleCompare();
+      else if (action === "fit") fitToWindow();
+      else if (action === "fullpage") setFullPage(!state.fullPage);
+      else if (action === "fit-small") fitSmall();
+      else if (action === "zoom-in") zoomBy(1.25);
+      else if (action === "zoom-out") zoomBy(1 / 1.25);
+      else if (action === "zoom-100") setZoom(1);
+      else if (action === "zoom-200") setZoom(2);
+      else if (action === "panel") togglePanel();
+      else if (action === "theme") toggleTheme();
     });
-    if (action === "original") {
+    if (item.dataset.action === "original") {
       item.addEventListener("pointerdown", e => { e.preventDefault(); state.showOriginal = true; scheduleRender(0); });
       item.addEventListener("pointerup", () => { state.showOriginal = false; scheduleRender(0); });
       item.addEventListener("pointerleave", () => { if (state.showOriginal) { state.showOriginal = false; scheduleRender(0); } });
     }
   });
 
-  on(els.toggleTheme, "change", () => setTheme(els.toggleTheme.checked));
+  /* ---- Zoom toolbar ---- */
+  on(els.zoomIn, "click", () => zoomBy(1.25));
+  on(els.zoomOut, "click", () => zoomBy(1 / 1.25));
+  on(els.zoomLevel, "click", e => {
+    e.stopPropagation();
+    const willOpen = !els.zoomMenu.classList.contains("open");
+    closeAllMenus(willOpen ? els.zoomMenu : null);
+    els.zoomMenu.classList.toggle("open", willOpen);
+    els.zoomLevel.setAttribute("aria-expanded", String(willOpen));
+    if (willOpen) requestAnimationFrame(() => focusFirstMenuItem(els.zoomMenu));
+  });
+  els.zoomMenu.querySelectorAll("[data-zoom]").forEach(item => {
+    item.addEventListener("click", () => {
+      closeAllMenus();
+      zoomToPreset(item.dataset.zoom);
+    });
+  });
+  els.zoomMenu.addEventListener("keydown", e => moveMenuFocus(e, els.zoomMenu));
+
+  on(els.themeToggle, "click", toggleTheme);
+  on(els.panelToggleBtn, "click", togglePanel);
+
   on(els.btnExport, "click", exportImage);
   on(els.btnReset, "click", resetAll);
   on(els.panelSearch, "input", () => filterControls(els.panelSearch.value));
+  on(els.btnSavePreset, "click", savePreset);
+  on(els.btnLoadPreset, "click", loadPreset);
 
+  /* ---- Sections ---- */
   document.querySelectorAll(".section-title").forEach(title => {
     title.addEventListener("click", () => {
       const sec = title.closest(".panel-section");
-      if (sec) {
-        sec.classList.toggle("collapsed");
-        saveSectionCollapse();
-      }
+      if (!sec) return;
+      sec.classList.toggle("collapsed");
+      title.setAttribute("aria-expanded", String(!sec.classList.contains("collapsed")));
+      saveSectionCollapse();
     });
   });
   document.querySelectorAll(".section-reset").forEach(btn => {
     btn.addEventListener("click", e => { e.stopPropagation(); resetSection(btn.dataset.section); });
+  });
+
+  /* ---- Keyboard ---- */
+  window.addEventListener("keydown", e => {
+    const target = e.target;
+    const typing = target && target.matches && target.matches("input, select, textarea");
+    const textEntry = target && target.matches && target.matches('input[type="text"], input[type="search"], input[type="number"], textarea');
+
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.code === "KeyO") {
+      e.preventDefault();
+      openFile();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.code === "KeyZ" && !textEntry) {
+      e.preventDefault();
+      if (e.shiftKey) redo(); else undo();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.code === "KeyY" && !textEntry) { e.preventDefault(); redo(); return; }
+
+    if (e.code === "Slash" && !textEntry && !typing) {
+      e.preventDefault();
+      showShortcuts();
+      return;
+    }
+    if (e.code === "Escape" && !typing) {
+      const modal = document.querySelector(".modal-backdrop");
+      if (modal) { modal.remove(); return; }
+      closeAllMenus();
+      if (state.fullPage) { setFullPage(false); return; }
+      if (state.compare) { state.compare = false; scheduleRender(0); }
+      if (els.panel.classList.contains("open")) els.panel.classList.remove("open");
+      return;
+    }
+    if (typing) return;
+
+    if (e.code === "KeyT") { e.preventDefault(); toggleTheme(); return; }
+    if (e.code === "Backslash") { e.preventDefault(); togglePanel(); return; }
+    if (e.code === "KeyE") { e.preventDefault(); exportImage(); return; }
+    if (e.code === "KeyR") { e.preventDefault(); resetAll(); return; }
+    if (e.code === "KeyC") { e.preventDefault(); toggleCompare(); return; }
+    if (e.code === "KeyF" && e.shiftKey) { e.preventDefault(); setFullPage(!state.fullPage); return; }
+    if (e.code === "KeyS" && e.shiftKey) { e.preventDefault(); fitSmall(); return; }
+    if (e.code === "Digit1") { e.preventDefault(); setZoom(1); return; }
+    if (e.code === "Digit2") { e.preventDefault(); setZoom(2); return; }
+    if (e.code === "KeyF" || e.code === "Digit0" || e.code === "Numpad0") { e.preventDefault(); fitToWindow(); return; }
+    if (e.key === "+" || e.key === "=") { e.preventDefault(); zoomBy(1.25); return; }
+    if (e.key === "-" || e.key === "_") { e.preventDefault(); zoomBy(1 / 1.25); return; }
+    if (e.code === "Space") {
+      e.preventDefault();
+      state.spaceDown = true;
+      els.canvasArea.style.cursor = "grab";
+      return;
+    }
+    if (e.code === "KeyO") { if (!state.showOriginal) { state.showOriginal = true; scheduleRender(0); } }
+  });
+  window.addEventListener("keyup", e => {
+    if (e.code === "Space") { state.spaceDown = false; els.canvasArea.style.cursor = ""; }
+    if (e.code === "KeyO" && state.showOriginal) { state.showOriginal = false; scheduleRender(0); }
   });
 
   on(els.selectMode, "change", () => {
@@ -1386,20 +1713,14 @@ function setupEventListeners() {
   on(els.textStyle, "change", () => { state.opts.textStyle = els.textStyle.value; rebuildRamp(); pushHistory("chars"); scheduleRender(); });
   on(els.charPreset, "change", () => {
     state.opts.charPreset = els.charPreset.value;
-    els.customCharsetRow.style.display = state.opts.charPreset === "custom" ? "" : "none";
+    els.customCharsetRow.hidden = state.opts.charPreset !== "custom";
     applyCharPreset(state.opts.charPreset);
     pushHistory("charPreset"); scheduleRender();
   });
   textBind(els.customCharset, "customCharset", () => { rebuildRamp(); pushHistory("customCharset"); scheduleRender(); });
 
-  syncSliderNumber(els.cellSize, els.cellSizeNum, els.valCellSize, "cellSize", () => { pushHistory("cellSize"); scheduleRender(); });
-  syncSliderNumber(els.glyphWeight, els.glyphWeightNum, els.valWeight, "glyphWeight", () => { pushHistory("glyphWeight"); scheduleRender(); });
-
-  on(els.glyphInvert, "change", () => { state.opts.glyphInvert = els.glyphInvert.checked; pushHistory("glyphInvert"); scheduleRender(); });
-  on(els.glyphColor, "change", () => { state.opts.glyphColor = els.glyphColor.checked; pushHistory("glyphColor"); scheduleRender(); });
-
   // Helper to sync slider and number input
-  function syncSliderNumber(slider, numInput, valueEl, optPath, onChange) {
+  function syncSliderNumber(slider, numInput, optPath, onChange) {
     const min = +slider.min, max = +slider.max, step = +slider.step;
     let lastValid = slider.value;
     function clamp(v) { return Math.max(min, Math.min(max, v)); }
@@ -1407,8 +1728,6 @@ function setupEventListeners() {
       const clamped = clamp(v);
       slider.value = clamped;
       numInput.value = clamped;
-      if (valueEl) valueEl.textContent = clamped;
-      // Set nested property (e.g., "adj.brightness" -> state.opts.adj.brightness)
       const parts = optPath.split(".");
       let obj = state.opts;
       for (let i = 0; i < parts.length - 1; i++) obj = obj[parts[i]];
@@ -1438,16 +1757,22 @@ function setupEventListeners() {
     numInput.addEventListener("dblclick", () => { numInput.value = slider.defaultValue; setVal(+slider.defaultValue); });
   }
 
-  syncSliderNumber(els.depth, els.depthNum, els.valDepth, "depth", () => { rebuildRamp(); pushHistory("depth"); scheduleRender(); });
-  syncSliderNumber(els.charOffset, els.charOffsetNum, els.valOffset, "charOffset", () => { pushHistory("offset"); scheduleRender(); });
-  syncSliderNumber(els.ditherDepth, els.ditherDepthNum, els.valColorDepth, "ditherDepth", () => { pushHistory("ditherDepth"); scheduleRender(); });
+  syncSliderNumber(els.cellSize, els.cellSizeNum, "cellSize", () => { pushHistory("cellSize"); scheduleRender(); });
+  syncSliderNumber(els.glyphWeight, els.glyphWeightNum, "glyphWeight", () => { pushHistory("glyphWeight"); scheduleRender(); });
+  syncSliderNumber(els.depth, els.depthNum, "depth", () => { rebuildRamp(); pushHistory("depth"); scheduleRender(); });
+  syncSliderNumber(els.charOffset, els.charOffsetNum, "charOffset", () => { pushHistory("offset"); scheduleRender(); });
+  syncSliderNumber(els.ditherDepth, els.ditherDepthNum, "ditherDepth", () => { pushHistory("ditherDepth"); scheduleRender(); });
+  syncSliderNumber(els.jpgQuality, els.jpgQualityNum, "jpgQuality", () => { pushHistory("jpgQuality"); scheduleRender(); });
+
+  on(els.glyphInvert, "change", () => { state.opts.glyphInvert = els.glyphInvert.checked; pushHistory("glyphInvert"); scheduleRender(); });
+  on(els.glyphColor, "change", () => { state.opts.glyphColor = els.glyphColor.checked; pushHistory("glyphColor"); scheduleRender(); });
   on(els.usePalette, "change", () => { state.opts.usePalette = els.usePalette.checked; pushHistory("usePalette"); scheduleRender(); });
   on(els.transparentBg, "change", () => { state.opts.transparentBg = els.transparentBg.checked; pushHistory("transparent"); scheduleRender(); });
   on(els.autoLevels, "change", () => { state.opts.autoLevels = els.autoLevels.checked; pushHistory("autoLevels"); scheduleRender(); });
   on(els.bgColor, "input", () => { state.opts.bgColor = els.bgColor.value; pushHistory("bg"); scheduleRender(); });
   on(els.colorMode, "change", () => {
     state.opts.colorMode = els.colorMode.value;
-    els.controlPalette.style.display = state.opts.colorMode === "palette" ? "" : "none";
+    els.controlPalette.hidden = state.opts.colorMode !== "palette";
     pushHistory("colorMode"); scheduleRender();
   });
   on(els.paletteSelect, "change", () => {
@@ -1459,8 +1784,8 @@ function setupEventListeners() {
 
   ["Brightness", "Contrast", "Saturation", "Hue", "Highlights", "Shadows", "Sharpen", "Blur"].forEach(name => {
     const key = name.toLowerCase();
-    const slider = els["adj" + name], val = els["val" + name], numInput = els["adj" + name + "Num"];
-    syncSliderNumber(slider, numInput, val, "adj." + key, () => { pushHistory("adj-" + key); scheduleRender(70); });
+    const slider = els["adj" + name], numInput = els["adj" + name + "Num"];
+    syncSliderNumber(slider, numInput, "adj." + key, () => { pushHistory("adj-" + key); scheduleRender(70); });
   });
   on(els.adjInvert, "change", () => { state.opts.adj.invert = els.adjInvert.checked; pushHistory("invert"); scheduleRender(); });
   on(els.adjSepia, "change", () => { state.opts.adj.sepia = els.adjSepia.checked; pushHistory("sepia"); scheduleRender(); });
@@ -1524,14 +1849,12 @@ function setupEventListeners() {
   on(els.outputFit, "change", () => { state.opts.outputFit = els.outputFit.value; pushHistory("fit"); scheduleRender(); });
   on(els.exportFormat, "change", () => {
     state.opts.exportFormat = els.exportFormat.value;
-    els.jpgQualityControl.style.display = state.opts.exportFormat === "jpg" ? "" : "none";
+    els.jpgQualityControl.hidden = state.opts.exportFormat !== "jpg";
     pushHistory("format");
   });
-  syncSliderNumber(els.jpgQuality, els.jpgQualityNum, els.valJpgQuality, "jpgQuality", () => { pushHistory("jpgQuality"); scheduleRender(); });
   on(els.ditherKernel, "change", () => { state.opts.ditherKernel = els.ditherKernel.value; pushHistory("kernel"); scheduleRender(); });
-  on(els.ditherDepth, "input", () => { state.opts.ditherDepth = +els.ditherDepth.value; els.valColorDepth.textContent = state.opts.ditherDepth; els.ditherDepthNum.value = state.opts.ditherDepth; pushHistory("ditherDepth"); scheduleRender(); });
 
-  document.querySelectorAll(".preset-btn").forEach(btn => {
+  document.querySelectorAll(".preset-btn[data-preset]").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("active", b === btn));
       applyNamedPreset(btn.dataset.preset);
@@ -1561,12 +1884,16 @@ function setupEventListeners() {
     window.addEventListener("pointerup", up);
   });
 
-  window.addEventListener("resize", updateCompareUI);
+  window.addEventListener("resize", () => {
+    updateCompareUI();
+    applyZoomUI();
+  });
 }
 
 function init() {
   initEls();
   loadTheme();
+  applyLanguage();
   populatePalettes();
   populateOutputPresets();
   rebuildRamp();
@@ -1574,9 +1901,10 @@ function init() {
   loadSectionCollapse();
   syncUIFromState();
   state.history.undo.push(snapshot());
+  if (els.outputWidth) els.outputWidth.disabled = true;
+  if (els.outputHeight) els.outputHeight.disabled = true;
+  applyZoomUI();
   updateStatus();
-  els.outputWidth.disabled = true;
-  els.outputHeight.disabled = true;
 }
 
 document.addEventListener("DOMContentLoaded", init);

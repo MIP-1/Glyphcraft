@@ -107,3 +107,17 @@
 - Engraved manuscript aesthetic: oxblood gradient buttons, diamond slider thumbs, chamfered clip-path
 - Tests: `python3 test_suite.py` (headless Chromium); report in TEST_REPORT.md, 114 checks (all pass)
 - No Web Worker: effects run synchronously on the reduced preview
+## Round 2 (2026-10-22) - DONE
+- **Light theme rebuilt** with a semantic token system (`--surface*`, `--text*`, `--border-*`, `--accent*`); every colour in `style.css` now comes from a token (including select arrows, checkbox SVGs, shadows and hover gradients). Legacy aliases (`--bg`, `--panel`, `--line`, …) kept for inline styles.
+- **Contrast**: 44×44 custom tokenised checkboxes, 44px controls, ≥3:1 control borders. New automated audit `tests/test_contrast.py` checks every visible text node, field, placeholder and control border in both themes at 360 and 1280 → **5960 pairs, 0 violations**.
+- **Sticky action bar**: solid `--surface-panel`, full panel width including padding/gap, `z-index: 40`, divider, content scrolls underneath (verified by hit-testing the gap).
+- **Unified controls**: duplicate value labels removed (`<input type=number>` is the only value display); one style per theme; no UA-white fields in dark or UA-dark fields in light; section headers are real buttons with `aria-expanded`.
+- **Menus**: File (Open/Export/Reset), View (zoom, fit, full page, fit small, 100/200%, panel, theme), Edit (undo/redo/compare). Click/tap open, Esc + outside click close, ArrowUp/Down/Home/End navigation, `<kbd>` shortcuts, `aria-haspopup/expanded`. Preset save/load moved to the Effects section.
+- **Zoom toolbar**: − / percent / + in the top bar, menu with Fit window, Full page, Fit small, 25–400%; live percent, clamp 10–800%, disabled limits, Ctrl+wheel and wheel zoom at the pointer, pinch, drag-pan when the image is larger than the view, `+ − 0` keys, pixelated above 100%, Full page + Esc restore.
+- **Theme toggle**: single top-bar button, inline sun/moon SVGs, pre-paint theme script, localStorage persistence, action-specific aria-label.
+- **Home screen**: real `Open file` button, drag/drop/paste, honest idle/hover/loading/error copy, 40 MB limit, format/decode/video errors, `aria-live` status, Arabic (`ar`) strings + RTL layout.
+- **Cleanup**: test reports moved to `tests/reports/` (gitignored), no `.bak` files added, README added.
+
+## Testing
+- `python tests/test_suite.py` → 131 checks, 0 failures.
+- `python tests/test_contrast.py` → 5960 pairs, 0 violations; screenshots in `tests/reports/`.
