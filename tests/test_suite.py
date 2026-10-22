@@ -1038,6 +1038,38 @@ with sync_playwright() as p:
     mpage.wait_for_timeout(250)
     menu_box = mpage.evaluate("""() => { const m=document.getElementById('dropdown-file').getBoundingClientRect(); return {left:m.left,right:m.right,width:m.width}; }""")
     record("360px menu fits", menu_box["left"] >= 0 and menu_box["right"] <= 360, json.dumps(menu_box))
+
+    # Sticky action bar at 360 with the panel open, in both themes.
+    mpage.keyboard.press("Escape")
+    mpage.click("#panel-toggle-btn")
+    mpage.wait_for_timeout(300)
+    mpage.evaluate("() => { document.querySelector('.panel-content').scrollTop = 1200; }")
+    mpage.wait_for_timeout(300)
+
+    def actionbar_360():
+        return mpage.evaluate("""() => {
+          const b=document.getElementById('panel-actionbar'), r=b.getBoundingClientRect();
+          const p=document.getElementById('panel');
+          const pr=p.getBoundingClientRect();
+          const hit=document.elementFromPoint(r.x+6, r.y+r.height/2);
+          return {open:p.classList.contains('open'), w:r.width, pw:pr.width,
+                  bg:getComputedStyle(b).backgroundColor, z:getComputedStyle(b).zIndex,
+                  hit:hit&&(hit.id||hit.className)};
+        }""")
+
+    small_dark = actionbar_360()
+    mpage.screenshot(path=f"{SHOT}/actionbar_360_dark.png")
+    mpage.click("#theme-toggle")
+    mpage.wait_for_timeout(300)
+    small_light = actionbar_360()
+    mpage.screenshot(path=f"{SHOT}/actionbar_360_light.png")
+    actionbar_ok = all(
+        d["open"] and d["w"] >= d["pw"] - 2 and d["bg"].startswith("rgb(") and
+        int(d["z"]) >= 10 and "actionbar" in str(d["hit"])
+        for d in (small_dark, small_light)
+    )
+    record("360px action bar solid + full width both themes", actionbar_ok,
+           json.dumps({"dark": small_dark, "light": small_light}))
     mctx.close()
 
     browser.close()
