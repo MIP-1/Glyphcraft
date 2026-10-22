@@ -13,6 +13,12 @@ function defaultOpts() {
     charInject: "",
     charOffset: 0,
     textStyle: "regular",
+    charPreset: "ascii",
+    customCharset: "",
+    cellSize: 8,
+    glyphWeight: 400,
+    glyphInvert: false,
+    glyphColor: true,
     usePalette: true,
     transparentBg: false,
     autoLevels: true,
@@ -148,6 +154,17 @@ function initEls() {
   els.paletteBuilder = $("palette-builder");
   els.paletteAddColor = $("palette-add-color");
   els.paletteSaveCustom = $("palette-save-custom");
+  els.charPreset = $("char-preset");
+  els.customCharsetRow = $("custom-charset-row");
+  els.customCharset = $("custom-charset");
+  els.cellSize = $("cell-size");
+  els.cellSizeNum = $("cell-size-num");
+  els.valCellSize = $("val-cell-size");
+  els.glyphWeight = $("glyph-weight");
+  els.glyphWeightNum = $("glyph-weight-num");
+  els.valWeight = $("val-weight");
+  els.glyphInvert = $("glyph-invert");
+  els.glyphColor = $("glyph-color");
 }
 
 function setTheme(dark) {
@@ -296,8 +313,34 @@ function saveCustomPalette() {
   } catch (e) { alert("Could not save palette"); }
 }
 
+const CHAR_PRESETS = {
+  ascii: " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",
+  blocks: " ░▒▓█▄▌▐▀▄▌▐▀■□▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌●◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◦◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◾◿",
+  braille: "⠀⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿",
+  binary: "01",
+  minimal: "@#:.",
+  dense: "█▓▒░"
+};
+
+function applyCharPreset(preset) {
+  const chars = CHAR_PRESETS[preset];
+  if (!chars) return;
+  if (preset === "custom") return;
+  state.opts.charInject = "";
+  state.opts.charCategory = "all";
+  state.opts.charSet = "all";
+  state.opts.customCharset = chars;
+  els.customCharset.value = chars;
+  els.charCategory.value = "all";
+  els.charSet.value = "all";
+}
+
 function rebuildRamp() {
-  state.ramp = buildRamp(state.opts.charCategory, state.opts.charSet, state.opts.charInject, state.opts.textStyle);
+  let inject = state.opts.charInject;
+  if (state.opts.charPreset !== "custom" && state.opts.charPreset !== "ascii") {
+    inject = state.opts.customCharset || CHAR_PRESETS[state.opts.charPreset] || "";
+  }
+  state.ramp = buildRamp(state.opts.charCategory, state.opts.charSet, inject, state.opts.textStyle);
 }
 
 function snapshot() { return JSON.stringify(state.opts); }
@@ -820,6 +863,13 @@ function syncUIFromState() {
   els.charInject.value = o.charInject;
   els.charOffset.value = o.charOffset; els.valOffset.textContent = o.charOffset; els.charOffsetNum.value = o.charOffset;
   els.textStyle.value = o.textStyle;
+  els.charPreset.value = o.charPreset;
+  els.customCharset.value = o.customCharset;
+  els.customCharsetRow.style.display = o.charPreset === "custom" ? "" : "none";
+  els.cellSize.value = o.cellSize; els.valCellSize.textContent = o.cellSize; els.cellSizeNum.value = o.cellSize;
+  els.glyphWeight.value = o.glyphWeight; els.valWeight.textContent = o.glyphWeight; els.glyphWeightNum.value = o.glyphWeight;
+  els.glyphInvert.checked = o.glyphInvert;
+  els.glyphColor.checked = o.glyphColor;
   els.usePalette.checked = o.usePalette;
   els.transparentBg.checked = o.transparentBg;
   els.autoLevels.checked = o.autoLevels;
@@ -1269,6 +1319,19 @@ function setupEventListeners() {
   on(els.charCategory, "change", () => { state.opts.charCategory = els.charCategory.value; rebuildRamp(); pushHistory("chars"); scheduleRender(); });
   on(els.charSet, "change", () => { state.opts.charSet = els.charSet.value; rebuildRamp(); pushHistory("chars"); scheduleRender(); });
   on(els.textStyle, "change", () => { state.opts.textStyle = els.textStyle.value; rebuildRamp(); pushHistory("chars"); scheduleRender(); });
+  on(els.charPreset, "change", () => {
+    state.opts.charPreset = els.charPreset.value;
+    els.customCharsetRow.style.display = state.opts.charPreset === "custom" ? "" : "none";
+    applyCharPreset(state.opts.charPreset);
+    pushHistory("charPreset"); scheduleRender();
+  });
+  textBind(els.customCharset, "customCharset", () => { rebuildRamp(); pushHistory("customCharset"); scheduleRender(); });
+
+  syncSliderNumber(els.cellSize, els.cellSizeNum, els.valCellSize, "cellSize", () => { pushHistory("cellSize"); scheduleRender(); });
+  syncSliderNumber(els.glyphWeight, els.glyphWeightNum, els.valWeight, "glyphWeight", () => { pushHistory("glyphWeight"); scheduleRender(); });
+
+  on(els.glyphInvert, "change", () => { state.opts.glyphInvert = els.glyphInvert.checked; pushHistory("glyphInvert"); scheduleRender(); });
+  on(els.glyphColor, "change", () => { state.opts.glyphColor = els.glyphColor.checked; pushHistory("glyphColor"); scheduleRender(); });
 
   // Helper to sync slider and number input
   function syncSliderNumber(slider, numInput, valueEl, optPath, onChange) {

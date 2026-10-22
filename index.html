@@ -161,6 +161,49 @@
               <label class="control-label">Background Color</label>
               <input type="color" id="bg-color" value="#0b0b0c">
             </div>
+            <div class="control">
+              <label class="control-label">Charset Preset</label>
+              <select id="char-preset">
+                <option value="custom">Custom</option>
+                <option value="ascii">ASCII (95 chars)</option>
+                <option value="blocks">Blocks (96 chars)</option>
+                <option value="braille">Braille (256 chars)</option>
+                <option value="binary">Binary (0,1)</option>
+                <option value="minimal">Minimal (@#:.)</option>
+                <option value="dense">Dense (█▓▒░)</option>
+              </select>
+            </div>
+            <div class="control" id="custom-charset-row" style="display: none;">
+              <label class="control-label">Custom Charset</label>
+              <input type="text" id="custom-charset" placeholder="Custom characters for ramp" spellcheck="false">
+            </div>
+            <div class="control-row">
+              <div class="control half">
+                <label class="control-label"><span>Cell Size</span><span class="control-value" id="val-cell-size">8</span></label>
+                <div class="control-input-wrap">
+                  <input type="range" id="cell-size" min="4" max="32" value="8" step="1">
+                  <input type="number" id="cell-size-num" min="4" max="32" value="8" step="1">
+                </div>
+              </div>
+              <div class="control half">
+                <label class="control-label"><span>Weight</span><span class="control-value" id="val-weight">400</span></label>
+                <div class="control-input-wrap">
+                  <input type="range" id="glyph-weight" min="100" max="900" value="400" step="100">
+                  <input type="number" id="glyph-weight-num" min="100" max="900" value="400" step="100">
+                </div>
+              </div>
+            </div>
+            <div class="control checkboxes">
+              <label class="checkbox"><input type="checkbox" id="glyph-invert"> Invert Ramp</label>
+              <label class="checkbox"><input type="checkbox" id="glyph-color"> Color Mode</label>
+              <label class="checkbox"><input type="checkbox" id="use-palette" checked> Use Palette</label>
+              <label class="checkbox"><input type="checkbox" id="transparent-bg"> Transparent Background</label>
+              <label class="checkbox"><input type="checkbox" id="auto-levels" checked> Auto Levels</label>
+            </div>
+            <div class="control">
+              <label class="control-label">Background Color</label>
+              <input type="color" id="bg-color" value="#0b0b0c">
+            </div>
           </section>
 
           <section class="panel-section" id="section-dither">
