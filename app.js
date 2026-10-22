@@ -69,7 +69,8 @@ const state = {
   exportProgress: { active: false, format: "", progress: 0, total: 0 }
 };
 
-const PREVIEW_MAX = 1100;
+const PREVIEW_MAX = 1600;
+const MAX_PREVIEW_PIXELS = 1600 * 1600;
 const els = {};
 function $(id) { return document.getElementById(id); }
 function on(el, ev, fn, opts) { if (el) el.addEventListener(ev, fn, opts); }
@@ -409,7 +410,11 @@ function renderOpts() {
 }
 
 function previewSize(full) {
-  const scale = Math.min(1, PREVIEW_MAX / Math.max(full.w, full.h));
+  const maxDim = Math.max(full.w, full.h);
+  const maxPixels = full.w * full.h;
+  let scale = 1;
+  if (maxDim > PREVIEW_MAX) scale = Math.min(scale, PREVIEW_MAX / maxDim);
+  if (maxPixels > MAX_PREVIEW_PIXELS) scale = Math.min(scale, Math.sqrt(MAX_PREVIEW_PIXELS / maxPixels));
   return { w: Math.max(1, Math.round(full.w * scale)), h: Math.max(1, Math.round(full.h * scale)), scale };
 }
 
@@ -1231,6 +1236,36 @@ function setupEventListeners() {
   window.addEventListener("pointermove", handlePointerMove);
   window.addEventListener("pointerup", handlePointerUp);
 
+  function showShortcuts() {
+    const modal = document.createElement("div");
+    modal.className = "shortcuts-modal";
+    modal.style.cssText = `
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      animation: fade-in 0.2s ease-out;
+    `;
+    modal.innerHTML = `
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-6); max-width: 400px; width: 90%; max-height: 80vh; overflow: auto;">
+        <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: var(--space-4); color: var(--text);">Keyboard Shortcuts</h3>
+        <dl style="display: grid; grid-template-columns: auto 1fr; gap: var(--space-2) var(--space-4); font-family: var(--font-ui); font-size: 13px; color: var(--text);">
+          <dt style="color: var(--muted); font-family: var(--font-mono);">E</dt><dd>Export image</dd>
+          <dt style="color: var(--muted); font-family: var(--font-mono);">R</dt><dd>Reset all (with confirmation)</dd>
+          <dt style="color: var(--muted); font-family: var(--font-mono);">Z</dt><dd>Undo</dd>
+          <dt style="color: var(--muted); font-family: var(--font-mono);">Shift+Z</dt><dd>Redo</dd>
+          <dt style="color: var(--muted); font-family: var(--font-mono);">C</dt><dd>Toggle compare split</dd>
+          <dt style="color: var(--muted); font-family: var(--font-mono);">O</dt><dd>Hold to show original</dd>
+          <dt style="color: var(--muted); font-family: var(--font-mono);">F</dt><dd>Fit to window</dd>
+          <dt style="color: var(--muted); font-family: var(--font-mono);">Space</dt><dd>Hold to pan (drag)</dd>
+          <dt style="color: var(--muted); font-family: var(--font-mono);">Esc</dt><dd>Close menus / compare / mobile panel</dd>
+          <dt style="color: var(--muted); font-family: var(--font-mono);">?</dt><dd>Show this help</dd>
+        </dl>
+        <button class="btn btn-primary" style="margin-top: var(--space-5); width: 100%;" onclick="this.closest('.shortcuts-modal').remove()">Got it</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+  }
+
   window.addEventListener("keydown", e => {
     const target = e.target;
     const typing = target && target.matches && target.matches("input, select, textarea");
@@ -1246,14 +1281,20 @@ function setupEventListeners() {
       state.spaceDown = true;
       els.canvasArea.style.cursor = "grab";
     }
+    if (e.code === "Slash" && !textEntry && !typing) {
+      e.preventDefault();
+      showShortcuts();
+      return;
+    }
+    if (e.code === "KeyE" && !textEntry && !typing) { e.preventDefault(); exportImage(); return; }
+    if (e.code === "KeyR" && !textEntry && !typing) { e.preventDefault(); resetAll(); return; }
+    if (e.code === "KeyC" && !textEntry && !typing) { e.preventDefault(); toggleCompare(); return; }
     if (typing) return;
     if (e.code === "KeyF") { e.preventDefault(); fitToWindow(); }
     if (e.code === "KeyO") { if (!state.showOriginal) { state.showOriginal = true; scheduleRender(0); } }
     if (e.code === "Escape") {
       if (state.compare) { state.compare = false; scheduleRender(0); }
-      // Close open menus
       document.querySelectorAll(".menu-dropdown.open").forEach(d => d.classList.remove("open"));
-      // Close mobile panel
       if (els.panel.classList.contains("open")) { els.panel.classList.remove("open"); }
     }
   });

@@ -395,6 +395,7 @@ input[type="range"]:focus::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--fo
 @keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 @keyframes toast-out { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(16px); } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
 .drop-zone[data-state="idle"] .hint { display: block; }
 .drop-zone[data-state="idle"] .icon { display: block; }
