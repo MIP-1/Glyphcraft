@@ -55,11 +55,15 @@
     <main class="workspace">
       <section class="canvas-area" id="canvas-area">
         <canvas id="canvas"></canvas>
-        <div class="drop-zone" id="drop-zone">
+        <div class="drop-zone" id="drop-zone" data-state="idle">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
           </svg>
           <span class="hint">Drop image or video here, or click to open</span>
+          <span class="drop-error" style="display:none; color:var(--accent); font-size:12px; margin-top:8px;"></span>
+          <div class="drop-loading" style="display:none; margin-top:8px;">
+            <div class="spinner" style="width:24px;height:24px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto;"></div>
+          </div>
         </div>
         <div class="compare-overlay" id="compare-overlay" style="display:none;">
           <div class="compare-slider" id="compare-slider"></div>

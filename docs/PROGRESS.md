@@ -43,9 +43,67 @@
 - Light theme rebuilt as parchment with dark ink (AA contrast audited)
 - SVG/TXT export now derives from the prepared source (not the rendered glyph canvas), so effects are included
 
+## Phase 1 (Overhaul) - DONE (2026-10-22)
+- Sticky action bar: Export Image / Reset All stay visible at top of panel while scrolling
+- Export shows progress for video, success toast on completion
+- Reset All requires confirmation (inline confirm with 3s timeout) or undo toast
+
+## Phase 2 (Overhaul) - DONE (2026-10-22)
+- Unified spacing scale (4/8/12/16/24/32) as CSS variables
+- Consistent control heights (36px), label sizes, gaps, padding across all sections
+- Collapsible sections (Mode, Script, Dither, Color, Adjustments, Effects, Output) with localStorage persistence
+- Unified form control styles: selects, sliders, toggles, buttons with same radius, border, hover, focus-visible ring, disabled state
+- Tab order top→bottom, left→right; everything keyboard-reachable; Esc closes menus
+- Effect stack: reorder (drag handle), per-effect enable toggle, remove, reset-to-default, empty state message
+- Tested widths 360, 768, 1280, 1920 — no horizontal scroll, no clipped text, no misaligned columns
+- Dark/light themes working; colors as tokens on :root
+- Logical CSS properties (margin-inline, padding-inline) for RTL support
+
+## Phase 3 (Overhaul) - DONE (2026-10-22)
+- Every slider gets a number input next to it — two-way live sync
+- Each effect keeps its own min, max, step, default in effects.js config
+- Clamp on input, blur, paste; NaN → revert to last valid
+- Arrow keys step; Shift+arrow = 10× step; Double-click slider = default
+- Units shown (px, %, deg) where applicable
+
+## Phase 4 (Overhaul) - DONE (2026-10-22)
+- Replaced dimension buttons with searchable grouped dropdown (Custom as last item)
+- Groups: Video, Desktop wallpaper, Phone wallpaper, Instagram, YouTube, Link preview, Avatar, Logo/icon, Print, Original
+- Custom reveals width + height inputs; preset fills width/height, switches to Custom if edited
+- Aspect-ratio lock checkbox
+- Max 8192 per side with warning on heavy sizes
+- Presets kept as data in engine.js
+
+## Phase 5 (Overhaul) - DONE (2026-10-22)
+- Goodmountain font (from /home/mustafa/Goodmountain-main) copied to ./assets/fonts/
+- @font-face in style.css with relative URL, font-display: swap, readable fallback stack
+- Used for brand, headings, buttons; clearer font for dense controls/numbers
+- Arabic glyph coverage checked; fallback handles Arabic
+- Google Fonts CDN kept as-is (UnifrakturCook, Crimson Text, JetBrains Mono)
+
+## Phase 6 (Overhaul) - DONE (2026-10-22)
+- Dither kernels added: Sierra, Stucki, Burkes, Jarvis-Judice-Ninke, Bayer 2×2, Blue Noise, Random
+- Serpentine (boustrophedon) toggle for error diffusion
+- Palette system enhanced: 1-bit, 2-color editable, Game Boy 4-green, CGA, N-level grayscale (4/8/16), custom palette builder with add/remove/save
+- Effects: 22 existing effects verified; params have min/max/step/default, tooltips, live preview, work on video
+- Script mode: charset presets (ASCII, blocks, braille, binary, minimal, dense), cell size, weight, invert, color/mono, background
+- Presets: save/load/delete named effect stacks in localStorage (try/catch), JSON export/import
+
+## Phase 7 (Overhaul) - IN PROGRESS
+- Drop zone states (idle/hover/error/loading), paste from clipboard, clear error for bad files
+- Before/after compare (hold key) — already implemented (O key)
+- Zoom and pan — already implemented (wheel zoom, Space+pan, F fit)
+- Debounce heavy effects, render in requestAnimationFrame, show render time
+- Large input: downscale for preview, full quality only on export
+- Undo/redo for all parameter changes — already implemented
+- Shortcuts (E export, R reset with confirm, Z undo, Shift+Z redo, C compare, O hold original) with ? popover
+- Export: PNG, JPEG (quality), WebP, plus existing formats
+- Accessibility: labels, aria-live status, contrast ≥ 4.5:1, prefers-reduced-motion
+- Remove dead code, zero console errors/warnings on load
+
 ## Notes
 - Single optional Google Font (UnifrakturCook) with serif fallback
 - Vanilla JS, plain script tags, no modules, works on file://
 - Engraved manuscript aesthetic: oxblood gradient buttons, diamond slider thumbs, chamfered clip-path
-- Tests: `python3 test_suite.py` (headless Chromium); report in TEST_REPORT.md, 109 checks
+- Tests: `python3 test_suite.py` (headless Chromium); report in TEST_REPORT.md, 114 checks (all pass)
 - No Web Worker: effects run synchronously on the reduced preview

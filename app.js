@@ -535,8 +535,22 @@ function handlePointerUp() {
   if (isPanning) { isPanning = false; els.canvasArea.style.cursor = state.spaceDown ? "grab" : ""; }
 }
 
+function setDropZoneState(state) {
+  if (els.dropZone) els.dropZone.dataset.state = state;
+}
+
+function showDropError(message) {
+  if (els.dropZone) {
+    const errorEl = els.dropZone.querySelector(".drop-error");
+    if (errorEl) errorEl.textContent = message;
+    setDropZoneState("error");
+  }
+  setTimeout(() => setDropZoneState("idle"), 3000);
+}
+
 function loadFile(file) {
   if (!file) return;
+  setDropZoneState("loading");
   const url = URL.createObjectURL(file);
   const isVideo = file.type.startsWith("video/");
   if (isVideo) {
@@ -554,8 +568,9 @@ function loadFile(file) {
       if (state.opts.palette === "__auto__") extractAutoPalette(vid);
       scheduleRender(0);
       setTimeout(fitToWindow, 30);
+      setDropZoneState("idle");
     }, { once: true });
-    vid.addEventListener("error", () => { URL.revokeObjectURL(url); alert("Unsupported video codec"); }, { once: true });
+    vid.addEventListener("error", () => { URL.revokeObjectURL(url); showDropError("Unsupported video codec"); }, { once: true });
   } else {
     const img = new Image();
     img.onload = () => {
@@ -568,8 +583,9 @@ function loadFile(file) {
       if (state.opts.palette === "__auto__") extractAutoPalette(img);
       scheduleRender(0);
       requestAnimationFrame(() => { render(); fitToWindow(); pushHistory("load"); });
+      setDropZoneState("idle");
     };
-    img.onerror = () => { URL.revokeObjectURL(url); alert("Unsupported image format"); };
+    img.onerror = () => { URL.revokeObjectURL(url); showDropError("Unsupported image format"); };
     img.src = url;
   }
 }
@@ -1192,13 +1208,13 @@ function setupEventListeners() {
   });
   on(els.dropZone, "click", openFile);
 
-  window.addEventListener("dragover", e => { e.preventDefault(); if (els.dropZone) els.dropZone.classList.add("drag-over"); });
+  window.addEventListener("dragover", e => { e.preventDefault(); if (els.dropZone) setDropZoneState("hover"); });
   window.addEventListener("dragleave", e => {
-    if (!e.relatedTarget) els.canvasArea && els.canvasArea.classList.remove("drag-over");
+    if (!e.relatedTarget) setDropZoneState("idle");
   });
   window.addEventListener("drop", e => {
     e.preventDefault();
-    els.canvasArea && els.canvasArea.classList.remove("drag-over");
+    setDropZoneState("idle");
     if (e.dataTransfer && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
   });
 
