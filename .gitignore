@@ -1,0 +1,12 @@
+TEST_REPORT.md
+TEST_RESULTS.json
+/test_suite_shots/
+/test_exports/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+*.bak
+*.bak/
