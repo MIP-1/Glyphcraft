@@ -383,6 +383,13 @@
                 <option value="webm">WebM Video</option>
               </select>
             </div>
+            <div class="control" id="jpg-quality-control" style="display: none;">
+              <label class="control-label"><span>JPG Quality</span><span class="control-value" id="val-jpg-quality">90</span><span class="control-unit">%</span></label>
+              <div class="control-input-wrap">
+                <input type="range" id="jpg-quality" min="10" max="100" value="90" step="1">
+                <input type="number" id="jpg-quality-num" min="10" max="100" value="90" step="1">
+              </div>
+            </div>
             <div class="control">
               <label class="control-label">Size Preset</label>
               <div class="preset-select-wrap">

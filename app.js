@@ -37,6 +37,7 @@ function defaultOpts() {
     outputFit: "contain",
     outputLockRatio: true,
     exportFormat: "png",
+    jpgQuality: 90,
     effects: defaultEffects()
   };
 }
@@ -165,6 +166,10 @@ function initEls() {
   els.valWeight = $("val-weight");
   els.glyphInvert = $("glyph-invert");
   els.glyphColor = $("glyph-color");
+  els.jpgQuality = $("jpg-quality");
+  els.jpgQualityNum = $("jpg-quality-num");
+  els.valJpgQuality = $("val-jpg-quality");
+  els.jpgQualityControl = $("jpg-quality-control");
 }
 
 function setTheme(dark) {
@@ -702,8 +707,9 @@ async function exportImage() {
   canvas.width = full.w; canvas.height = full.h;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   renderToContext(base, ctx, full.w, full.h, opts);
+  const quality = format === "jpg" ? state.opts.jpgQuality / 100 : 0.95;
   const typeMap = { png: "image/png", jpg: "image/jpeg", webp: "image/webp" };
-  const blob = await canvasToBlob(canvas, typeMap[format] || "image/png", 0.95);
+  const blob = await canvasToBlob(canvas, typeMap[format] || "image/png", quality);
   saveBlob(blob, `glyphcraft.${format}`);
   showToast(`${format.toUpperCase()} exported`);
 }
@@ -910,6 +916,8 @@ function syncUIFromState() {
   els.outputFit.value = o.outputFit;
   els.outputLockRatio.checked = o.outputLockRatio;
   els.exportFormat.value = o.exportFormat;
+  els.jpgQuality.value = o.jpgQuality; els.valJpgQuality.textContent = o.jpgQuality; els.jpgQualityNum.value = o.jpgQuality;
+  els.jpgQualityControl.style.display = o.exportFormat === "jpg" ? "" : "none";
   updateOutputCustomVisibility();
   toggleModeSections();
   renderEffectsList();
@@ -1473,7 +1481,12 @@ function setupEventListeners() {
     pushHistory("outH"); scheduleRender();
   });
   on(els.outputFit, "change", () => { state.opts.outputFit = els.outputFit.value; pushHistory("fit"); scheduleRender(); });
-  on(els.exportFormat, "change", () => { state.opts.exportFormat = els.exportFormat.value; pushHistory("format"); });
+  on(els.exportFormat, "change", () => {
+    state.opts.exportFormat = els.exportFormat.value;
+    els.jpgQualityControl.style.display = state.opts.exportFormat === "jpg" ? "" : "none";
+    pushHistory("format");
+  });
+  syncSliderNumber(els.jpgQuality, els.jpgQualityNum, els.valJpgQuality, "jpgQuality", () => { pushHistory("jpgQuality"); scheduleRender(); });
   on(els.ditherKernel, "change", () => { state.opts.ditherKernel = els.ditherKernel.value; pushHistory("kernel"); scheduleRender(); });
   on(els.ditherDepth, "input", () => { state.opts.ditherDepth = +els.ditherDepth.value; els.valColorDepth.textContent = state.opts.ditherDepth; els.ditherDepthNum.value = state.opts.ditherDepth; pushHistory("ditherDepth"); scheduleRender(); });
 
