@@ -89,16 +89,16 @@
 - Script mode: charset presets (ASCII, blocks, braille, binary, minimal, dense), cell size, weight, invert, color/mono, background
 - Presets: save/load/delete named effect stacks in localStorage (try/catch), JSON export/import
 
-## Phase 7 (Overhaul) - IN PROGRESS
+## Phase 7 (Overhaul) - DONE (2026-10-22)
 - Drop zone states (idle/hover/error/loading), paste from clipboard, clear error for bad files
 - Before/after compare (hold key) — already implemented (O key)
 - Zoom and pan — already implemented (wheel zoom, Space+pan, F fit)
 - Debounce heavy effects, render in requestAnimationFrame, show render time
-- Large input: downscale for preview, full quality only on export
+- Large input: downscale for preview (max 1600px / 2.5MP), full quality only on export
 - Undo/redo for all parameter changes — already implemented
-- Shortcuts (E export, R reset with confirm, Z undo, Shift+Z redo, C compare, O hold original) with ? popover
-- Export: PNG, JPEG (quality), WebP, plus existing formats
-- Accessibility: labels, aria-live status, contrast ≥ 4.5:1, prefers-reduced-motion
+- Shortcuts (E export, R reset with confirm, Z undo, Shift+Z redo, C compare, O hold original, F fit, Space pan, ? help) with ? popover
+- Export: PNG, JPEG (quality slider), WebP, plus existing formats (SVG, TXT, WebM)
+- Accessibility: labels, aria-live status, contrast ≥ 4.5:1, prefers-reduced-motion, focus-visible rings
 - Remove dead code, zero console errors/warnings on load
 
 ## Notes
