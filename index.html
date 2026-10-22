@@ -103,7 +103,10 @@
             </div>
             <div class="control">
               <label class="control-label"><span>Depth</span><span class="control-value" id="val-depth">80</span></label>
-              <input type="range" id="depth" min="20" max="240" value="80" step="1">
+              <div class="control-input-wrap">
+                <input type="range" id="depth" min="20" max="240" value="80" step="1">
+                <input type="number" id="depth-num" min="20" max="240" value="80" step="1">
+              </div>
             </div>
             <div class="control-row">
               <div class="control half">
@@ -134,7 +137,10 @@
             </div>
             <div class="control">
               <label class="control-label"><span>Offset</span><span class="control-value" id="val-offset">0</span></label>
-              <input type="range" id="char-offset" min="-50" max="50" value="0" step="1">
+              <div class="control-input-wrap">
+                <input type="range" id="char-offset" min="-50" max="50" value="0" step="1">
+                <input type="number" id="char-offset-num" min="-50" max="50" value="0" step="1">
+              </div>
             </div>
             <div class="control-row">
               <div class="control half">
@@ -175,7 +181,10 @@
             </div>
             <div class="control">
               <label class="control-label"><span>Color Depth</span><span class="control-value" id="val-color-depth">4</span></label>
-              <input type="range" id="dither-depth" min="2" max="16" value="4" step="1">
+              <div class="control-input-wrap">
+                <input type="range" id="dither-depth" min="2" max="16" value="4" step="1">
+                <input type="number" id="dither-depth-num" min="2" max="16" value="4" step="1">
+              </div>
             </div>
           </section>
 
@@ -205,36 +214,60 @@
               <button class="section-reset" data-section="adjustments">Reset</button>
             </div>
             <div class="control">
-              <label class="control-label"><span>Brightness</span><span class="control-value" id="val-brightness">0</span></label>
-              <input type="range" id="adj-brightness" min="-100" max="100" value="0" step="1">
+              <label class="control-label"><span>Brightness</span><span class="control-value" id="val-brightness">0</span><span class="control-unit">%</span></label>
+              <div class="control-input-wrap">
+                <input type="range" id="adj-brightness" min="-100" max="100" value="0" step="1">
+                <input type="number" id="adj-brightness-num" min="-100" max="100" value="0" step="1">
+              </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Contrast</span><span class="control-value" id="val-contrast">0</span></label>
-              <input type="range" id="adj-contrast" min="-100" max="100" value="0" step="1">
+              <label class="control-label"><span>Contrast</span><span class="control-value" id="val-contrast">0</span><span class="control-unit">%</span></label>
+              <div class="control-input-wrap">
+                <input type="range" id="adj-contrast" min="-100" max="100" value="0" step="1">
+                <input type="number" id="adj-contrast-num" min="-100" max="100" value="0" step="1">
+              </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Saturation</span><span class="control-value" id="val-saturation">0</span></label>
-              <input type="range" id="adj-saturation" min="-100" max="100" value="0" step="1">
+              <label class="control-label"><span>Saturation</span><span class="control-value" id="val-saturation">0</span><span class="control-unit">%</span></label>
+              <div class="control-input-wrap">
+                <input type="range" id="adj-saturation" min="-100" max="100" value="0" step="1">
+                <input type="number" id="adj-saturation-num" min="-100" max="100" value="0" step="1">
+              </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Hue</span><span class="control-value" id="val-hue">0</span></label>
-              <input type="range" id="adj-hue" min="-180" max="180" value="0" step="1">
+              <label class="control-label"><span>Hue</span><span class="control-value" id="val-hue">0</span><span class="control-unit">°</span></label>
+              <div class="control-input-wrap">
+                <input type="range" id="adj-hue" min="-180" max="180" value="0" step="1">
+                <input type="number" id="adj-hue-num" min="-180" max="180" value="0" step="1">
+              </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Highlights</span><span class="control-value" id="val-highlights">0</span></label>
-              <input type="range" id="adj-highlights" min="-100" max="100" value="0" step="1">
+              <label class="control-label"><span>Highlights</span><span class="control-value" id="val-highlights">0</span><span class="control-unit">%</span></label>
+              <div class="control-input-wrap">
+                <input type="range" id="adj-highlights" min="-100" max="100" value="0" step="1">
+                <input type="number" id="adj-highlights-num" min="-100" max="100" value="0" step="1">
+              </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Shadows</span><span class="control-value" id="val-shadows">0</span></label>
-              <input type="range" id="adj-shadows" min="-100" max="100" value="0" step="1">
+              <label class="control-label"><span>Shadows</span><span class="control-value" id="val-shadows">0</span><span class="control-unit">%</span></label>
+              <div class="control-input-wrap">
+                <input type="range" id="adj-shadows" min="-100" max="100" value="0" step="1">
+                <input type="number" id="adj-shadows-num" min="-100" max="100" value="0" step="1">
+              </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Sharpen</span><span class="control-value" id="val-sharpen">0</span></label>
-              <input type="range" id="adj-sharpen" min="0" max="100" value="0" step="1">
+              <label class="control-label"><span>Sharpen</span><span class="control-value" id="val-sharpen">0</span><span class="control-unit">%</span></label>
+              <div class="control-input-wrap">
+                <input type="range" id="adj-sharpen" min="0" max="100" value="0" step="1">
+                <input type="number" id="adj-sharpen-num" min="0" max="100" value="0" step="1">
+              </div>
             </div>
             <div class="control">
-              <label class="control-label"><span>Blur</span><span class="control-value" id="val-blur">0</span></label>
-              <input type="range" id="adj-blur" min="0" max="20" value="0" step="1">
+              <label class="control-label"><span>Blur</span><span class="control-value" id="val-blur">0</span><span class="control-unit">px</span></label>
+              <div class="control-input-wrap">
+                <input type="range" id="adj-blur" min="0" max="20" value="0" step="1">
+                <input type="number" id="adj-blur-num" min="0" max="20" value="0" step="1">
+              </div>
             </div>
             <div class="control checkboxes">
               <label class="checkbox"><input type="checkbox" id="adj-invert"> Invert</label>

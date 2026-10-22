@@ -80,10 +80,12 @@ function initEls() {
   els.btnReset = $("btn-reset");
   els.selectMode = $("select-mode");
   els.depth = $("depth"); els.valDepth = $("val-depth");
+  els.depthNum = $("depth-num");
   els.charCategory = $("char-category");
   els.charSet = $("char-set");
   els.charInject = $("char-inject");
   els.charOffset = $("char-offset"); els.valOffset = $("val-offset");
+  els.charOffsetNum = $("char-offset-num");
   els.textStyle = $("text-style");
   els.usePalette = $("use-palette");
   els.transparentBg = $("transparent-bg");
@@ -94,13 +96,21 @@ function initEls() {
   els.controlPalette = $("control-palette");
   els.paletteSwatches = $("palette-swatches");
   els.adjBrightness = $("adj-brightness"); els.valBrightness = $("val-brightness");
+  els.adjBrightnessNum = $("adj-brightness-num");
   els.adjContrast = $("adj-contrast"); els.valContrast = $("val-contrast");
+  els.adjContrastNum = $("adj-contrast-num");
   els.adjSaturation = $("adj-saturation"); els.valSaturation = $("val-saturation");
+  els.adjSaturationNum = $("adj-saturation-num");
   els.adjHue = $("adj-hue"); els.valHue = $("val-hue");
+  els.adjHueNum = $("adj-hue-num");
   els.adjHighlights = $("adj-highlights"); els.valHighlights = $("val-highlights");
+  els.adjHighlightsNum = $("adj-highlights-num");
   els.adjShadows = $("adj-shadows"); els.valShadows = $("val-shadows");
+  els.adjShadowsNum = $("adj-shadows-num");
   els.adjSharpen = $("adj-sharpen"); els.valSharpen = $("val-sharpen");
+  els.adjSharpenNum = $("adj-sharpen-num");
   els.adjBlur = $("adj-blur"); els.valBlur = $("val-blur");
+  els.adjBlurNum = $("adj-blur-num");
   els.adjInvert = $("adj-invert");
   els.adjSepia = $("adj-sepia");
   els.outputPreset = $("output-preset");
@@ -110,6 +120,7 @@ function initEls() {
   els.exportFormat = $("export-format");
   els.ditherKernel = $("dither-kernel");
   els.ditherDepth = $("dither-depth");
+  els.ditherDepthNum = $("dither-depth-num");
   els.valColorDepth = $("val-color-depth");
   els.statusBar = $("status-bar");
   els.menuFile = $("menu-file"); els.dropdownFile = $("dropdown-file");
@@ -704,11 +715,11 @@ function resetSection(name) {
 function syncUIFromState() {
   const o = state.opts;
   els.selectMode.value = o.mode;
-  els.depth.value = o.depth; els.valDepth.textContent = o.depth;
+  els.depth.value = o.depth; els.valDepth.textContent = o.depth; els.depthNum.value = o.depth;
   els.charCategory.value = o.charCategory;
   els.charSet.value = o.charSet;
   els.charInject.value = o.charInject;
-  els.charOffset.value = o.charOffset; els.valOffset.textContent = o.charOffset;
+  els.charOffset.value = o.charOffset; els.valOffset.textContent = o.charOffset; els.charOffsetNum.value = o.charOffset;
   els.textStyle.value = o.textStyle;
   els.usePalette.checked = o.usePalette;
   els.transparentBg.checked = o.transparentBg;
@@ -717,12 +728,13 @@ function syncUIFromState() {
   els.colorMode.value = o.colorMode;
   els.paletteSelect.value = o.palette;
   els.ditherKernel.value = o.ditherKernel;
-  els.ditherDepth.value = o.ditherDepth; els.valColorDepth.textContent = o.ditherDepth;
+  els.ditherDepth.value = o.ditherDepth; els.valColorDepth.textContent = o.ditherDepth; els.ditherDepthNum.value = o.ditherDepth;
   const names = ["Brightness", "Contrast", "Saturation", "Hue", "Highlights", "Shadows", "Sharpen", "Blur"];
   names.forEach(n => {
     const key = n.toLowerCase();
     els["adj" + n].value = o.adj[key];
     els["val" + n].textContent = o.adj[key];
+    els["adj" + n + "Num"].value = o.adj[key];
   });
   els.adjInvert.checked = o.adj.invert;
   els.adjSepia.checked = o.adj.sepia;
@@ -1116,8 +1128,49 @@ function setupEventListeners() {
   on(els.charSet, "change", () => { state.opts.charSet = els.charSet.value; rebuildRamp(); pushHistory("chars"); scheduleRender(); });
   on(els.textStyle, "change", () => { state.opts.textStyle = els.textStyle.value; rebuildRamp(); pushHistory("chars"); scheduleRender(); });
 
-  on(els.depth, "input", () => { state.opts.depth = +els.depth.value; els.valDepth.textContent = state.opts.depth; rebuildRamp(); pushHistory("depth"); scheduleRender(); });
-  on(els.charOffset, "input", () => { state.opts.charOffset = +els.charOffset.value; els.valOffset.textContent = state.opts.charOffset; pushHistory("offset"); scheduleRender(); });
+  // Helper to sync slider and number input
+  function syncSliderNumber(slider, numInput, valueEl, optPath, onChange) {
+    const min = +slider.min, max = +slider.max, step = +slider.step;
+    let lastValid = slider.value;
+    function clamp(v) { return Math.max(min, Math.min(max, v)); }
+    function setVal(v) {
+      const clamped = clamp(v);
+      slider.value = clamped;
+      numInput.value = clamped;
+      if (valueEl) valueEl.textContent = clamped;
+      // Set nested property (e.g., "adj.brightness" -> state.opts.adj.brightness)
+      const parts = optPath.split(".");
+      let obj = state.opts;
+      for (let i = 0; i < parts.length - 1; i++) obj = obj[parts[i]];
+      obj[parts[parts.length - 1]] = clamped;
+      lastValid = clamped;
+      if (onChange) onChange();
+    }
+    function getCurrentVal() {
+      const parts = optPath.split(".");
+      let obj = state.opts;
+      for (let i = 0; i < parts.length - 1; i++) obj = obj[parts[i]];
+      return obj[parts[parts.length - 1]];
+    }
+    slider.addEventListener("input", () => setVal(+slider.value));
+    numInput.addEventListener("input", () => {
+      const v = parseFloat(numInput.value);
+      if (!isNaN(v)) setVal(v);
+    });
+    numInput.addEventListener("blur", () => {
+      if (isNaN(parseFloat(numInput.value))) numInput.value = lastValid;
+    });
+    numInput.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowUp") { e.preventDefault(); setVal(getCurrentVal() + step * (e.shiftKey ? 10 : 1)); }
+      if (e.key === "ArrowDown") { e.preventDefault(); setVal(getCurrentVal() - step * (e.shiftKey ? 10 : 1)); }
+    });
+    slider.addEventListener("dblclick", () => setVal(+slider.defaultValue));
+    numInput.addEventListener("dblclick", () => { numInput.value = slider.defaultValue; setVal(+slider.defaultValue); });
+  }
+
+  syncSliderNumber(els.depth, els.depthNum, els.valDepth, "depth", () => { rebuildRamp(); pushHistory("depth"); scheduleRender(); });
+  syncSliderNumber(els.charOffset, els.charOffsetNum, els.valOffset, "charOffset", () => { pushHistory("offset"); scheduleRender(); });
+  syncSliderNumber(els.ditherDepth, els.ditherDepthNum, els.valColorDepth, "ditherDepth", () => { pushHistory("ditherDepth"); scheduleRender(); });
   on(els.usePalette, "change", () => { state.opts.usePalette = els.usePalette.checked; pushHistory("usePalette"); scheduleRender(); });
   on(els.transparentBg, "change", () => { state.opts.transparentBg = els.transparentBg.checked; pushHistory("transparent"); scheduleRender(); });
   on(els.autoLevels, "change", () => { state.opts.autoLevels = els.autoLevels.checked; pushHistory("autoLevels"); scheduleRender(); });
@@ -1135,13 +1188,8 @@ function setupEventListeners() {
 
   ["Brightness", "Contrast", "Saturation", "Hue", "Highlights", "Shadows", "Sharpen", "Blur"].forEach(name => {
     const key = name.toLowerCase();
-    const slider = els["adj" + name], val = els["val" + name];
-    on(slider, "input", () => {
-      state.opts.adj[key] = +slider.value;
-      val.textContent = slider.value;
-      pushHistory("adj-" + key);
-      scheduleRender(70);
-    });
+    const slider = els["adj" + name], val = els["val" + name], numInput = els["adj" + name + "Num"];
+    syncSliderNumber(slider, numInput, val, "adj." + key, () => { pushHistory("adj-" + key); scheduleRender(70); });
   });
   on(els.adjInvert, "change", () => { state.opts.adj.invert = els.adjInvert.checked; pushHistory("invert"); scheduleRender(); });
   on(els.adjSepia, "change", () => { state.opts.adj.sepia = els.adjSepia.checked; pushHistory("sepia"); scheduleRender(); });
