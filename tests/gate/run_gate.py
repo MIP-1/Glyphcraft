@@ -583,9 +583,12 @@ SCAN_JS = r"""
 
   return {
     theme: document.documentElement.dataset.theme,
+    state,
     violations,
     checkedText: elements.filter(visible).length,
     effects: document.querySelectorAll('.effect-item').length,
+    effectIds: Array.from(document.querySelectorAll('.effect-item')).map(el => el.getAttribute('data-id') || ''),
+    expectedEffectIds: (typeof EFFECTS !== 'undefined' ? EFFECTS.map(e => e.id) : []),
     presets: document.querySelectorAll('.preset-btn').length,
     canvasWidth: document.getElementById('canvas') ? document.getElementById('canvas').width : 0
   };
@@ -1078,6 +1081,19 @@ def _merge_scan(g2: dict, data: dict, seen: set[tuple]) -> None:
     if data.get("theme") not in ("dark", "light"):
         g2["pass"] = False
         g2["violations"].append({"kind": "theme", "detail": f"unexpected theme {data.get('theme')!r}", "selector": "html"})
+    if data.get("state") == "fullest-top":
+        expected = data.get("expectedEffectIds") or []
+        actual = data.get("effectIds") or []
+        if len(actual) != 22 or actual != expected:
+            key = ("effect-coverage", data.get("theme"), data.get("width"), ".effect-item", "", "")
+            if key not in seen:
+                seen.add(key)
+                g2["pass"] = False
+                g2["violations"].append({
+                    "kind": "effect-coverage",
+                    "detail": f"fullest state expected {len(expected)} effect ids {expected}, got {len(actual)} {actual}",
+                    "selector": ".effect-item",
+                })
     for violation in data.get("violations", []):
         key = (violation.get("kind"), violation.get("theme"), violation.get("width"), violation.get("selector"),
                violation.get("bg"), violation.get("fg"))

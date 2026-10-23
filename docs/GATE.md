@@ -542,3 +542,227 @@ Tag: `P1-1-pass`
 
 - **G8** — top-bar geometry: status/zoom/theme/panel alignment and radii at
   1280/360. P1-3.
+
+## P1-2 — Light theme parity — STATUS: PASS
+
+G2 is green in both themes at both widths in the fullest state, G1 is green,
+and all 22 effect types are present and individually scanned. The root cause
+and the app-side fix landed in P1-0 (`ae85c1c`); P1-2 re-ran the full loop on
+the current tree and added a stricter per-effect coverage check so the claim
+cannot silently regress.
+
+### Root cause (file:line evidence)
+
+The light theme was not missing its own values. The app used the generic token
+name `--surface`, and the host’s global `userContent.css` also defines that
+name on `*`:
+
+```css
+/* b5c02bd:style.css */
+:root                    { --surface: #0b0b0c; }   /* line 18 */
+:root[data-theme=light]  { --surface: #faf7f1; }   /* line 109 */
+.effect-item             { background: var(--surface); } /* line 728 */
+.preset-btn              { background: var(--surface); } /* line 833 */
+
+/* tests/gate/host_usercontent.css */
+@media (prefers-color-scheme: dark) {
+  * { --surface: #1f1a1f; }                         /* line 13 */
+}
+```
+
+A declaration directly on a descendant (`*`) wins over a value inherited from
+`:root`, regardless of selector specificity. With the app in light mode and
+the OS in dark mode, every effect card and preset chip inherited the host’s
+dark `--surface`, while their text used the app’s light-theme dark
+`--text-primary` (`style.css:802`). That produced the reported
+`bg=rgb(31,26,31) fg=rgb(33,27,20) ratio=1` cards, invisible names, and black
+chips. The 6-dot handle used `--text-muted` on the same dark card and measured
+`2.14:1`.
+
+The app-side fix (P1-0) namespaced the token:
+
+- `style.css:18,107` now define `--gc-surface`; the six consumers
+  (`style.css:158,369,726,831,1095` and `--bg`) use it;
+- the generic `--text` and `--muted` aliases were removed;
+- the active preset border now uses `--border-focus` (`style.css:842`), fixing
+  the dark real-flow `2.21:1` border;
+- the disabled zoom border uses `--text-muted` (`style.css:297`);
+- the empty-state inline colour uses `--text-muted` (`app.js:1149`).
+
+The host fixture remains permanently injected in G2’s real-flow cells. There
+are now no hardcoded app colours outside the token blocks (G1 0).
+
+### RED output (fresh pre-fix archive)
+
+`GATE_TASK=p1-2-red python tests/gate/run_gate.py` in `/tmp/glyphcraft_prefix`
+(a `b5c02bd` archive with the current gate and host fixture). These are the
+relevant G1/G2 lines; the archive lacks the generated test fixture, so its G5
+line is not the authoritative suite result.
+
+```text
+G1 FAIL token lint: 11 violation(s)
+G2 FAIL theme parity: 98 violation(s), 51796 element/state checks, 10 cells, 88 scans
+  [dark 1280 real-clean-initial] button.preset-btn.active:nth-of-type(6) kind=ui bg=rgb(21, 20, 22) fg=rgb(142, 43, 43) ratio=2.21 min=3 top border
+  [light 1280 host-dark-icon] button.preset-btn:nth-of-type(1) kind=text bg=rgb(31, 26, 31) fg=rgb(33, 27, 20) ratio=1 min=4.5 Terminal Green
+  [light 1280 host-dark-icon] span.effect-name kind=text bg=rgb(31, 26, 31) fg=rgb(33, 27, 20) ratio=1 min=4.5 Halftone
+  [light 1280 host-dark-icon] button.drag-handle kind=icon bg=rgb(31, 26, 31) fg=rgb(87, 80, 63) ratio=2.14 min=3 handle dots
+  [light 1280 host-dark-icon] div.effect-item:nth-of-type(1)[data-id="halftone"] kind=luminance bg=rgb(31, 26, 31) fg= ratio=1 min=2 light theme surface luminance 0.011 < 0.35
+  ...
+  [light 1280 host-dark-reload-light] #drop-zone kind=luminance bg=rgb(34, 29, 33) fg= ratio=1 min=2 light theme surface luminance 0.013 < 0.35
+```
+
+The same card/chip/name failures repeat at 360 and in the reload/host cells.
+The full 98-line list is in `/tmp/opencode/p1-2-red.log`.
+
+### Fix verification and the stricter effect check
+
+No app CSS/JS change was needed in P1-2; the P1-0 namespacing already removed
+every G2 failure. P1-2 adds a G2 completeness guard: the gate now records the
+actual `.effect-item[data-id]` list and the expected `EFFECTS` list in every
+scan, and the `fullest-top` state fails if it is not exactly all 22 expected
+IDs in order. This is stricter than before and is allowed by the gate rules.
+
+```text
+expected 22 ['halftone', 'crt', 'glitch', 'vhs', 'pixelate', 'pixelsort', 'bloom', 'grain', 'vignette', 'duotone', 'posterize', 'edges', 'sketch', 'oil', 'emboss', 'blur', 'sharpen', 'invert', 'sepia', 'thermal', 'matrix', 'retro']
+actual   22 ['halftone', 'crt', 'glitch', 'vhs', 'pixelate', 'pixelsort', 'bloom', 'grain', 'vignette', 'duotone', 'posterize', 'edges', 'sketch', 'oil', 'emboss', 'blur', 'sharpen', 'invert', 'sepia', 'thermal', 'matrix', 'retro']
+unique 22 match True
+names 22 ['Halftone', 'CRT', 'Glitch / RGB Split', 'VHS', 'Pixelate / Mosaic', 'Pixel Sort', 'Bloom / Glow', 'Film Grain', 'Vignette', 'Duotone / Gradient Map', 'Posterize', 'Edge Detect (Sobel)', 'Pencil Sketch / Crosshatch', 'Oil Paint (Kuwahara)', 'Emboss', 'Blur', 'Sharpen', 'Invert', 'Sepia', 'Thermal', 'Matrix Rain', 'Retro Palette']
+```
+
+### GREEN output — 3× consecutive
+
+Each run is `GATE_TASK=p1-2 npm run gate` on the current tree.
+
+Run 1:
+
+```text
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 51784 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-2/
+G4 PASS frame timings: dark 1280: median=16.69999999999891ms p95=16.80000000000109ms frames=80, dark 360: median=16.69999999999891ms p95=16.799999999999272ms frames=84, light 1280: median=16.69999999999891ms p95=16.700000000000728ms frames=71, light 360: median=16.69999999999891ms p95=16.700000000000728ms frames=77
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (201.8s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 FAIL top-bar geometry: 16 violation(s)
+GATE FAIL G8
+```
+
+Run 2:
+
+```text
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 51784 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-2/
+G4 PASS frame timings: dark 1280: median=16.700000000000728ms p95=16.80000000000291ms frames=79, dark 360: median=16.69999999999891ms p95=16.799999999999272ms frames=71, light 1280: median=16.69999999999891ms p95=16.700000000000728ms frames=78, light 360: median=16.69999999999891ms p95=1033.300000000003ms frames=80
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (198.5s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 FAIL top-bar geometry: 16 violation(s)
+GATE FAIL G8
+```
+
+Run 3:
+
+```text
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 51784 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-2/
+G4 PASS frame timings: dark 1280: median=16.69999999999891ms p95=16.700000000000728ms frames=79, dark 360: median=16.700000000000728ms p95=1133.2000000000007ms frames=89, light 1280: median=16.69999999999891ms p95=16.799999999999272ms frames=79, light 360: median=16.700000000000728ms p95=33.39999999999782ms frames=92
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (228.2s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 FAIL top-bar geometry: 16 violation(s)
+GATE FAIL G8
+```
+
+Run 2/3’s isolated G4 p95 spikes are host scheduling during those runs; all
+medians are 16.7 ms and G4 passed. G8 remains the only failure, deliberately
+out of scope until P1-3.
+
+### Screenshots (opened and described)
+
+Fullest state:
+
+- `docs/evidence/p1-2/dark-1280-fullest-effects.png` — dark cards on a dark
+  page; light effect names, red checked boxes, visible dot handles; preset
+  chips are dark bordered rectangles with light labels. No light card leaks
+  through.
+- `docs/evidence/p1-2/light-1280-fullest-effects.png` — cream cards on the
+  cream page; dark effect names/params; preset chips cream with dark borders;
+  red checked boxes; handle dots visible; no black card or chip remains.
+- `docs/evidence/p1-2/dark-360-fullest-effects.png` — panel open, cards full
+  width, chips wrap 3 + 3 + 1; dark surfaces, light names; `Reset`/`Remove`
+  readable; no horizontal clipping.
+- `docs/evidence/p1-2/light-360-fullest-effects.png` — same layout in light;
+  cream cards/chips, dark names, red checks, all labels readable. The narrow
+  black strip at the far left is the rendered canvas image (identical in dark),
+  not a UI surface.
+
+Host-token and reload states:
+
+- `docs/evidence/p1-2/light-1280-host-dark-icon.png` — host dark fixture
+  active, app light: cream panel, cream effect cards, readable names, cream
+  preset chips. No `rgb(31,26,31)` block.
+- `docs/evidence/p1-2/light-360-host-dark-icon.png` — same at 360 with the
+  panel open; chips wrap and stay cream; Halftone card and controls readable.
+- `docs/evidence/p1-2/light-1280-host-dark-reload-light.png` — reload while
+  light with the host fixture: light drop zone, top bar, fields and panel;
+  status says “No image loaded”; no dark drop zone.
+- `docs/evidence/p1-2/light-360-host-os-light-os-light.png` — OS light first
+  visit, no saved theme: light drop zone/panel; no dark card or field.
+
+Interactive states:
+
+- `docs/evidence/p1-2/light-1280-hover-preset.png` — hovered preset chip has
+  the dark-red focus border and cream background; label remains readable.
+- `docs/evidence/p1-2/light-1280-hover-primary.png` — primary hover keeps the
+  red fill and light label; no dark surface behind it.
+- `docs/evidence/p1-2/light-1280-focus-theme.png` — red focus ring around the
+  sun icon; icon visible.
+- `docs/evidence/p1-2/light-1280-select-focus.png` — red focus border around
+  the select; field background stays white/cream, not dark.
+
+Remaining mismatch in these screenshots: **none for theme surfaces or text.**
+The known G8 top-bar misalignment is still visible and is intentionally left
+for P1-3.
+
+### Break-it list (5) and results
+
+1. **Host `userContent.css` dark block on `*` while the app is light** — G2
+   host-dark cells at 1280 and 360: 0 violations; both screenshots opened.
+   PASS.
+2. **Reload while light with the host block re-applied** — G2
+   host-dark-reload-light cell: 0 violations; screenshot shows a light reload
+   state. PASS.
+3. **OS light first visit with no saved theme** — G2 host-os-light cell: 0
+   violations; screenshot light. PASS.
+4. **All 22 effect types, not a sample** — every `EFFECTS` ID is added and the
+   `fullest-top` scan compares the DOM list to the expected list; 22/22 unique
+   and matching; G2 0. PASS.
+5. **Dynamic hover/focus/active/disabled states** — gate scans open menus,
+   zoom menu, size picker, six theme toggles, hover/focus states, active preset
+   border and disabled zoom border; G2 0; light hover/focus screenshots opened.
+   PASS.
+
+### Files changed (git diff --stat) and why
+
+- `tests/gate/run_gate.py` — +16 lines: records `effectIds`/expected IDs and
+  fails `fullest-top` unless all 22 expected effects are present. Stricter,
+  not weaker.
+- `docs/evidence/p1-2/` — 62 Chromium screenshots for the current tree.
+- `docs/GATE.md` — this record.
+- **No app file changed in P1-2.** The token fix was committed in P1-0; this
+  task is the required full re-verification plus the coverage guard.
+- `git diff --stat` before commit: `tests/gate/run_gate.py | 16 ++++++++++++++++`.
+
+### Commit / tag
+
+Commit: `P1-2: verify light-theme parity across all effects`
+
+Tag: `P1-2-pass`
+
+### Remaining flaws
+
+- **G8** — top-bar geometry/alignment and radii; P1-3.
+- Native `<select>` popups and native tooltips are a HUMAN-CHECK; headless
+  Chromium cannot capture OS-rendered widgets.
