@@ -201,16 +201,47 @@ h1, h2, h3, h4, h5, h6, .section-title, .logo, .btn {
   min-width: 0; margin-inline-start: auto;
 }
 
-.status {
+.status-group {
+  display: flex;
+  align-items: stretch;
+  height: 48px;
+  padding: 1px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-panel);
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);
   white-space: nowrap;
+  min-width: 0;
+}
+.status-seg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-2);
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
-  max-width: 300px;
 }
+.status-seg + .status-seg { border-inline-start: 1px solid var(--border-subtle); }
+.status-group.is-empty .status-seg { border-inline-start: none; }
+
+/* Top-bar icon buttons share the zoom group's box, radius and height. */
+.menubar-right > .icon-btn {
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  min-height: 48px;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition: background 0.15s, border-color 0.15s;
+}
+.menubar-right > .icon-btn:hover { background: var(--surface-hover); border-color: var(--text-muted); }
+.menubar-right > .icon-btn:active { background: var(--surface-active); }
+.menubar-right > .icon-btn:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.menubar-right > .icon-btn svg { width: 18px; height: 18px; }
 
 .menu { position: relative; }
 .menu-btn {
@@ -1135,7 +1166,8 @@ body.reorder-active * { cursor: grabbing !important; }
 
 /* ---------------- Responsive ---------------- */
 @media (max-width: 900px) {
-  .status { max-width: 160px; }
+  .status-group { font-size: 10px; }
+  .status-seg { padding: 0 var(--space-1); }
 }
 
 @media (max-width: 768px) {
@@ -1155,8 +1187,9 @@ body.reorder-active * { cursor: grabbing !important; }
   .panel.collapsed { width: min(340px, 100vw); }
   .menubar { padding-inline: var(--space-2); }
   .panel-content { padding: 0 var(--space-3) var(--space-4); }
-  .status { flex: 1 0 100%; max-width: none; order: 5; text-align: end; }
-  .menubar-right { flex: 1 1 100%; justify-content: flex-end; flex-wrap: wrap; row-gap: 0; }
+  /* Status wraps onto its own row and stays right-aligned. */
+  .status-group { order: 5; flex: 0 0 auto; margin-inline-start: auto; }
+  .menubar-right { flex: 1 1 100%; justify-content: flex-end; flex-wrap: wrap; row-gap: 4px; }
   .menubar { row-gap: 0; }
   .menu-dropdown { min-width: 210px; }
 }

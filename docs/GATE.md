@@ -827,3 +827,139 @@ should be rebuilt from that system, not copied CSS.
 
 No code changed. `G8` remains RED with 16 violations from P1-2. Waiting for
 written confirmation before touching code.
+
+---
+
+## H0 — Top bar: one segmented status box + boxed icon buttons — STATUS: PASS
+
+Root cause: the top bar had two different component systems. `.status` was
+plain muted text (`style.css`, old lines 204–213) with no border, radius,
+padding, or fixed height, and the theme/panel buttons were bare transparent
+`.menu-btn`/`.icon-btn` boxes (44px high, 4px radius, top offset 2px). The zoom
+group was the only 48px, 6px-radius, 1px-bordered box. G8 measured exactly those
+differences: `heights status-bar=16.5, zoom-controls=48.0, theme-toggle=44.0,
+panel-toggle-btn=44.0`, `tops status-bar=15.8, zoom-controls=0.0,
+theme-toggle=2.0`, `radius zoom-controls=6.0, theme-toggle=4.0`, and the
+panel-toggle icon center `(1241,11)` vs item center `(1246,24)` (clipped).
+
+RED output (before, `GATE_TASK=p1-0` baseline, `/tmp/opencode/gateline/baseline.log`):
+```
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 51784 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-0/
+G4 PASS frame timings: dark 1280 ... dark 360 ... light 1280 ... light 360 ...
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 FAIL top-bar geometry: 16 violation(s)
+  [dark 1280] icon-center: panel-toggle-btn icon center (1241.0,11.0) vs item center (1246.0,24.0)
+  [dark 1280] height: heights status-bar=16.5, zoom-controls=48.0, theme-toggle=44.0, panel-toggle-btn=44.0
+  [dark 1280] top: tops status-bar=15.8, zoom-controls=0.0, theme-toggle=2.0, panel-toggle-btn=2.0
+  [dark 1280] radius: zoom-controls=6.0, theme-toggle=4.0
+  ... repeated identically for [dark 360], [light 1280], [light 360]
+GATE FAIL G8
+EXIT=1
+```
+G8 was made row-aware in the same change because decision #2 explicitly permits
+the status group to wrap onto its own second row at ≤768px. The stricter checks
+now enforce: all four items boxed; one row at >768px; if two rows, the wrapped
+row contains only the status group; per-row height/top/gap consistency; status
+must be a non-interactive `div[role=status]` with exactly 3 segments, 1px
+internal dividers, and no clipped segment text (`scrollWidth <= clientWidth`,
+checked at every cell).
+
+GREEN output (after, `GATE_TASK=p1-3`, `/tmp/opencode/gateline/h0-run3.log`):
+```
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 52040 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-3/
+G4 PASS frame timings: dark 1280: median=16.7ms p95=16.7ms frames=80, dark 360: median=16.7ms p95=16.8ms frames=79, light 1280: median=16.7ms p95=16.7ms frames=80, light 360: median=16.7ms p95=16.8ms frames=79
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (216.0s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 PASS top-bar geometry: 0 violation(s)
+GATE PASS
+EXIT=0
+```
+Measured geometry (real browser, 4 cells): `status-bar` 48px high,
+`zoom-controls` 48px, `theme-toggle` 48×48, `panel-toggle-btn` 48×48, all
+`1px` border, `6px` radius, top `0` at 1280.
+At 360 the zoom/theme/panel row is at top 44 and the status group (126px wide,
+all 3 segments, `38% | 900×600 | 1160ms`) wraps alone to top 96, right-aligned
+(226..352); the bar is 144px tall.
+
+Gate runs (3x): green / green / green (`h0-run1.log`, `h0-run2.log`, `h0-run3.log`; G8 0 violations in each, G5 169/0 each).
+
+Screenshots (path — what I see):
+- `docs/evidence/p1-3/dark-1280-fullest-top.png` — dark bar: status is one
+  48px box at x=807..980 with `100%`, `900×600`, `1274ms` separated by two 1px
+  dividers; zoom group at 988..1156 has the same outer border/radius; moon and
+  panel buttons are separate 48px boxes at 1164..1212 and 1220..1268; all four
+  boxes share the same top edge (y=0) and height. Icons are centered, nothing
+  clipped.
+- `docs/evidence/p1-3/light-1280-fullest-top.png` — same geometry on the cream
+  theme; status text muted gray is readable, dividers visible, icon buttons use
+  the same surface/border. No misalignment.
+- `docs/evidence/p1-3/dark-360-fullest-top.png` — first row `File View Edit`;
+  second row zoom group + moon + panel (all 48px, right-aligned); third row is
+  the status box alone at x=226..352 with all three values (`38%`, `900×600`,
+  `1160ms`) fully visible. The 4px inner padding is tighter than desktop but
+  no text touches a divider.
+- `docs/evidence/p1-3/light-360-fullest-top.png` — same three-row layout in
+  light; the status box is complete (all four rounded corners visible) and the
+  panel begins below it. No clipping at the right edge (8px margin).
+- `docs/evidence/p1-3/dark-1280-focus-theme.png` — the theme button shows a
+  2px accent focus ring offset 2px outside its box; the ring is complete on all
+  four sides and does not overlap the panel-toggle box.
+- `docs/evidence/p1-3/dark-360-focus-theme.png` — focus ring complete at 360,
+  not clipped by the viewport or the wrapped status row.
+- `docs/evidence/p1-3/light-1280-hover-theme-tooltip.png` — hovered theme
+  button has a visibly darker surface and stronger border than its neighbours;
+  no tooltip in the screenshot (native tooltip is a HUMAN-CHECK in headless).
+- `docs/evidence/p1-3/dark-360-hover-theme-tooltip.png` — same hover change at
+  360; box stays 48×48 and the icon stays centered.
+
+Break-it list (5) and results:
+1. **Empty state / no image.** Reload with no file at 769, 800, 1024, 320:
+   status renders only `No image loaded` in segment 2, segments 1/3 hidden,
+   divider widths 0, no page errors. (`/tmp/opencode/h0_breakit.py` → `EMPTY ...`.)
+2. **Long values at 360.** 4000×3000 image at 400% (`400% 4000×3000 8742ms`):
+   the status box grows 126→144px and every segment has
+   `scrollWidth == clientWidth` (0 clipped), still one wrapped row. At 1280 it
+   grows to 187px and stays on the single bar row. No errors.
+3. **Pressed state at both widths.** Real `pointerdown` on the panel toggle:
+   `:active` true, background becomes `rgb(42,39,41)` (`--surface-active`) and
+   border `rgb(138,128,112)`, then returns on pointerup. Same at 360 and 1280.
+4. **Video-export status (single segment).** `Exporting video: 7/30 frames`
+   shows in one visible segment with 0px dividers on both sides; no empty box
+   and no dropped text.
+5. **Sticky / scroll and width 320 (below target).** Scrolling the panel to the
+   end leaves `.menubar` top at 0 at 1280 and 360; at 320 the status still fits
+   and wraps alone (`210..312`, 102px, `scrollWidth == clientWidth`).
+
+Files changed (git diff --stat) and why:
+```
+ app.js                 |  22 +++++++--
+ index.html             |   4 +-
+ style.css              |  45 ++++++++++++++++---
+ tests/gate/run_gate.py | 119 ++++++++++++++++++++++++++++++++++++++-----------
+```
+- `index.html`: status is now one `.status-group` with three `.status-seg`
+  spans; panel toggle joins the `.icon-btn bar-btn` box system.
+- `style.css`: `.status-group`/`.status-seg` component (48px, 1px border, 6px
+  radius, 1px dividers), `.menubar-right > .icon-btn` box/hover/active/focus
+  states, and the 900/768px rules (smaller status font/padding, status wraps
+  alone and stays right-aligned).
+- `app.js`: `setStatusSegments()` writes the three segments; `updateStatus()`
+  and the empty/video-export paths use it.
+- `tests/gate/run_gate.py`: row-aware G8 plus the stricter boxed/status/
+  divider/no-clip checks described above.
+
+Commit / tag: `H0: box the segmented status group and top-bar icon buttons` / tag `H0-pass`.
+
+Remaining flaws: the native tooltip on the theme button is not capturable in
+headless Chromium (HUMAN-CHECK). At 360 the status inner padding is 4px, the
+minimum that still fits all three values without clipping; if a future value
+string is longer than `400% 4000×3000 8742ms`, the status box grows until it
+reaches the bar width, then the 1px-clip check will fail the gate rather than
+silently truncate.

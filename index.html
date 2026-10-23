@@ -59,7 +59,7 @@
         </div>
       </div>
       <div class="menubar-right">
-        <span class="status" id="status-bar" aria-live="polite" aria-atomic="true">No image loaded</span>
+        <div class="status-group" id="status-bar" role="status" aria-live="polite" aria-atomic="true"><span class="status-seg" id="status-zoom"></span><span class="status-seg" id="status-size">No image loaded</span><span class="status-seg" id="status-time"></span></div>
         <div class="zoom-controls" role="group" aria-label="Zoom">
           <button class="icon-btn" id="zoom-out" type="button" aria-label="Zoom out" title="Zoom out (−)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/><path d="M8 11h6"/></svg>
@@ -86,7 +86,7 @@
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.5 14.7A8.5 8.5 0 0 1 9.3 3.5 8.5 8.5 0 1 0 20.5 14.7z"/></svg>
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></svg>
         </button>
-        <button class="menu-btn panel-toggle-btn" id="panel-toggle-btn" type="button" aria-label="Toggle controls panel" title="Toggle controls panel">
+        <button class="icon-btn bar-btn panel-toggle-btn" id="panel-toggle-btn" type="button" aria-label="Toggle controls panel" title="Toggle controls panel">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg>
         </button>
       </div>

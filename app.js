@@ -149,6 +149,9 @@ function initEls() {
   els.ditherDepthNum = $("dither-depth-num");
  
   els.statusBar = $("status-bar");
+  els.statusZoom = $("status-zoom");
+  els.statusSize = $("status-size");
+  els.statusTime = $("status-time");
   els.menuFile = $("menu-file"); els.dropdownFile = $("dropdown-file");
   els.menuView = $("menu-view"); els.dropdownView = $("dropdown-view");
   els.menuEdit = $("menu-edit"); els.dropdownEdit = $("dropdown-edit");
@@ -505,7 +508,7 @@ function drawOriginal(destCtx, w, h, clipW) {
 
 function render() {
   if (!state.source) {
-    if (els.statusBar) els.statusBar.textContent = "No image loaded";
+    setStatusSegments("", "No image loaded", "");
     return;
   }
   const start = performance.now();
@@ -571,15 +574,26 @@ function applyZoomUI() {
   }
 }
 
+function setStatusSegments(zoom, size, time) {
+  if (!els.statusBar) return;
+  const values = [zoom, size, time];
+  [els.statusZoom, els.statusSize, els.statusTime].forEach((el, i) => {
+    if (!el) return;
+    el.textContent = values[i];
+    el.hidden = !values[i];
+  });
+  els.statusBar.classList.toggle("is-empty", values.filter(Boolean).length <= 1);
+}
+
 function updateStatus(full) {
   if (!els.statusBar) return;
   if (state.videoExporting) {
-    els.statusBar.textContent = `Exporting video: ${state.videoExportFrames}/${state.videoExportTotal} frames`;
+    setStatusSegments("", `Exporting video: ${state.videoExportFrames}/${state.videoExportTotal} frames`, "");
     return;
   }
-  if (!state.source) { els.statusBar.textContent = "No image loaded"; return; }
+  if (!state.source) { setStatusSegments("", "No image loaded", ""); return; }
   const zoom = Math.round(state.zoom * 100);
-  els.statusBar.textContent = `${zoom}%  ${state.sourceW}×${state.sourceH}  ${Math.round(state.lastRender)}ms`;
+  setStatusSegments(`${zoom}%`, `${state.sourceW}×${state.sourceH}`, `${Math.round(state.lastRender)}ms`);
 }
 
 function updateCompareUI() {

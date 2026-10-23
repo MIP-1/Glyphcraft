@@ -663,8 +663,12 @@ def geometry(page, theme: str, width: int) -> dict:
           const info = items.map((el, i) => {
             const cs = getComputedStyle(el);
             const r = el.getBoundingClientRect();
-            const svg = el.querySelector(':scope > svg') || null;
-            const sr = svg ? svg.getBoundingClientRect() : null;
+            const svgs = Array.from(el.querySelectorAll(':scope > svg'))
+              .map(svg => {
+                const sr = svg.getBoundingClientRect();
+                return {left: sr.left, top: sr.top, right: sr.right, bottom: sr.bottom, width: sr.width, height: sr.height};
+              })
+              .filter(sr => sr.width >= 1 && sr.height >= 1);
             const borderWidths = ['Top', 'Right', 'Bottom', 'Left'].map(side => parseFloat(cs['border' + side + 'Width']) || 0);
             return {
               index: i,
@@ -676,10 +680,28 @@ def geometry(page, theme: str, width: int) -> dict:
               borderWidth: Math.max(...borderWidths),
               borderWidths,
               boxed: borderWidths.some(x => x > 0) && !['none', 'hidden'].includes(cs.borderTopStyle),
-              svg: sr ? {left: sr.left, top: sr.top, right: sr.right, bottom: sr.bottom, width: sr.width, height: sr.height} : null
+              svgs
             };
           });
-          return {theme, width, bar: {left: barRect.left, top: barRect.top, right: barRect.right, bottom: barRect.bottom, width: barRect.width, height: barRect.height}, items: info};
+          const sg = document.querySelector('.status-group');
+          const status = sg ? {
+            tag: sg.tagName.toLowerCase(),
+            role: sg.getAttribute('role') || '',
+            tabIndex: sg.getAttribute('tabindex'),
+            cursor: getComputedStyle(sg).cursor,
+            segments: Array.from(sg.querySelectorAll('.status-seg')).map(seg => {
+              const scs = getComputedStyle(seg);
+              return {
+                text: (seg.textContent || '').trim(),
+                hidden: seg.hidden || scs.display === 'none',
+                borderStart: parseFloat(scs.borderInlineStartWidth) || 0,
+                height: seg.getBoundingClientRect().height,
+                clientWidth: seg.clientWidth,
+                scrollWidth: seg.scrollWidth
+              };
+            })
+          } : null;
+          return {theme, width, bar: {left: barRect.left, top: barRect.top, right: barRect.right, bottom: barRect.bottom, width: barRect.width, height: barRect.height}, items: info, status};
         }
         """,
         [theme, width],
@@ -702,26 +724,56 @@ def evaluate_geometry(data: dict, tolerance: float = 1.0) -> list[dict]:
             out.append({"cell": cell, "kind": "overflow", "detail": f"{name} horizontal box {item['left']:.1f}..{item['right']:.1f} outside bar {bar['left']:.1f}..{bar['right']:.1f}"})
         if item["top"] < bar["top"] - tolerance or item["bottom"] > bar["bottom"] + tolerance:
             out.append({"cell": cell, "kind": "overflow", "detail": f"{name} vertical box {item['top']:.1f}..{item['bottom']:.1f} outside bar {bar['top']:.1f}..{bar['bottom']:.1f}"})
-        if item["svg"] and item["svg"]["width"] >= 1 and item["svg"]["height"] >= 1:
-            sr = item["svg"]
-            r = item
-            if sr["left"] < r["left"] - tolerance or sr["right"] > r["right"] + tolerance or sr["top"] < r["top"] - tolerance or sr["bottom"] > r["bottom"] + tolerance:
-                out.append({"cell": cell, "kind": "clipped-icon", "detail": f"{name} svg {sr['left']:.1f},{sr['top']:.1f} {sr['width']:.1f}x{sr['height']:.1f} outside item {r['left']:.1f},{r['top']:.1f} {r['width']:.1f}x{r['height']:.1f}"})
-            item_cx = (r["left"] + r["right"]) / 2
-            item_cy = (r["top"] + r["bottom"]) / 2
-            svg_cx = (sr["left"] + sr["right"]) / 2
-            svg_cy = (sr["top"] + sr["bottom"]) / 2
-            if abs(item_cx - svg_cx) > tolerance or abs(item_cy - svg_cy) > tolerance:
-                out.append({"cell": cell, "kind": "icon-center", "detail": f"{name} icon center ({svg_cx:.1f},{svg_cy:.1f}) vs item center ({item_cx:.1f},{item_cy:.1f})"})
+        if item["svgs"]:
+            for sr in item["svgs"]:
+                r = item
+                if sr["left"] < r["left"] - tolerance or sr["right"] > r["right"] + tolerance or sr["top"] < r["top"] - tolerance or sr["bottom"] > r["bottom"] + tolerance:
+                    out.append({"cell": cell, "kind": "clipped-icon", "detail": f"{name} svg {sr['left']:.1f},{sr['top']:.1f} {sr['width']:.1f}x{sr['height']:.1f} outside item {r['left']:.1f},{r['top']:.1f} {r['width']:.1f}x{r['height']:.1f}"})
+                item_cx = (r["left"] + r["right"]) / 2
+                item_cy = (r["top"] + r["bottom"]) / 2
+                svg_cx = (sr["left"] + sr["right"]) / 2
+                svg_cy = (sr["top"] + sr["bottom"]) / 2
+                if abs(item_cx - svg_cx) > tolerance or abs(item_cy - svg_cy) > tolerance:
+                    out.append({"cell": cell, "kind": "icon-center", "detail": f"{name} icon center ({svg_cx:.1f},{svg_cy:.1f}) vs item center ({item_cx:.1f},{item_cy:.1f})"})
 
     heights = [i["height"] for i in items]
-    tops = [i["top"] for i in items]
     if max(heights) - min(heights) > tolerance:
         out.append({"cell": cell, "kind": "height", "detail": "heights " + ", ".join(f"{i['name']}={i['height']:.1f}" for i in items)})
-    if max(tops) - min(tops) > tolerance:
-        out.append({"cell": cell, "kind": "top", "detail": "tops " + ", ".join(f"{i['name']}={i['top']:.1f}" for i in items)})
+
+    # Rows are stable groups of items sharing a top offset. The desktop bar is
+    # one row; below 768 px the status group alone may wrap onto a second row.
+    rows: list[list[dict]] = []
+    for item in sorted(items, key=lambda i: (i["top"], i["left"])):
+        if rows and abs(rows[-1][0]["top"] - item["top"]) <= tolerance:
+            rows[-1].append(item)
+        else:
+            rows.append([item])
+    if data["width"] > 768 and len(rows) > 1:
+        out.append({"cell": cell, "kind": "rows", "detail": f"{len(rows)} rows at desktop width: " + " | ".join(", ".join(i["name"] for i in row) for row in rows)})
+    if len(rows) > 2:
+        out.append({"cell": cell, "kind": "rows", "detail": f"{len(rows)} rows: " + " | ".join(", ".join(i["name"] for i in row) for row in rows)})
+    if len(rows) == 2:
+        alone = [row for row in rows if len(row) == 1 and row[0]["name"] == "status-bar"]
+        if not alone:
+            out.append({"cell": cell, "kind": "rows", "detail": "wrapped row must contain only the status group: " + " | ".join(", ".join(i["name"] for i in row) for row in rows)})
+    for row in rows:
+        row_tops = [i["top"] for i in row]
+        if max(row_tops) - min(row_tops) > tolerance:
+            out.append({"cell": cell, "kind": "top", "detail": "tops " + ", ".join(f"{i['name']}={i['top']:.1f}" for i in row)})
+        row_heights = [i["height"] for i in row]
+        if max(row_heights) - min(row_heights) > tolerance:
+            out.append({"cell": cell, "kind": "row-height", "detail": "heights " + ", ".join(f"{i['name']}={i['height']:.1f}" for i in row)})
+        gaps = []
+        for a, b in zip(row, row[1:]):
+            gaps.append((a["name"], b["name"], b["left"] - a["right"]))
+        if gaps:
+            values = [g[2] for g in gaps]
+            if max(values) - min(values) > tolerance:
+                out.append({"cell": cell, "kind": "gap", "detail": ", ".join(f"{a}/{b}={g:.1f}" for a, b, g in gaps)})
 
     boxed = [i for i in items if i["boxed"]]
+    if len(boxed) != len(items):
+        out.append({"cell": cell, "kind": "boxed", "detail": "unboxed items: " + ", ".join(i["name"] for i in items if not i["boxed"])})
     if boxed:
         bw = [i["borderWidth"] for i in boxed]
         radii = [i["radius"] for i in boxed]
@@ -730,15 +782,28 @@ def evaluate_geometry(data: dict, tolerance: float = 1.0) -> list[dict]:
         if max(radii) - min(radii) > tolerance:
             out.append({"cell": cell, "kind": "radius", "detail": ", ".join(f"{i['name']}={i['radius']:.1f}" for i in boxed)})
 
-    ordered = sorted(items, key=lambda i: (i["top"], i["left"]))
-    gaps = []
-    for a, b in zip(ordered, ordered[1:]):
-        if abs(a["top"] - b["top"]) <= tolerance:
-            gaps.append((a["name"], b["name"], b["left"] - a["right"]))
-    if gaps:
-        values = [g[2] for g in gaps]
-        if max(values) - min(values) > tolerance:
-            out.append({"cell": cell, "kind": "gap", "detail": ", ".join(f"{a}/{b}={g:.1f}" for a, b, g in gaps)})
+    status = data.get("status")
+    if not status:
+        out.append({"cell": cell, "kind": "status", "detail": "status group missing"})
+    else:
+        segs = status["segments"]
+        if status["tag"] != "div" or status["role"] != "status":
+            out.append({"cell": cell, "kind": "status", "detail": f"status group must be a non-interactive div with role=status, got <{status['tag']}> role={status['role']!r}"})
+        if status["tabIndex"] is not None or status["cursor"] == "pointer":
+            out.append({"cell": cell, "kind": "status", "detail": f"status group must not be interactive: tabindex={status['tabIndex']} cursor={status['cursor']}"})
+        if len(segs) != 3:
+            out.append({"cell": cell, "kind": "status", "detail": f"expected 3 status segments, got {len(segs)}"})
+        visible = [s for s in segs if not s["hidden"]]
+        if len(visible) != 3:
+            out.append({"cell": cell, "kind": "status", "detail": f"expected 3 visible segments with an image loaded, got {len(visible)}"})
+        if any(not s["text"] for s in visible):
+            out.append({"cell": cell, "kind": "status", "detail": "empty status segment: " + repr([s["text"] for s in visible])})
+        clipped = [s["text"] for s in visible if s["scrollWidth"] > s["clientWidth"] + tolerance]
+        if clipped:
+            out.append({"cell": cell, "kind": "status", "detail": "clipped status text: " + repr(clipped)})
+        dividers = [s["borderStart"] for s in segs[1:]]
+        if len(dividers) != 2 or any(abs(d - 1) > tolerance for d in dividers):
+            out.append({"cell": cell, "kind": "status", "detail": f"internal dividers must be 1px, got {dividers}"})
     return out
 
 
