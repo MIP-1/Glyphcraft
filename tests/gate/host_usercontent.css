@@ -1,0 +1,45 @@
+/*
+ * Regression fixture: the generic token block from a global browser
+ * userContent.css (Noctalia/Zen). It is injected into the page during the
+ * real-flow G2 scenario to emulate a host stylesheet that defines common
+ * custom-property names on every element.
+ *
+ * This is not application CSS and is intentionally not part of the app's
+ * colour system. The app must not consume these generic names directly.
+ */
+@media (prefers-color-scheme: dark) {
+  * {
+    --base:             #161217;
+    --surface:          #1f1a1f;
+    --overlay:          #231e23;
+    --hl_low:           #2e282e;
+    --hl_med:           #393339;
+    --hl_high:          #3d373d;
+    --outline:          #4c444c;
+    --muted:            #988e97;
+    --subtle:           #cfc3cd;
+    --text:             #eae0e7;
+    --primary:          #e7b6f1;
+    --secondary:        #d5c0d6;
+    --tertiary:         #f5b7b2;
+    --error:            #ffb4ab;
+  }
+}
+@media (prefers-color-scheme: light) {
+  * {
+    --base:             #fff7fb;
+    --surface:          #fbf1f8;
+    --overlay:          #f5ebf2;
+    --hl_low:           #f0e5ed;
+    --hl_med:           #eae0e7;
+    --hl_high:          #fff7fb;
+    --outline:          #cfc3cd;
+    --muted:            #7e747d;
+    --subtle:           #4c444c;
+    --text:             #1f1a1f;
+    --primary:          #784f83;
+    --secondary:        #6a596c;
+    --tertiary:         #82524e;
+    --error:            #ba1a1a;
+  }
+}

@@ -1185,7 +1185,7 @@ function renderEffectsList() {
   if (state.opts.effects.length === 0) {
     const empty = document.createElement("div");
     empty.className = "effect-empty";
-    empty.style.cssText = "padding: var(--space-4); text-align: center; color: var(--muted); font-size: 13px;";
+    empty.style.cssText = "padding: var(--space-4); text-align: center; color: var(--text-muted); font-size: 13px;";
     empty.textContent = "No effects added. Enable effects from the presets or add them manually.";
     els.effectsList.appendChild(empty);
     return;

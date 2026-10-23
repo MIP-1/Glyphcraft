@@ -1,146 +1,327 @@
 # Glyphcraft Gate
 
-## P1-0 — Build the gate — STATUS: BLOCKED
+## P1-0 — Build the gate — STATUS: PASS
 
-**Blocker:** The repository at `HEAD 7f17aff` is **not** the broken light-theme build described in the task file. G2 is GREEN on the unmodified app. The reference images in `docs/ref/` show the old failure, but the app no longer reproduces it: `.effect-item` and `.preset-btn` compute to light surfaces with dark text in light theme at both widths. The gate is not broken; a live negative control proves it catches the exact screenshot failure when it exists.
+The gate now runs the real user flow in a real browser, with an optional host
+`userContent.css` fixture that reproduces the user’s Zen/Noctalia environment.
+On the pre-fix archive G2 failed with **98 violations**, including dark effect
+cards, black preset chips, and invisible effect names in light theme. After the
+fix G2 is **green with the host fixture still applied**. G6/G7/G8 remain
+deliberately RED for P1-1/P1-3.
 
-### Root cause of the blocker
+### Root cause (not a stale screenshot)
 
-- `style.css:105-152` defines a complete `:root[data-theme="light"]` token block; the light values are already used by the effect cards, preset chips, and effect-name text (`--surface`, `--surface-panel`, `--text-primary`).
-- `git log` shows the light-theme repair in earlier committed work (`b89b5e2 Round 2 — light theme...`, `a6936d0 Round 1 fixes: theme tokens...`). The `docs/ref/` screenshots predate that repair.
-- This means P1-0's required RED condition (`G2 MUST fail` with dark light-theme cards/chips/invisible names) cannot be produced honestly on this tree.
+The user’s Zen profile loads a global Noctalia `userContent.css`
+(`~/.cache/noctalia/zen-browser/zen-userContent.css`) that declares generic
+custom properties on **every element**:
 
-### RED output (before) — required check status
+```css
+@media (prefers-color-scheme: dark) {
+  * {
+    --surface: #1f1a1f;
+    --text:    #eae0e7;
+    --muted:   #988e97;
+    /* ... --base, --overlay, --primary, ... */
+  }
+}
+```
 
-The full run on `HEAD 7f17aff`, with `tests/gate/run_gate.py` and `tests/gate/allowlist.json`, produced:
+The app defined its own `--surface`, `--text`, and `--muted` on `:root` and
+inherited them. A direct declaration on a descendant (`*`) beats an inherited
+value, regardless of selector specificity. With the app in light theme and the
+OS in dark mode, the host’s dark `--surface` replaced the app’s light
+`--surface` on every element, while `--surface-panel` (not defined by the host)
+stayed light. That is exactly the screenshot pattern: light top bar and panel,
+dark canvas, dark effect cards, black preset chips, and dark names on dark
+cards. It did not reproduce in a clean browser profile, which is why the
+original gate was green.
+
+The fix is to stop using host-generic names for app tokens:
+
+- `--surface` → `--gc-surface`;
+- removed the unused generic `--text` and `--muted` aliases;
+- the inline empty-state colour now uses `--text-muted`;
+- two real-flow contrast issues exposed by the new checks were also fixed:
+  active preset border (`--border-focus`) and disabled zoom border
+  (`--text-muted`).
+
+`tests/gate/host_usercontent.css` is a permanent regression fixture containing
+the host token block. It is injected in G2 for the real-flow cell, so this
+collision cannot silently return.
+
+### RED output (before) — real gate run
+
+Command: `npm run gate` in a `git archive HEAD` copy of the pre-fix tree
+(`b5c02bd`) with the current `tests/gate/run_gate.py` and host fixture copied
+in. This is a genuine full gate run, not a hand-built screenshot assertion.
 
 ```text
-G1 PASS token lint: 0 violation(s)
-G2 PASS theme parity: 0 violation(s), 38372 element/state checks, 4 cells, 64 scans
-G3 PASS screenshots: 48 captured in docs/evidence/p1-0/
-G4 PASS frame timings: dark 1280: median=16.69999999999891ms p95=16.799999999999272ms frames=71, dark 360: median=16.69999999999891ms p95=16.799999999999272ms frames=71, light 1280: median=16.69999999999891ms p95=16.799999999999272ms frames=74, light 360: median=16.700000000000728ms p95=16.80000000000109ms frames=83
-G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (198.8s)
-G6 FAIL no Arabic: 15 violation(s)
+G1 FAIL token lint: 11 violation(s)
+G2 FAIL theme parity: 98 violation(s), 51796 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-0/
+G4 PASS frame timings: dark 1280: median=16.69999999999891ms p95=16.700000000000728ms frames=73, dark 360: median=16.69999999999891ms p95=16.700000000000728ms frames=80, light 1280: median=16.69999999999891ms p95=16.799999999999272ms frames=74, light 360: median=16.69999999999891ms p95=16.80000000000109ms frames=84
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (200.3s)
+G6 FAIL no Arabic: 28 violation(s)
 G7 FAIL no Theme item in View menu
 G8 FAIL top-bar geometry: 16 violation(s)
 
-GATE FAIL G6, G7, G8
+GATE FAIL G1, G2, G6, G7, G8
 ```
 
-Required G6 RED, as expected (abridged; full list is printed by `npm run gate`):
+G6 counted 28 in the archived copy because its old `docs/GATE.md` still quoted
+the same app strings; the current tree itself has 15 app/test/report hits. G6 is
+still RED as required.
+
+G2 red proof — the real host path, at both widths:
 
 ```text
-app.js:257: idle: "أفلت صورة أو فيديو هنا، أو الصقه (Ctrl+V)، أو افتح ملفًا.",
-app.js:258: hover: "أفلت الملف لتحميله.",
-app.js:259: loading: "جارٍ تحميل {name}…",
-app.js:260: open: "فتح ملف",
-app.js:261: noImage: "لم يتم تحميل صورة",
-app.js:262: errType: "نوع الملف غير مدعوم. جرّب صورة PNG أو JPG أو WebP، أو فيديو WebM أو MP4.",
-app.js:263: errSize: "الملف كبير جدًا ({size}). جرّب ملفًا أصغر (أقل من {max}).",
-app.js:264: errDecode: "تعذّر فك ترميز هذا الملف. جرّب حفظه بصيغة PNG أو MP4 ثم افتحه مجددًا.",
-app.js:265: errVideo: "تعذّر تشغيل هذا الفيديو. جرّب MP4 (H.264) أو WebM (VP9).",
-app.js:266: resetConfirm: "اضغط على «إعادة تعيين الكل» مرة أخرى للتأكيد",
-app.js:267: resetDone: "تمت إعادة تعيين كل الإعدادات"
-tests/test_suite.py:1035: arabic_ok["dir"] == "rtl" and "أفلت" in arabic_ok["hint"] and arabic_ok["open"] == "فتح ملف",
-tests/test_suite.py:1037: record("Arabic honest error message", "كبير" in arabic_err and "40 MB" in arabic_err, arabic_err)
-tests/reports/TEST_REPORT.md:174: | Arabic home screen | PASS | {"dir": "rtl", "hint": "أفلت صورة أو فيديو هنا، أو الصقه (Ctrl+V)، أو افتح ملفًا.", "op...
-tests/reports/TEST_REPORT.md:175: | Arabic honest error message | PASS | الملف كبير جدًا (⁦50 MB⁩). جرّب ملفًا أصغر (أقل من ⁦40 MB⁩). |
+[light 1280 host-dark-icon] button.preset-btn:nth-of-type(1) kind=text bg=rgb(31, 26, 31) fg=rgb(33, 27, 20) ratio=1 min=4.5 Terminal Green
+[light 1280 host-dark-icon] span.effect-name kind=text bg=rgb(31, 26, 31) fg=rgb(33, 27, 20) ratio=1 min=4.5 Halftone
+[light 1280 host-dark-icon] div.effect-item:nth-of-type(1)[data-id="halftone"] kind=luminance bg=rgb(31, 26, 31) ratio=1 min=2 light theme surface luminance 0.011 < 0.35
+[light 1280 host-dark-icon] button.drag-handle kind=icon bg=rgb(31, 26, 31) fg=rgb(87, 80, 63) ratio=2.14 min=3 handle dots
+[light 1280 host-dark-icon] button.preset-btn:nth-of-type(1) kind=luminance bg=rgb(31, 26, 31) ratio=1 min=2 light theme surface luminance 0.011 < 0.35
+[light 360 host-dark-icon] button.preset-btn:nth-of-type(1) kind=text bg=rgb(31, 26, 31) fg=rgb(33, 27, 20) ratio=1 min=4.5 Terminal Green
+[light 360 host-dark-icon] span.effect-name kind=text bg=rgb(31, 26, 31) fg=rgb(33, 27, 20) ratio=1 min=4.5 Halftone
+[light 360 host-dark-icon] div.effect-item:nth-of-type(1)[data-id="halftone"] kind=luminance bg=rgb(31, 26, 31) ratio=1 min=2 light theme surface luminance 0.011 < 0.35
 ```
 
-Required G7 RED:
+The same run also caught two independent real-flow contrast failures that the
+old static/fullest-state checks never reached:
 
 ```text
-[dark 1280]  [{"action": "theme", "text": "ThemeT"}]
-[dark 360]   [{"action": "theme", "text": "ThemeT"}]
-[light 1280] [{"action": "theme", "text": "ThemeT"}]
-[light 360]  [{"action": "theme", "text": "ThemeT"}]
+[dark 1280 real-clean-initial] button.preset-btn.active:nth-of-type(6) kind=ui bg=rgb(21, 20, 22) fg=rgb(142, 43, 43) ratio=2.21 min=3 top border
+[light 1280 real-clean-reload-light] #zoom-level kind=ui bg=rgb(242, 236, 225) fg=rgb(216, 205, 185) ratio=1.34 min=3 top border
 ```
 
-Required G8 RED (16 violations; abridged):
+G1 red proof (the same collision, caught as a static guard):
 
 ```text
-[dark 1280] icon-center: panel-toggle-btn icon center (1241.0,11.0) vs item center (1246.0,24.0)
-[dark 1280] height: heights status-bar=16.5, zoom-controls=48.0, theme-toggle=44.0, panel-toggle-btn=44.0
-[dark 1280] top: tops status-bar=15.8, zoom-controls=0.0, theme-toggle=2.0, panel-toggle-btn=2.0
-[dark 1280] radius: zoom-controls=6.0, theme-toggle=4.0
-...
-[light 360] icon-center: panel-toggle-btn icon center (325.0,55.0) vs item center (330.0,68.0)
-[light 360] height: heights status-bar=16.5, zoom-controls=48.0, theme-toggle=44.0, panel-toggle-btn=44.0
-[light 360] top: tops status-bar=96.0, zoom-controls=44.0, theme-toggle=46.0, panel-toggle-btn=46.0
-[light 360] radius: zoom-controls=6.0, theme-toggle=4.0
+style.css:18: host-generic token '--surface' used; namespace the app token
+style.css:93: host-generic token '--surface' used; namespace the app token
+style.css:109: host-generic token '--surface' used; namespace the app token
+style.css:97: host-generic token '--text' used; namespace the app token
+style.css:98: host-generic token '--muted' used; namespace the app token
+app.js:1188: host-generic token '--muted' used; namespace the app token
 ```
 
-### Gate negative control (proves G2 is not broken)
+### Required G6 / G7 / G8 RED (current tree)
 
-The failing state from the screenshots was injected into the live light-theme page only, without changing any repository file:
-
-```css
-.effect-item { background:#000000 !important; border-color:#1a1a1a !important }
-.effect-name { color:#141414 !important }
-.preset-btn { background:#000000 !important; color:#141414 !important; border-color:#1a1a1a !important }
-.drag-handle { color:#222222 !important }
-```
-
-G2 result: **before 0 violations; after 40 violations.** The exact requested failures were reported:
+G6 is red on the remaining localisation strings. The Arabic payload is omitted
+from this record so the record itself does not add more G6 hits; the full lines
+are printed by `npm run gate`.
 
 ```text
-[light 1280 after-negative-control] button.preset-btn:nth-of-type(1) kind=text bg=rgb(0, 0, 0) fg=rgb(20, 20, 20) ratio=1.14 min=4.5 "Terminal Green"
-[light 1280 after-negative-control] span.effect-name kind=text bg=rgb(0, 0, 0) fg=rgb(20, 20, 20) ratio=1.14 min=4.5 "Halftone"
-[light 1280 after-negative-control] button.drag-handle kind=icon bg=rgb(0, 0, 0) fg=rgb(34, 34, 34) ratio=1.32 min=3 "handle dots"
-[light 1280 after-negative-control] div.effect-item[data-id="halftone"] kind=luminance bg=rgb(0, 0, 0) detail="light theme surface luminance 0.000 < 0.35"
+G6 FAIL no Arabic: 15 violation(s)
+  app.js:257 [localised home hint]
+  app.js:258 [localised hover hint]
+  app.js:259 [localised loading hint]
+  app.js:260 [localised open-file label]
+  app.js:261 [localised no-image status]
+  app.js:262 [localised type error]
+  app.js:263 [localised size error]
+  app.js:264 [localised decode error]
+  app.js:265 [localised video error]
+  app.js:266 [localised reset confirmation]
+  app.js:267 [localised reset completion]
+  tests/test_suite.py:1035 [Arabic home assertion]
+  tests/test_suite.py:1037 [Arabic error assertion]
+  tests/reports/TEST_REPORT.md:174 [generated Arabic report row]
+  tests/reports/TEST_REPORT.md:175 [generated Arabic report row]
 ```
 
-This confirms the light-theme failure would be caught in a real browser. It is absent from HEAD.
+G7 is red in all four cells:
+
+```text
+G7 FAIL no Theme item in View menu
+  [dark 1280] [{"action": "theme", "text": "ThemeT"}]
+  [dark 360] [{"action": "theme", "text": "ThemeT"}]
+  [light 1280] [{"action": "theme", "text": "ThemeT"}]
+  [light 360] [{"action": "theme", "text": "ThemeT"}]
+```
+
+G8 is red on 16 geometry checks. Abridged:
+
+```text
+G8 FAIL top-bar geometry: 16 violation(s)
+  [dark 1280] icon-center: panel-toggle-btn icon center (1241.0,11.0) vs item center (1246.0,24.0)
+  [dark 1280] height: heights status-bar=16.5, zoom-controls=48.0, theme-toggle=44.0, panel-toggle-btn=44.0
+  [dark 1280] top: tops status-bar=15.8, zoom-controls=0.0, theme-toggle=2.0, panel-toggle-btn=2.0
+  [dark 1280] radius: zoom-controls=6.0, theme-toggle=4.0
+  [dark 360] icon-center: panel-toggle-btn icon center (325.0,55.0) vs item center (330.0,68.0)
+  [dark 360] height: heights status-bar=16.5, zoom-controls=48.0, theme-toggle=44.0, panel-toggle-btn=44.0
+  [dark 360] top: tops status-bar=96.0, zoom-controls=44.0, theme-toggle=46.0, panel-toggle-btn=46.0
+  [dark 360] radius: zoom-controls=6.0, theme-toggle=4.0
+  [light 1280] icon-center: panel-toggle-btn icon center (1241.0,11.0) vs item center (1246.0,24.0)
+  [light 1280] height: heights status-bar=16.5, zoom-controls=48.0, theme-toggle=44.0, panel-toggle-btn=44.0
+  [light 1280] top: tops status-bar=15.8, zoom-controls=0.0, theme-toggle=2.0, panel-toggle-btn=2.0
+  [light 1280] radius: zoom-controls=6.0, theme-toggle=4.0
+  [light 360] icon-center: panel-toggle-btn icon center (325.0,55.0) vs item center (330.0,68.0)
+  [light 360] height: heights status-bar=16.5, zoom-controls=48.0, theme-toggle=44.0, panel-toggle-btn=44.0
+  [light 360] top: tops status-bar=96.0, zoom-controls=44.0, theme-toggle=46.0, panel-toggle-btn=46.0
+  [light 360] radius: zoom-controls=6.0, theme-toggle=4.0
+```
 
 ### GREEN output (after)
 
-Not applicable while BLOCKED. G1-G5 are already green; G6/G7/G8 are deliberately red and are the P1-1/P1-3 targets.
+Focused post-fix browser run (same gate scanner):
 
-### Gate runs (3x)
+```text
+g2 pass True violations 0 states 88 cells 10 checked 51796
+g3 62
+g4 {'pass': True, 'runs': [{'frames': 74, 'median': 16.69999999999891, 'p95': 16.700000000000728, 'theme': 'dark', 'width': 1280}, {'frames': 94, 'median': 16.69999999999891, 'p95': 16.80000000000109, 'theme': 'dark', 'width': 360}, {'frames': 78, 'median': 16.69999999999891, 'p95': 16.799999999999272, 'theme': 'light', 'width': 1280}, {'frames': 92, 'median': 16.69999999999891, 'p95': 16.799999999999272, 'theme': 'light', 'width': 360}]}
+g7 pass False
+g8 16
+errors []
+```
 
-Not run as a PASS sequence because P1-0 is BLOCKED. The full gate was run twice after scanner fixes; the final run is pasted above. Repeating it would not turn G2 red on this tree.
+With the host fixture still applied, the light card is now
+`rgb(250, 247, 241)`, the name is `rgb(33, 27, 20)`, and the chip is
+`rgb(250, 247, 241)` on cream `rgb(242, 236, 225)`.
+
+### Firefox (real second browser)
+
+Playwright Firefox 157.0 was installed and used against the pre-fix archive and
+the fixed tree, with the host fixture applied to both:
+
+```text
+firefox 157.0
+prefix-dark        card rgb(31, 26, 31)  name rgb(233, 223, 200)  chip rgb(31, 26, 31)  panel rgb(21, 20, 22)
+prefix-light-icon  card rgb(31, 26, 31)  name rgb(33, 27, 20)    chip rgb(31, 26, 31)  panel rgb(242, 236, 225)
+prefix-light-T     card rgb(31, 26, 31)  name rgb(33, 27, 20)    chip rgb(31, 26, 31)  panel rgb(242, 236, 225)
+prefix-light-reload card rgb(31, 26, 31) name rgb(33, 27, 20)    chip rgb(31, 26, 31)  panel rgb(242, 236, 225)
+current-dark       card rgb(11, 11, 12)  name rgb(233, 223, 200)  chip rgb(11, 11, 12)  panel rgb(21, 20, 22)
+current-light-icon card rgb(250, 247, 241) name rgb(33, 27, 20)   chip rgb(250, 247, 241) panel rgb(242, 236, 225)
+current-light-T    card rgb(250, 247, 241) name rgb(33, 27, 20)   chip rgb(250, 247, 241) panel rgb(242, 236, 225)
+current-light-reload card rgb(250, 247, 241) name rgb(33, 27, 20) chip rgb(250, 247, 241) panel rgb(242, 236, 225)
+```
+
+Persisted evidence:
+`docs/evidence/p1-0/firefox-prefix-light-icon.png` and
+`docs/evidence/p1-0/firefox-current-light-icon.png`.
+
+### Full gate runs (3× consecutive, after fix)
+
+Run 1:
+
+```text
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 51796 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-0/
+G4 PASS frame timings: dark 1280: median=16.700000000000728ms p95=16.80000000000291ms frames=90, dark 360: median=16.69999999999891ms p95=16.700000000000728ms frames=71, light 1280: median=16.69999999999891ms p95=16.80000000000109ms frames=79, light 360: median=16.700000000000728ms p95=1116.5999999999985ms frames=94
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (199.0s)
+G6 FAIL no Arabic: 15 violation(s)
+G7 FAIL no Theme item in View menu
+G8 FAIL top-bar geometry: 16 violation(s)
+GATE FAIL G6, G7, G8
+```
+
+Run 2:
+
+```text
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 51796 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-0/
+G4 PASS frame timings: dark 1280: median=16.69999999999891ms p95=16.799999999999272ms frames=71, dark 360: median=16.69999999999891ms p95=16.799999999999272ms frames=77, light 1280: median=16.700000000000728ms p95=1083.2999999999993ms frames=97, light 360: median=16.69999999999891ms p95=16.700000000000728ms frames=71
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (196.4s)
+G6 FAIL no Arabic: 15 violation(s)
+G7 FAIL no Theme item in View menu
+G8 FAIL top-bar geometry: 16 violation(s)
+GATE FAIL G6, G7, G8
+```
+
+Run 3:
+
+```text
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 51796 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-0/
+G4 PASS frame timings: dark 1280: median=16.700000000000728ms p95=1083.2999999999993ms frames=89, dark 360: median=16.69999999999709ms p95=16.799999999999272ms frames=76, light 1280: median=16.69999999999709ms p95=16.799999999999272ms frames=96, light 360: median=16.69999999999891ms p95=16.700000000000728ms frames=73
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (200.7s)
+G6 FAIL no Arabic: 15 violation(s)
+G7 FAIL no Theme item in View menu
+G8 FAIL top-bar geometry: 16 violation(s)
+GATE FAIL G6, G7, G8
+```
+
+Gate runs (3x): **G1-G5 green / green / green**. Each run has `G2 PASS` with
+the host fixture active. G6/G7/G8 are the expected P1-1/P1-3 RED outputs.
 
 ### Screenshots (path — what I see)
 
-All 48 are in `docs/evidence/p1-0/`. I opened the fullest and menu/picker states:
+All 62 Chromium shots plus the two Firefox shots are in
+`docs/evidence/p1-0/`. I opened the key new states:
 
-- `docs/evidence/p1-0/dark-1280-fullest-top.png` — dark page; status text at right; zoom group taller than theme/panel buttons; panel icon sits high inside its 44px box; red Export button.
-- `docs/evidence/p1-0/light-1280-fullest-top.png` — light page; all top-bar text readable; same geometry issue; no dark surfaces.
-- `docs/evidence/p1-0/dark-1280-fullest-effects.png` — dark effect cards, light preset chips and readable names; red checkboxes; no clipped controls.
-- `docs/evidence/p1-0/light-1280-fullest-effects.png` — **light effect cards, dark readable names, cream preset chips, red checkboxes**; the screenshot bug is not present.
-- `docs/evidence/p1-0/dark-360-fullest-effects.png` — panel open at 360; chips wrap; cards are dark with readable names; panel icon high.
-- `docs/evidence/p1-0/light-360-fullest-effects.png` — panel open at 360; chips and cards are light/cream; names readable; panel icon high.
-- `docs/evidence/p1-0/dark-1280-file-menu.png` / `light-1280-file-menu.png` — inverse menus: light menu on dark page, dark menu on light page; text readable; no clipping.
-- `docs/evidence/p1-0/dark-1280-view-menu.png` / `light-1280-view-menu.png` — readable inverse menu; **Theme item visible**, confirming G7 red.
-- `docs/evidence/p1-0/dark-1280-zoom-menu.png` / `light-1280-zoom-menu.png` — inverse zoom menu; readable; current zoom row highlighted.
-- `docs/evidence/p1-0/dark-1280-size-picker.png` / `light-1280-size-picker.png` — inverse picker; searchable list; readable labels/swatches; no overflow at 1280.
+- `docs/evidence/p1-0/light-1280-host-dark-icon.png` — real flow, host fixture
+  active, light theme: cream panel/top bar, **light effect cards and preset
+  chips**, dark readable names, red checkboxes.
+- `docs/evidence/p1-0/light-360-host-dark-icon.png` — same at 360 with the panel
+  open; cards/chips wrap and stay light; names readable.
+- `docs/evidence/p1-0/light-1280-host-dark-reload-light.png` — reload while
+  light with the host fixture re-applied; drop zone, top bar and panel are
+  light; the (below-fold) effect-card scan is still green.
+- `docs/evidence/p1-0/light-360-host-dark-reload-light.png` — same at 360 with
+  the panel open; visible cards/chips are light and names readable.
+- `docs/evidence/p1-0/light-1280-host-os-light-os-light.png` — first visit with
+  OS light and no saved theme; light surfaces, readable text.
+- `docs/evidence/p1-0/light-1280-real-clean-icon.png` — clean-browser real flow
+  after the icon toggle; light cards/chips, readable names.
+- `docs/evidence/p1-0/light-360-real-clean-icon.png` — same at 360.
+- `docs/evidence/p1-0/light-1280-real-clean-reload-light.png` — clean reload
+  while light; no dark surfaces; disabled zoom border now visible.
+- `docs/evidence/p1-0/firefox-prefix-light-icon.png` — Firefox pre-fix: cream
+  panel, **dark cards/chips**, invisible names.
+- `docs/evidence/p1-0/firefox-current-light-icon.png` — Firefox post-fix: light
+  cards/chips, readable names.
 
-The remaining 36 state images are in the same directory; the G2 scanner audited them in 64 real-browser scans.
+The remaining screenshots are the existing dark/light × 360/1280 menu, picker,
+focus, hover, and fullest-effect states; G2 audited all 88 scan states in 10
+cells (51,796 element/state checks).
 
 ### Break-it list (5) and results
 
-1. **Inject dark cards/chips/names in light theme** — G2 RED with 40 exact violations (negative control above). PASS for gate sensitivity.
-2. **Arabic text present in app and tests** — G6 RED with 15 file:line locations. PASS for gate sensitivity.
-3. **Theme item present in View** — G7 RED in all four cells. PASS for gate sensitivity.
-4. **Top-bar icon not vertically centered** — G8 RED: panel-toggle icon center y=11 vs item center y=24 at 1280. PASS for gate sensitivity.
-5. **Theme toggle stress** — five real toggles per cell, full DOM scan after each; 64 scans total, no leaked inline styles reported by G2. PASS for no-flake sensitivity.
+1. **Host `userContent.css` defines generic tokens on `*`** — real flow with
+   the fixture: pre-fix G2 98 violations, post-fix 0. PASS.
+2. **Icon, `T`, and reload while light** — real clicks/keys, no pre-seeded
+   localStorage: every post-fix state green at 1280 and 360. PASS.
+3. **Active preset border** — pre-fix `ratio=2.21 < 3`; changed to
+   `--border-focus`, post-fix green. PASS.
+4. **Disabled zoom border after reload** — pre-fix `ratio=1.34 < 3`; changed to
+   `--text-muted`, post-fix green. PASS.
+5. **Generic host token names in app source** — new G1 guard: 11 pre-fix
+   violations, 0 post-fix. PASS.
 
-### Files changed (`git diff --stat`) and why
+### Files changed and why
 
-- `package.json` — adds `npm run gate` with no new dependencies.
-- `tests/gate/run_gate.py` — G1-G8 implementation; real Chromium for G2/G3/G4/G7/G8, static lint for G1/G6, existing suite for G5.
-- `tests/gate/allowlist.json` — explicit G2 luminance allowlist: preview canvas, inverse menus/pickers, primary red buttons, toast; contrast exceptions only for primary red hairlines.
+- `style.css` — namespaced `--surface` to `--gc-surface`; removed generic
+  `--text`/`--muted` aliases; active preset border uses `--border-focus`;
+  disabled zoom border uses `--text-muted`.
+- `app.js` — empty-state colour uses `--text-muted` instead of host-generic
+  `--muted`.
+- `tests/gate/run_gate.py` — adds the host-userContent injection and real-flow
+  scenarios (clean dark, host dark, host OS-light), plus the G1 generic-token
+  guard. The scanner is stricter, not weaker.
+- `tests/gate/host_usercontent.css` — new regression fixture containing the
+  Noctalia/Zen generic token block.
+- `docs/evidence/p1-0/` — 62 Chromium screenshots and 2 Firefox comparison
+  screenshots.
 - `docs/GATE.md` — this evidence record.
-- `docs/evidence/p1-0/` — 48 screenshots (dark/light × 360/1280 × 12 states).
-- No app files and no existing test files were edited by this task.
+- **No existing tests were edited in P1-0.** The authorized
+  `tests/test_suite.py:717-729` Theme assertion edit is reserved for P1-1 and
+  was not applied.
 
 ### Commit / tag
 
-Not tagged. A BLOCKED task must not be tagged `P1-0-pass`.
+Commit: `P1-0: gate and host-token light-theme fix`
 
-### Remaining flaws
+Tag: `P1-0-pass`
 
-- **G2 is green, contrary to P1-0.** The current tree already has the light-theme repair; the reference images are stale.
-- **P1-1 has a second conflict:** `tests/test_suite.py:717-729` asserts that `View → Theme` exists, while P1-1 requires it removed and G7 green. P1-1 says only Arabic tests may be edited, so the 169-test green requirement cannot be met without also changing that test (or replacing it with a no-Theme assertion).
-- Native `<select>` popup and native title tooltips cannot be captured by headless Chromium; their focus/hover states are captured, the OS-rendered popup/tooltip itself is a HUMAN-CHECK.
-- Custom checkbox artwork and pseudo-element backgrounds are screenshot-covered; the DOM scanner checks reachable pseudo colors but cannot sample data-URI checkbox pixels.
+### Remaining RED (deliberate, next parts)
+
+- **G6** — Arabic/localised strings still present in `app.js`, the existing
+  Arabic tests, and the generated report. P1-1.
+- **G7** — `View → Theme` item still present in all four cells. P1-1.
+- **G8** — top-bar geometry: status/zoom/theme/panel icon alignment and radii
+  still differ at 1280/360. P1-3.
+- Native `<select>` popups and native tooltips remain a HUMAN-CHECK; headless
+  Chromium cannot screenshot OS-rendered widgets. Custom checkbox artwork and
+  pseudo-element colours are screenshot-covered but not pixel-sampled.

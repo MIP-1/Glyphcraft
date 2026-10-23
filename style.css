@@ -15,7 +15,7 @@
   color-scheme: dark;
 
   /* Surfaces */
-  --surface: #0b0b0c;
+  --gc-surface: #0b0b0c;
   --surface-panel: #151416;
   --surface-raised: #1d1b1e;
   --surface-input: #0b0b0c;
@@ -90,12 +90,10 @@
   --panel-width: 300px;
 
   /* Legacy aliases kept for inline styles in app.js / index.html */
-  --bg: var(--surface);
+  --bg: var(--gc-surface);
   --panel: var(--surface-panel);
   --panel2: var(--surface-raised);
   --line: var(--border-subtle);
-  --text: var(--text-primary);
-  --muted: var(--text-muted);
   --accent-hi: var(--accent-hover);
   --focus: var(--border-focus);
   --drop-bg: var(--surface-drop);
@@ -106,7 +104,7 @@
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --surface: #faf7f1;
+  --gc-surface: #faf7f1;
   --surface-panel: #f2ece1;
   --surface-raised: #e7dfd1;
   --surface-input: #ffffff;
@@ -157,7 +155,7 @@ html, body { height: 100%; }
 
 body {
   font-family: var(--font-ui);
-  background: var(--surface);
+  background: var(--gc-surface);
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.5;
@@ -327,7 +325,7 @@ h1, h2, h3, h4, h5, h6, .section-title, .logo, .btn {
   white-space: nowrap;
 }
 .zoom-level:hover { background: var(--surface-hover); }
-.zoom-level:disabled { color: var(--text-muted); background: var(--surface-raised); border-color: var(--border-subtle); cursor: not-allowed; }
+.zoom-level:disabled { color: var(--text-muted); background: var(--surface-raised); border-color: var(--text-muted); cursor: not-allowed; }
 .zoom-menu {
   position: absolute;
   top: calc(100% + 6px);
@@ -368,7 +366,7 @@ h1, h2, h3, h4, h5, h6, .section-title, .logo, .btn {
 .canvas-area {
   position: relative;
   min-height: 0;
-  background: var(--surface);
+  background: var(--gc-surface);
   overflow: hidden;
   touch-action: none;
   outline: none;
@@ -725,7 +723,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--border-focus); o
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2);
-  background: var(--surface);
+  background: var(--gc-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -830,7 +828,7 @@ body.reorder-active * { cursor: grabbing !important; }
 .presets-bar { display: flex; gap: var(--space-1); margin-bottom: var(--space-2); flex-wrap: wrap; }
 .presets-actions { display: flex; gap: var(--space-1); margin-bottom: var(--space-3); flex-wrap: wrap; }
 .preset-btn {
-  background: var(--surface);
+  background: var(--gc-surface);
   border: 1px solid var(--border-default);
   color: var(--text-primary);
   font-family: var(--font-ui);
@@ -841,7 +839,7 @@ body.reorder-active * { cursor: grabbing !important; }
   cursor: pointer;
 }
 .preset-btn:hover { border-color: var(--border-focus); background: var(--surface-hover); }
-.preset-btn.active { border-color: var(--accent); background: var(--surface-raised); }
+.preset-btn.active { border-color: var(--border-focus); background: var(--surface-raised); }
 .preset-btn.save { color: var(--accent-text); }
 
 /* Buttons */
@@ -1094,7 +1092,7 @@ body.reorder-active * { cursor: grabbing !important; }
   gap: var(--space-2);
   margin-top: var(--space-2);
   padding: var(--space-2);
-  background: var(--surface);
+  background: var(--gc-surface);
   border: 1px solid var(--accent);
   border-radius: var(--radius-md);
 }

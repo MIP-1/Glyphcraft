@@ -38,6 +38,7 @@ ROOT = Path(__file__).resolve().parents[2]
 GATE_TASK = os.environ.get("GATE_TASK", "p1-0")
 EVIDENCE = ROOT / "docs" / "evidence" / GATE_TASK
 ALLOWLIST_PATH = Path(__file__).with_name("allowlist.json")
+HOST_USERCONTENT = Path(__file__).with_name("host_usercontent.css")
 FIXTURE = Path("/tmp/glyphcraft_gate_fixture.png")
 TEST_IMAGE = Path("/tmp/glyphcraft_test.png")
 REPORTS = ROOT / "tests" / "reports"
@@ -178,6 +179,23 @@ def g1_token_lint() -> tuple[bool, list[str]]:
                     continue
                 violations.append(
                     f"{js_path.name}:{lineno}: hardcoded color {match.group(0)!r} in JS DOM style"
+                )
+
+    # Generic custom-property names are globally owned by host browser
+    # stylesheets (for example Noctalia/Zen userContent.css). A direct `*`
+    # declaration on every element beats an inherited app token, so these
+    # names must never be used by the app. Namespaced names are safe.
+    generic_names = ("--surface", "--text", "--muted")
+    app_texts = [("style.css", css_path.read_text(encoding="utf-8"))]
+    app_texts += [(p.name, p.read_text(encoding="utf-8", errors="replace")) for p in sorted(ROOT.glob("*.js"))]
+    app_texts.append(("index.html", html_path.read_text(encoding="utf-8")))
+    for name, text in app_texts:
+        for generic in generic_names:
+            pattern = re.compile(rf"(?<![\w-]){re.escape(generic)}(?![\w-])")
+            for match in pattern.finditer(text):
+                lineno = text.count("\n", 0, match.start()) + 1
+                violations.append(
+                    f"{name}:{lineno}: host-generic token {generic!r} used; namespace the app token"
                 )
 
     return not violations, violations
@@ -769,6 +787,117 @@ def run_frame_harness(page, theme: str, width: int) -> dict:
     return result
 
 
+def apply_host_usercontent(page) -> None:
+    """Apply the same generic token block a global browser userContent.css adds.
+
+    The fixture is loaded as an author stylesheet in the gate, which reproduces
+    the cascade that matters here: a direct `*` declaration on every element
+    beats the app's inherited `:root[data-theme]` values. In the user's Zen
+    profile the same rules are user-origin; the computed values are identical.
+    """
+    page.add_style_tag(path=str(HOST_USERCONTENT))
+    page.wait_for_timeout(250)
+
+
+def ensure_panel_open(page, width: int) -> None:
+    if width > 768:
+        return
+    if not page.evaluate("() => !!document.querySelector('#panel.open')"):
+        page.click("#panel-toggle-btn")
+        page.wait_for_timeout(300)
+
+
+def add_effects_with_real_click(page, width: int) -> None:
+    ensure_panel_open(page, width)
+    page.locator("#section-effects").scroll_into_view_if_needed()
+    page.wait_for_timeout(200)
+    page.locator('.preset-btn[data-preset="oldphoto"]').click()
+    page.wait_for_timeout(750)
+
+
+def run_real_theme_flow(
+    browser,
+    result: dict,
+    seen_g2: set[tuple],
+    width: int,
+    os_theme: str,
+    host_css: bool,
+    label: str,
+) -> None:
+    """Exercise the user's real flow, optionally with a host userContent.css.
+
+    Start with no app localStorage, open a file through the real input, add
+    effects with a real preset click, toggle via the top-bar icon and `T`,
+    then reload while light. The OS-light variant starts on a first visit with
+    no saved theme.
+    """
+    height = 900 if width >= 1000 else 740
+    context = browser.new_context(
+        viewport={"width": width, "height": height},
+        color_scheme=os_theme,
+        locale="en-US",
+        reduced_motion="reduce",
+    )
+    page = context.new_page()
+    errors: list[str] = []
+    page.on("pageerror", lambda exc: errors.append(str(exc)))
+    result["g2"]["cells"] += 1
+    try:
+        page.goto(BASE_URL + "/index.html", wait_until="load", timeout=30000)
+        page.wait_for_timeout(450)
+        if host_css:
+            apply_host_usercontent(page)
+        ensure_panel_open(page, width)
+
+        page.set_input_files("#file-input", str(FIXTURE))
+        page.wait_for_selector(".canvas-area.has-content", timeout=20000)
+        page.wait_for_timeout(500)
+        add_effects_with_real_click(page, width)
+
+        data = scan(page, os_theme, width, f"{label}-initial")
+        _merge_scan(result["g2"], data, seen_g2)
+
+        if os_theme == "dark":
+            page.click("#theme-toggle")
+            page.wait_for_timeout(600)
+            shot = screenshot(page, "light", width, f"{label}-icon")
+            result["g3"]["screenshots"].append(str(shot.relative_to(ROOT)))
+            data = scan(page, "light", width, f"{label}-icon")
+            _merge_scan(result["g2"], data, seen_g2)
+
+            page.keyboard.press("t")
+            page.wait_for_timeout(600)
+            data = scan(page, "dark", width, f"{label}-T-dark")
+            _merge_scan(result["g2"], data, seen_g2)
+
+            page.keyboard.press("t")
+            page.wait_for_timeout(600)
+            shot = screenshot(page, "light", width, f"{label}-T-light")
+            result["g3"]["screenshots"].append(str(shot.relative_to(ROOT)))
+            data = scan(page, "light", width, f"{label}-T-light")
+            _merge_scan(result["g2"], data, seen_g2)
+
+            page.reload(wait_until="load")
+            page.wait_for_timeout(650)
+            if host_css:
+                apply_host_usercontent(page)
+            ensure_panel_open(page, width)
+            shot = screenshot(page, "light", width, f"{label}-reload-light")
+            result["g3"]["screenshots"].append(str(shot.relative_to(ROOT)))
+            data = scan(page, "light", width, f"{label}-reload-light")
+            _merge_scan(result["g2"], data, seen_g2)
+        else:
+            shot = screenshot(page, "light", width, f"{label}-os-light")
+            result["g3"]["screenshots"].append(str(shot.relative_to(ROOT)))
+            data = scan(page, "light", width, f"{label}-os-light")
+            _merge_scan(result["g2"], data, seen_g2)
+
+        if errors:
+            result["errors"].extend(f"{label} {width}: {e}" for e in errors)
+    finally:
+        context.close()
+
+
 def run_browser_checks() -> dict:
     result = {
         "g2": {"pass": True, "violations": [], "checked": 0, "states": 0, "cells": 0},
@@ -917,6 +1046,14 @@ def run_browser_checks() -> dict:
                             _merge_scan(result["g2"], data, seen_g2)
                     finally:
                         context.close()
+
+            # Real user flows. These do not pre-seed localStorage and do not
+            # inject effects through JS: they open a file, click a preset, use
+            # the icon and `T`, and reload while light.
+            for width in (1280, 360):
+                run_real_theme_flow(browser, result, seen_g2, width, "dark", False, "real-clean")
+                run_real_theme_flow(browser, result, seen_g2, width, "dark", True, "host-dark")
+                run_real_theme_flow(browser, result, seen_g2, width, "light", True, "host-os-light")
         finally:
             browser.close()
 
