@@ -766,3 +766,64 @@ Tag: `P1-2-pass`
 - **G8** — top-bar geometry/alignment and radii; P1-3.
 - Native `<select>` popups and native tooltips are a HUMAN-CHECK; headless
   Chromium cannot capture OS-rendered widgets.
+
+## P1-3 — Top bar matches the purple reference — STATUS: CHECKPOINT
+
+Reference opened: `docs/ref/r3-1-topbar.png` (512×714). I count **5 red
+arrows** and **3 purple arrows**. The red arrows land on the three status
+tokens, the theme icon, and the panel-toggle icon. The purple arrows all land on
+the zoom group. I do **not** see a separate red arrow landing on a vertical
+separator/line; the only vertical lines in that area belong to the zoom group
+(purple reference), and the bar’s bottom hairline is full-width and unarrowed.
+
+### RED-arrow targets (what is wrong)
+
+1. **Status token `65%`** — plain muted mono text in the bar, no box, border,
+   radius, padding, fixed height, hover/active/focus surface, or shared
+   component with the zoom group. It is vertically centered as text
+   (`height 16.5px`, `top 15.8px` at 1280) while the reference controls are
+   boxed at `44px`/`top 0–2px`.
+2. **Status token `1280×720`** — same unboxed muted text; same baseline and
+   missing states. The second red arrow lands under this token.
+3. **Status token `236ms`** — same unboxed muted text; same missing states. The
+   third red arrow lands under this token. Together the three arrows read as
+   “the whole status readout is the wrong style”, not as three separate
+   features to build.
+4. **Theme toggle (moon icon)** — bare transparent icon button: no border,
+   radius, boxed background, or visible hover/pressed state. It is `44px` high
+   but starts at `top 2px` while the zoom group starts at `top 0px`; its radius
+   is `4px` versus the zoom group’s `6px`.
+5. **Panel-toggle icon (grid)** — bare transparent menu button: no border,
+   radius, or boxed background, and it is visibly wrong in the reference’s
+   current-state screenshots: the icon center is `(1241,11)` versus item center
+   `(1246,24)` at 1280 (and `(325,55)` versus `(330,68)` at 360), so it sits
+   high and is clipped. Its height/top/radius also differ (`44px`, `top 2px`,
+   `4px`).
+
+**On the lines/separators:** I agree with your list of three controls, but I do
+not see a sixth red-arrow target. The three red arrows on the left are all
+under the status text, not on a separator. The only nearby separator is the
+zoom group’s own border/internal divider, which is the purple reference. The
+full-width `.menubar` bottom hairline is present but no arrow points at it. If
+you intended the gaps between status/theme/panel to be separate red targets,
+say so; otherwise I read “lines/separators next to them” as the missing box
+edges around the three unboxed controls.
+
+### PURPLE-arrow targets (reference style)
+
+1. **Zoom-out segment / left side of the zoom group** — boxed by the shared
+   rounded group border, `44px` control height, consistent padding, visible
+   hover/active states.
+2. **Zoom-level `65%` box** — inner bordered/rounded box with centered mono
+   label; the strongest reference for a “value readout that is a control”.
+3. **Zoom-in segment / right side of the zoom group** — same boxed group,
+   internal 1px separators, aligned icon and hit area.
+
+The three purple arrows therefore describe one shared component: the outer
+zoom group plus its inner value box and two icon segments. The red targets
+should be rebuilt from that system, not copied CSS.
+
+### Checkpoint status
+
+No code changed. `G8` remains RED with 16 violations from P1-2. Waiting for
+written confirmation before touching code.
