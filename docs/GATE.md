@@ -325,3 +325,220 @@ Tag: `P1-0-pass`
 - Native `<select>` popups and native tooltips remain a HUMAN-CHECK; headless
   Chromium cannot screenshot OS-rendered widgets. Custom checkbox artwork and
   pseudo-element colours are screenshot-covered but not pixel-sampled.
+
+## P1-1 — Remove localisation and RTL — STATUS: PASS
+
+The app is English-only now. The runtime dictionary, `navigator.language` read,
+`documentElement.dir` assignment, RTL stylesheet rules, duplicate View → Theme
+row, and the generated-report rows that still held the old language are gone.
+G6 and G7 are green, and the existing suite is still exactly **169 checks, 0
+failures**.
+
+### Root cause
+
+The home screen was localised at runtime:
+
+- `app.js` held a two-language `STRINGS` map, selected with
+  `navigator.language.startsWith("ar")`, and `applyLanguage()` wrote both
+  `documentElement.lang` and `documentElement.dir`;
+- `t()` substituted strings, including bidi-isolating filename/size values;
+- `style.css` carried two `[dir="rtl"]` overrides for selects and the panel;
+- `index.html` carried `dir="ltr"` and a duplicate View → Theme row;
+- the generated test report still contained the old locale rows.
+
+The product decision is English-only, so this was not a translation-quality
+fix: the whole locale seam and the RTL branch were removed. The top-bar theme
+button and `T` remain the only theme toggles.
+
+### RED before P1-1 (P1-0 final tree)
+
+P1-0’s three final runs are the starting evidence; they were taken before these
+edits and are recorded above.
+
+```text
+G6 FAIL no Arabic: 15 violation(s)
+  app.js:257-267 [11 localised home strings]
+  tests/test_suite.py:1035,1037 [2 locale assertions]
+  tests/reports/TEST_REPORT.md:174-175 [2 generated report rows]
+G7 FAIL no Theme item in View menu
+  [dark 1280] [{"action": "theme", "text": "ThemeT"}]
+  [dark 360] [{"action": "theme", "text": "ThemeT"}]
+  [light 1280] [{"action": "theme", "text": "ThemeT"}]
+  [light 360] [{"action": "theme", "text": "ThemeT"}]
+G8 FAIL top-bar geometry: 16 violation(s)
+```
+
+G1-G5 were already green in those runs. G8 remains deliberately RED for P1-3.
+
+### Fix
+
+- `app.js` — removed `STRINGS`, `LANG`, `t()`, `applyLanguage()` and its init
+  call; home/status/error strings are plain English literals; `showDropError()`
+  now takes the final message instead of a dictionary key; removed the dead
+  `theme` menu-action branch. `T` and `#theme-toggle` still call `toggleTheme()`.
+- `index.html` — removed `dir="ltr"` and the View → Theme menu item.
+- `style.css` — removed both `[dir="rtl"]` overrides; the normal panel rule
+  remains.
+- `README.md` / `docs/PROGRESS.md` — removed the locale/RTL claims and recorded
+  the interface as English-only.
+- No Arabic font file existed; the Latin Google Fonts and Goodmountain assets
+  are unchanged.
+- The gate, selectors, thresholds, allowlists and scanner logic were not
+  weakened. G2 checks 51,784 element/state values after the menu row removal.
+
+### Authorized Theme test edit (`tests/test_suite.py:717-729`)
+
+Reason: the old test asserted the View → Theme row existed and clicked it. That
+is now the opposite of the requirement. The replacement asserts **absence** and
+then proves the two supported toggles still work in order: `T` dark→light, `T`
+light→dark, then the top-bar icon dark→light.
+
+```diff
+-    # Round 2 Phase 4: View > Theme is present and switches the theme.
++    # P1-1: View has no Theme item; T and the top-bar icon own the toggle.
+     page.keyboard.press("Escape")
+     set_theme(True)
+     open_menu("view")
+     theme_item = page.locator('#dropdown-view [data-action="theme"]')
+-    theme_before = page.evaluate("() => document.documentElement.dataset.theme")
+-    theme_label = theme_item.inner_text() if theme_item.count() else ""
+-    theme_item.click()
++    theme_count = theme_item.count()
++    page.keyboard.press("Escape")
++    page.wait_for_timeout(150)
++    page.locator("#canvas-area").click(position={"x": 200, "y": 150})
++    page.keyboard.press("t")
++    page.wait_for_timeout(300)
++    after_t = page.evaluate("() => document.documentElement.dataset.theme")
++    page.keyboard.press("t")
++    page.wait_for_timeout(300)
++    after_t2 = page.evaluate("() => document.documentElement.dataset.theme")
++    page.click("#theme-toggle")
+     page.wait_for_timeout(300)
+-    theme_after = page.evaluate("() => document.documentElement.dataset.theme")
+-    record("theme item present in View menu",
+-           theme_item.count() == 1 and "Theme" in theme_label and theme_before == "dark" and theme_after == "light",
+-           f"count={theme_item.count()}, label={theme_label!r}, {theme_before} -> {theme_after}")
++    after_icon = page.evaluate("() => document.documentElement.dataset.theme")
++    record("no theme item; T and top-bar icon toggle theme",
++           theme_count == 0 and after_t == "light" and after_t2 == "dark" and after_icon == "light",
++           f"count={theme_count}, T={after_t}, T2={after_t2}, icon={after_icon}")
+     set_theme(True)
+```
+
+The old two locale records in the fresh-context block were also repurposed as
+English-only assertions. They now check no `dir` attribute, computed `ltr`,
+English hint/open/status copy, and the English size error. **Two records were
+replaced, not deleted**, so the total stays 169:
+
+```text
+PASS English home screen {"dir": "", "direction": "ltr", "hint": "Drop an image or video here, paste it (Ctrl+V), or open a file.", "open": "Open file", "status": "No image loaded"}
+PASS English honest error message This file is too large (50 MB). Try a smaller file (under 40 MB).
+REPORT WRITTEN 169 checks, 0 failures
+```
+
+A separate `ar-SA` browser check (not added to the suite) proves the interface
+does not react to browser locale: `navigatorLanguage="ar-SA"`, `lang="en"`,
+no `dir` attribute, computed `direction="ltr"`, English hint/open/status, and
+zero page errors. Its screenshot is
+`docs/evidence/p1-1/home-english-ar-SA-390.png`.
+
+### GREEN output — 3× consecutive
+
+Each run is `GATE_TASK=p1-1 npm run gate` on the edited tree.
+
+Run 1:
+
+```text
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 51784 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-1/
+G4 PASS frame timings: dark 1280: median=16.69999999999891ms p95=16.80000000000109ms frames=78, dark 360: median=16.69999999999709ms p95=16.799999999999272ms frames=100, light 1280: median=16.69999999999891ms p95=16.80000000000291ms frames=93, light 360: median=16.700000000000728ms p95=16.80000000000109ms frames=82
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (202.1s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 FAIL top-bar geometry: 16 violation(s)
+GATE FAIL G8
+```
+
+Run 2:
+
+```text
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 51784 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-1/
+G4 PASS frame timings: dark 1280: median=16.700000000000728ms p95=1133.199999999997ms frames=89, dark 360: median=16.700000000000728ms p95=1149.9000000000015ms frames=84, light 1280: median=16.69999999999891ms p95=33.39999999999782ms frames=87, light 360: median=16.69999999999891ms p95=16.80000000000291ms frames=92
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (198.2s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 FAIL top-bar geometry: 16 violation(s)
+GATE FAIL G8
+```
+
+Run 3:
+
+```text
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 51784 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p1-1/
+G4 PASS frame timings: dark 1280: median=16.69999999999891ms p95=33.30000000000291ms frames=97, dark 360: median=16.69999999999891ms p95=16.799999999999272ms frames=71, light 1280: median=16.69999999999891ms p95=16.799999999999272ms frames=71, light 360: median=16.69999999999891ms p95=16.700000000000728ms frames=79
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (200.6s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 FAIL top-bar geometry: 16 violation(s)
+GATE FAIL G8
+```
+
+Run 2’s two G4 p95 spikes (1.13 s/1.15 s) are host load during that run; the
+medians stayed 16.7 ms and the gate’s timing threshold passed. Runs 1 and 3 are
+clean. G8 is the only remaining gate failure, as scoped for P1-3.
+
+### Screenshots (opened and described)
+
+- `docs/evidence/p1-1/light-1280-view-menu.png` — light page, inverse dark
+  View menu; rows are Zoom in/out, Fit window, Full page, Fit small, 100%,
+  200%, Toggle controls panel. **No Theme row.**
+- `docs/evidence/p1-1/dark-360-view-menu.png` — same at 360, inverse light
+  menu, fully inside the viewport. **No Theme row; no horizontal overflow.**
+- `docs/evidence/p1-1/home-english-390.png` — 390 px first-visit/error state:
+  English LTR copy, English size error, `Open file`, no clipped text.
+- `docs/evidence/p1-1/home-english-ar-SA-390.png` — same English/LTR result
+  with browser locale `ar-SA`; no locale switch.
+
+### Break-it list (5) and results
+
+1. **Browser locale set to `ar-SA`** — `navigator.language` is `ar-SA`, but
+   `lang="en"`, no `dir`, computed `ltr`, English copy, zero page errors.
+   PASS.
+2. **View menu must not expose Theme** — G7 green in all four
+   dark/light × 1280/360 cells; opened both width screenshots. PASS.
+3. **Theme must still toggle without the menu row** — the authorized test
+   records `count=0, T=light, T2=dark, icon=light`. PASS.
+4. **Old locale seam must be completely dead** — repo search finds no
+   `STRINGS`, `LANG`, `applyLanguage`, `navigator.language`, `[dir="rtl"]`, or
+   `dir=` in app/test/style/docs. G6 0 violations. PASS.
+5. **Regenerated report must not reintroduce old rows** — G5 rewrites
+   `tests/reports/TEST_REPORT.md`; subsequent G6 runs are 0. PASS.
+
+### Files changed and why
+
+- `app.js` — English literals; locale/dictionary/RTL removed; dead theme action
+  removed.
+- `index.html` — no `dir`; no View → Theme row.
+- `style.css` — no `[dir="rtl"]` rules.
+- `tests/test_suite.py` — authorized Theme assertion; two locale records
+  replaced with English-only assertions; report screenshot label updated.
+- `README.md`, `docs/PROGRESS.md` — English-only documentation.
+- `docs/evidence/p1-1/` — 62 gate screenshots plus the two English home shots.
+- `docs/GATE.md` — this record.
+
+### Commit / tag
+
+Commit: `P1-1: remove localisation and Theme menu`
+
+Tag: `P1-1-pass`
+
+### Remaining RED (deliberate, next part)
+
+- **G8** — top-bar geometry: status/zoom/theme/panel alignment and radii at
+  1280/360. P1-3.

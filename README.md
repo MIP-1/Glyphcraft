@@ -39,8 +39,7 @@ the render order.
 Drop a file, paste it (`Ctrl+V`) or press **Open file**. Images (PNG, JPG,
 WebP, GIF, BMP, AVIF, SVG) and videos (WebM, MP4, …) up to **40 MB** are
 accepted. If a file cannot be read, the drop area says why and what to try.
-When the browser language starts with `ar`, the home screen switches to Arabic
-and the layout becomes right-to-left.
+The interface is English only.
 
 ## Keyboard
 

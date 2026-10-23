@@ -57,7 +57,7 @@
 - Effect stack: reorder (drag handle), per-effect enable toggle, remove, reset-to-default, empty state message
 - Tested widths 360, 768, 1280, 1920 — no horizontal scroll, no clipped text, no misaligned columns
 - Dark/light themes working; colors as tokens on :root
-- Logical CSS properties (margin-inline, padding-inline) for RTL support
+- Logical CSS properties (margin-inline, padding-inline) used for layout
 
 ## Phase 3 (Overhaul) - DONE (2026-10-22)
 - Every slider gets a number input next to it — two-way live sync
@@ -78,7 +78,6 @@
 - Goodmountain font (from /home/mustafa/Goodmountain-main) copied to ./assets/fonts/
 - @font-face in style.css with relative URL, font-display: swap, readable fallback stack
 - Used for brand, headings, buttons; clearer font for dense controls/numbers
-- Arabic glyph coverage checked; fallback handles Arabic
 - Google Fonts CDN kept as-is (UnifrakturCook, Crimson Text, JetBrains Mono)
 
 ## Phase 6 (Overhaul) - DONE (2026-10-22)
@@ -112,16 +111,16 @@
 - **Contrast**: 44×44 custom tokenised checkboxes, 44px controls, ≥3:1 control borders. New automated audit `tests/test_contrast.py` checks every visible text node, field, placeholder and control border in both themes at 360 and 1280 → **9,628 pairs, 0 violations**.
 - **Sticky action bar**: solid `--surface-panel`, full panel width including padding/gap, `z-index: 40`, divider, content scrolls underneath (verified by hit-testing the gap).
 - **Unified controls**: duplicate value labels removed (`<input type=number>` is the only value display); one style per theme; no UA-white fields in dark or UA-dark fields in light; section headers are real buttons with `aria-expanded`.
-- **Menus**: File (Open/Export/Reset), View (zoom, fit, full page, fit small, 100/200%, panel, theme), Edit (undo/redo/compare). Click/tap open, Esc + outside click close, ArrowUp/Down/Home/End navigation, `<kbd>` shortcuts, `aria-haspopup/expanded`. Preset save/load moved to the Effects section.
+- **Menus**: File (Open/Export/Reset), View (zoom, fit, full page, fit small, 100/200%, panel), Edit (undo/redo/compare). Click/tap open, Esc + outside click close, ArrowUp/Down/Home/End navigation, `<kbd>` shortcuts, `aria-haspopup/expanded`. Preset save/load moved to the Effects section.
 - **Zoom toolbar**: − / percent / + in the top bar, menu with Fit window, Full page, Fit small, 25–400%; live percent, clamp 10–800%, disabled limits, Ctrl+wheel and wheel zoom at the pointer, pinch, drag-pan when the image is larger than the view, `+ − 0` keys, pixelated above 100%, Full page + Esc restore.
 - **Theme toggle**: single top-bar button, inline sun/moon SVGs, pre-paint theme script, localStorage persistence, action-specific aria-label.
-- **Home screen**: real `Open file` button, drag/drop/paste, honest idle/hover/loading/error copy, 40 MB limit, format/decode/video errors, `aria-live` status, Arabic (`ar`) strings + RTL layout.
+- **Home screen**: real `Open file` button, drag/drop/paste, honest idle/hover/loading/error copy, 40 MB limit, format/decode/video errors, `aria-live` status, English-only interface.
 - **Cleanup**: test reports moved to `tests/reports/` (gitignored), no `.bak` files added, README added.
 
 ## Round 1 — Fixes + UI (2026-10-22) - DONE
 - **Theme audit (Task 1):** every colour in `style.css` resolves from the light/dark token sets; effect cards, fields, steppers, sliders, menus, dropdowns, borders and scrollbars re-theme. Automated contrast now also audits open menus, the zoom menu and the size-picker panel in both states → **9,628 pairs, 0 violations** at 360 and 1280.
 - **Effect values (Tasks 2/3):** all effect params use the shared `roundToStep()` / `clampToParam()` path. Slider, number field, wheel and arrows stay in sync; empty text is allowed while typing; clamping/snapping happens on blur or Enter; wheel and arrows move exactly one step; hold repeats through native key repeat; per-effect min/max/step preserved. Five effects exercised through type, arrow, hold, wheel and mouse-slider drag; all 28 numeric effect params checked for exact up/down and min/max clamp.
-- **Theme menu item (Task 4):** removed the View → Light theme row only. `T` and the top-bar theme button still work. (Superseded in Round 2 Phase 4: View → Theme is restored.)
+- **Theme menu item (Task 4):** removed the View → Light theme row only. `T` and the top-bar theme button still work. (Round 2 Phase 4 temporarily restored View → Theme; **P1-1 removes it permanently** and keeps only `T` plus the top-bar icon.)
 - **Inverse menus (Task 5):** File/View/Edit, the zoom menu and the size-picker panel use dedicated `--menu-*` tokens (dark page → light menu, light page → dark menu), including hover, focus, disabled, shortcut and accent states. Search field inside the inverse panel also uses the menu palette.
 - **Zoom borders (Task 6):** the whole −/%/+ group now has the same visible border as the % box, with separators between the three controls.
 - **Reorder (Task 7):** new reusable `reorder.js` (pointer events, 250 ms hold or 4 px drag, 6-dot handle, lifted ghost, drop line, FLIP neighbour animation, edge auto-scroll, `Alt+Up/Down`, Escape cancel, focus restoration). Render order follows stack order; plain clicks/scrolls do not reorder; order survives parameter edits. Mouse, synthetic touch-pointer and keyboard paths are tested.

@@ -237,58 +237,6 @@ function loadTheme() {
   setTheme(dark ? "dark" : "light");
 }
 
-/* ---------------- Localisation (home screen) ---------------- */
-
-const STRINGS = {
-  en: {
-    idle: "Drop an image or video here, paste it (Ctrl+V), or open a file.",
-    hover: "Release to load it.",
-    loading: "Loading {name}…",
-    open: "Open file",
-    noImage: "No image loaded",
-    errType: "That file type is not supported. Try a PNG, JPG or WebP image, or a WebM/MP4 video.",
-    errSize: "This file is too large ({size}). Try a smaller file (under {max}).",
-    errDecode: "Couldn’t decode this file. Try re-saving it as PNG or MP4, then open it again.",
-    errVideo: "Couldn’t play this video. Try MP4 (H.264) or WebM (VP9).",
-    resetConfirm: "Press Reset All again to confirm",
-    resetDone: "All settings reset"
-  },
-  ar: {
-    idle: "أفلت صورة أو فيديو هنا، أو الصقه (Ctrl+V)، أو افتح ملفًا.",
-    hover: "أفلت الملف لتحميله.",
-    loading: "جارٍ تحميل {name}…",
-    open: "فتح ملف",
-    noImage: "لم يتم تحميل صورة",
-    errType: "نوع الملف غير مدعوم. جرّب صورة PNG أو JPG أو WebP، أو فيديو WebM أو MP4.",
-    errSize: "الملف كبير جدًا ({size}). جرّب ملفًا أصغر (أقل من {max}).",
-    errDecode: "تعذّر فك ترميز هذا الملف. جرّب حفظه بصيغة PNG أو MP4 ثم افتحه مجددًا.",
-    errVideo: "تعذّر تشغيل هذا الفيديو. جرّب MP4 (H.264) أو WebM (VP9).",
-    resetConfirm: "اضغط على «إعادة تعيين الكل» مرة أخرى للتأكيد",
-    resetDone: "تمت إعادة تعيين كل الإعدادات"
-  }
-};
-
-const LANG = (navigator.language || "en").toLowerCase().startsWith("ar") ? "ar" : "en";
-
-function t(key, vars) {
-  let out = (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key] || key;
-  if (vars) Object.keys(vars).forEach(k => {
-    const value = String(vars[k]);
-    // Keep measurements and file names LTR inside Arabic sentences.
-    const safe = /[0-9A-Za-z]/.test(value) ? "\u2066" + value + "\u2069" : value;
-    out = out.replace(new RegExp("\\{" + k + "\\}", "g"), safe);
-  });
-  return out;
-}
-
-function applyLanguage() {
-  document.documentElement.lang = LANG;
-  document.documentElement.dir = LANG === "ar" ? "rtl" : "ltr";
-  if (els.openFileBtn) els.openFileBtn.textContent = t("open");
-  if (els.dropHint) els.dropHint.textContent = t("idle");
-  if (els.statusBar && !state.source) els.statusBar.textContent = t("noImage");
-}
-
 function formatBytes(bytes) {
   if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   if (bytes >= 1024) return Math.round(bytes / 1024) + " KB";
@@ -629,7 +577,7 @@ function updateStatus(full) {
     els.statusBar.textContent = `Exporting video: ${state.videoExportFrames}/${state.videoExportTotal} frames`;
     return;
   }
-  if (!state.source) { els.statusBar.textContent = t("noImage"); return; }
+  if (!state.source) { els.statusBar.textContent = "No image loaded"; return; }
   const zoom = Math.round(state.zoom * 100);
   els.statusBar.textContent = `${zoom}%  ${state.sourceW}×${state.sourceH}  ${Math.round(state.lastRender)}ms`;
 }
@@ -788,25 +736,32 @@ const MAX_FILE_BYTES = 40 * 1024 * 1024;
 function setDropZoneState(stateName, detail) {
   if (!els.dropZone) return;
   els.dropZone.dataset.state = stateName;
-  if (stateName === "idle" && els.dropHint) els.dropHint.textContent = t("idle");
-  if (stateName === "hover" && els.dropHint) els.dropHint.textContent = t("hover");
+  if (stateName === "idle" && els.dropHint) {
+    els.dropHint.textContent = "Drop an image or video here, paste it (Ctrl+V), or open a file.";
+  }
+  if (stateName === "hover" && els.dropHint) {
+    els.dropHint.textContent = "Release to load it.";
+  }
   if (stateName === "loading" && els.dropLoadingText) {
-    els.dropLoadingText.textContent = t("loading", { name: (detail && detail.name) || "…" });
+    els.dropLoadingText.textContent = `Loading ${(detail && detail.name) || "…"}…`;
   }
 }
 
-function showDropError(key, vars) {
+function showDropError(message) {
   if (!els.dropZone) return;
-  if (els.dropError) els.dropError.textContent = t(key, vars);
+  if (els.dropError) els.dropError.textContent = message;
   setDropZoneState("error");
 }
 
 function loadFile(file) {
   if (!file) return;
   const type = file.type || "";
-  if (!/^(image|video)\//.test(type)) { showDropError("errType"); return; }
+  if (!/^(image|video)\//.test(type)) {
+    showDropError("That file type is not supported. Try a PNG, JPG or WebP image, or a WebM/MP4 video.");
+    return;
+  }
   if (file.size > MAX_FILE_BYTES) {
-    showDropError("errSize", { size: formatBytes(file.size), max: formatBytes(MAX_FILE_BYTES) });
+    showDropError(`This file is too large (${formatBytes(file.size)}). Try a smaller file (under ${formatBytes(MAX_FILE_BYTES)}).`);
     return;
   }
   setDropZoneState("loading", { name: file.name });
@@ -829,7 +784,10 @@ function loadFile(file) {
       setTimeout(fitToWindow, 30);
       setDropZoneState("idle");
     }, { once: true });
-    vid.addEventListener("error", () => { URL.revokeObjectURL(url); showDropError("errVideo"); }, { once: true });
+    vid.addEventListener("error", () => {
+      URL.revokeObjectURL(url);
+      showDropError("Couldn’t play this video. Try MP4 (H.264) or WebM (VP9).");
+    }, { once: true });
   } else {
     const img = new Image();
     img.onload = () => {
@@ -844,7 +802,10 @@ function loadFile(file) {
       requestAnimationFrame(() => { render(); fitToWindow(); pushHistory("load"); });
       setDropZoneState("idle");
     };
-    img.onerror = () => { URL.revokeObjectURL(url); showDropError("errDecode"); };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      showDropError("Couldn’t decode this file. Try re-saving it as PNG or MP4, then open it again.");
+    };
     img.src = url;
   }
 }
@@ -1810,7 +1771,6 @@ function setupEventListeners() {
       else if (action === "zoom-100") setZoom(1);
       else if (action === "zoom-200") setZoom(2);
       else if (action === "panel") togglePanel();
-      else if (action === "theme") toggleTheme();
     });
     if (item.dataset.action === "original") {
       item.addEventListener("pointerdown", e => { e.preventDefault(); state.showOriginal = true; scheduleRender(0); });
@@ -2189,7 +2149,6 @@ function initReorder() {
 function init() {
   initEls();
   loadTheme();
-  applyLanguage();
   populatePalettes();
   populateOutputPresets();
   rebuildRamp();

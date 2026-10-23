@@ -714,19 +714,27 @@ with sync_playwright() as p:
     zsmall = page.inner_text("#zoom-level")
     record("fit small ~ half of fit", abs(int(zsmall[:-1]) - int(zfit[:-1]) / 2) <= 3, f"{zfit} -> {zsmall}")
 
-    # Round 2 Phase 4: View > Theme is present and switches the theme.
+    # P1-1: View has no Theme item; T and the top-bar icon own the toggle.
     page.keyboard.press("Escape")
     set_theme(True)
     open_menu("view")
     theme_item = page.locator('#dropdown-view [data-action="theme"]')
-    theme_before = page.evaluate("() => document.documentElement.dataset.theme")
-    theme_label = theme_item.inner_text() if theme_item.count() else ""
-    theme_item.click()
+    theme_count = theme_item.count()
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(150)
+    page.locator("#canvas-area").click(position={"x": 200, "y": 150})
+    page.keyboard.press("t")
     page.wait_for_timeout(300)
-    theme_after = page.evaluate("() => document.documentElement.dataset.theme")
-    record("theme item present in View menu",
-           theme_item.count() == 1 and "Theme" in theme_label and theme_before == "dark" and theme_after == "light",
-           f"count={theme_item.count()}, label={theme_label!r}, {theme_before} -> {theme_after}")
+    after_t = page.evaluate("() => document.documentElement.dataset.theme")
+    page.keyboard.press("t")
+    page.wait_for_timeout(300)
+    after_t2 = page.evaluate("() => document.documentElement.dataset.theme")
+    page.click("#theme-toggle")
+    page.wait_for_timeout(300)
+    after_icon = page.evaluate("() => document.documentElement.dataset.theme")
+    record("no theme item; T and top-bar icon toggle theme",
+           theme_count == 0 and after_t == "light" and after_t2 == "dark" and after_icon == "light",
+           f"count={theme_count}, T={after_t}, T2={after_t2}, icon={after_icon}")
     set_theme(True)
 
     def menu_palette(dark):
@@ -1014,27 +1022,28 @@ with sync_playwright() as p:
     record("zero console errors", len(console_errors) == 0, json.dumps(console_errors[:3]))
     record("zero page errors", len(page_errors) == 0, json.dumps(page_errors[:3]))
 
-    # Arabic home screen (separate locale context).
-    actx = browser.new_context(viewport={"width": 390, "height": 820}, locale="ar-SA")
+    # English-only first visit in a fresh locale context.
+    actx = browser.new_context(viewport={"width": 390, "height": 820}, locale="en-US")
     apage = actx.new_page()
-    arabic_errors = []
-    apage.on("pageerror", lambda e: arabic_errors.append(str(e)))
+    english_errors = []
+    apage.on("pageerror", lambda e: english_errors.append(str(e)))
     apage.goto(URL, wait_until="load")
     apage.wait_for_timeout(500)
-    arabic_ok = apage.evaluate("""() => ({
+    english_ok = apage.evaluate("""() => ({
       dir: document.documentElement.dir,
+      direction: getComputedStyle(document.documentElement).direction,
       hint: document.querySelector('.drop-hint').textContent,
       open: document.getElementById('open-file-btn').textContent,
       status: document.getElementById('status-bar').textContent
     })""")
-    apage.evaluate("() => window.showDropError('errSize', {size: '50 MB', max: '40 MB'})")
+    apage.evaluate("() => window.showDropError('This file is too large (50 MB). Try a smaller file (under 40 MB).')")
     apage.wait_for_timeout(200)
-    arabic_err = apage.inner_text(".drop-error")
-    apage.screenshot(path=f"{SHOT}/home_arabic.png")
-    record("Arabic home screen",
-           arabic_ok["dir"] == "rtl" and "أفلت" in arabic_ok["hint"] and arabic_ok["open"] == "فتح ملف",
-           json.dumps(arabic_ok, ensure_ascii=False))
-    record("Arabic honest error message", "كبير" in arabic_err and "40 MB" in arabic_err, arabic_err)
+    english_err = apage.inner_text(".drop-error")
+    apage.screenshot(path=f"{SHOT}/home_english.png")
+    record("English home screen",
+           english_ok["dir"] == "" and english_ok["direction"] == "ltr" and "Drop an image" in english_ok["hint"] and english_ok["open"] == "Open file",
+           json.dumps(english_ok, ensure_ascii=False))
+    record("English honest error message", "too large" in english_err and "40 MB" in english_err, english_err)
     actx.close()
 
     # 360px pass: picker + inverse menu must fit and stay scrollable.
@@ -1121,7 +1130,7 @@ for name, ok, detail in rows:
 lines += ["", "## Screenshots", f"- Contrast: `{REPORTS}/contrast-<theme>-<width>.png`",
           f"- Empty state: `{SHOT}/empty_dark.png`, `{SHOT}/empty_light.png`",
           f"- Loaded: `{SHOT}/loaded_dark.png`, `{SHOT}/loaded_light.png`",
-          f"- Arabic home: `{SHOT}/home_arabic.png`",
+          f"- English home: `{SHOT}/home_english.png`",
           f"- Per-effect (script): `{SHOT}/fx_<id>.png`",
           f"- Compare: `{SHOT}/compare.png`", f"- Video: `{SHOT}/video_loaded.png`", "",
           "## Not tested", "- Firefox/Safari rendering (only headless Chromium was available).",
