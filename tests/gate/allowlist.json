@@ -1,0 +1,42 @@
+{
+  "luminance": [
+    {
+      "selector": "#canvas",
+      "reason": "Rendered preview canvas: its pixels are the user's image, not a UI surface."
+    },
+    {
+      "selector": ".menu-dropdown",
+      "reason": "Inverse-theme menus: light page uses a dark menu and dark page uses a light menu by design."
+    },
+    {
+      "selector": ".zoom-menu",
+      "reason": "Inverse-theme zoom menu, same system as other menus."
+    },
+    {
+      "selector": ".preset-popup",
+      "reason": "Inverse-theme size picker, same system as other menus/pickers."
+    },
+    {
+      "selector": ".btn-primary",
+      "reason": "Primary red action buttons: the red fill is the intended accent and is checked separately for text contrast."
+    },
+    {
+      "selector": "#btn-export",
+      "reason": "Primary red Export Image button, same accent exception."
+    },
+    {
+      "selector": ".toast",
+      "reason": "Transient inverse toast overlay: intentionally contrasts with the page."
+    }
+  ],
+  "contrast": [
+    {
+      "selector": ".btn-primary",
+      "reason": "Primary red action button: its hairline border is an intentional inverse hairline; the red fill and white label are checked separately."
+    },
+    {
+      "selector": "#btn-export",
+      "reason": "Primary red Export Image button, same hairline exception."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "glyphcraft",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Glyphcraft static app",
+  "scripts": {
+    "gate": "python tests/gate/run_gate.py"
+  }
+}
