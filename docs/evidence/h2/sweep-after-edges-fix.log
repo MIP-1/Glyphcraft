@@ -1,0 +1,208 @@
+check                    case                                   detail                                         verdict
+halftone                 default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+halftone                 size=2                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+halftone                 size=3                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+halftone                 size=5                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+halftone                 size=8                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+halftone                 size=13                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+halftone                 size=14                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      scan=0                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      scan=1                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      scan=45                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      scan=50                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      scan=99                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      scan=100                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      curve=0                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      curve=1                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      curve=25                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      curve=50                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      curve=99                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      curve=100                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      mask=0                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      mask=1                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      mask=35                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      mask=50                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      mask=99                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      mask=100                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+crt                      all min                                white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+crt                      all max                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   shift=0                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   shift=1                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   shift=8                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   shift=20                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   shift=39                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   shift=40                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   slices=0                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   slices=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   slices=8                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   slices=20                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   slices=39                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   slices=40                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   all min                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+glitch                   all max                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      bleed=0                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      bleed=1                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      bleed=40                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      bleed=50                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      bleed=99                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      bleed=100                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      noise=0                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      noise=1                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      noise=30                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      noise=50                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      noise=99                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      noise=100                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      all min                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vhs                      all max                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelate                 default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelate                 size=2                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelate                 size=3                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelate                 size=8                                 white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelate                 size=21                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelate                 size=39                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelate                 size=40                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                threshold=0                            white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                threshold=1                            white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                threshold=50                           white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                threshold=99                           white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                threshold=100                          white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                amount=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+pixelsort                amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                amount=60                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+pixelsort                all min                                white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+pixelsort                all max                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    radius=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    radius=2                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    radius=8                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    radius=15.5                            white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    radius=29                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    radius=30                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    amount=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+bloom                    amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    amount=55                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+bloom                    all min                                white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+bloom                    all max                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+grain                    default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+grain                    amount=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+grain                    amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+grain                    amount=35                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+grain                    amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+grain                    amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+grain                    amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 amount=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+vignette                 amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 amount=55                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 size=10                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 size=11                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 size=65                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 size=55                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 size=99                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 size=100                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+vignette                 all min                                white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+vignette                 all max                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+duotone                  default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+posterize                default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+posterize                levels=2                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+posterize                levels=3                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+posterize                levels=5                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+posterize                levels=9                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+posterize                levels=15                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+posterize                levels=16                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+edges                    default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+edges                    amount=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+edges                    amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+edges                    amount=80                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+edges                    amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+edges                    amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+edges                    amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   amount=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+sketch                   amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   amount=70                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   cross=0                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   cross=1                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   cross=40                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   cross=50                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   cross=99                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   cross=100                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sketch                   all min                                white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+sketch                   all max                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+oil                      default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+oil                      radius=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+oil                      radius=2                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+oil                      radius=3                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+emboss                   default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+emboss                   amount=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+emboss                   amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+emboss                   amount=70                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+emboss                   amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+emboss                   amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+emboss                   amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+blur                     default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+blur                     radius=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+blur                     radius=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+blur                     radius=4                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+blur                     radius=10                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+blur                     radius=19                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+blur                     radius=20                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sharpen                  default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sharpen                  amount=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+sharpen                  amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sharpen                  amount=60                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sharpen                  amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sharpen                  amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sharpen                  amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+invert                   default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sepia                    default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sepia                    amount=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+sepia                    amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sepia                    amount=80                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sepia                    amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sepia                    amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+sepia                    amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+thermal                  default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+thermal                  amount=0                               white=no alpha_bad=0 identity=yes alpha_bad=0  PASS
+thermal                  amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+thermal                  amount=80                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+thermal                  amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+thermal                  amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+thermal                  amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   density=10                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   density=11                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   density=55                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   density=99                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   density=100                            white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   amount=0                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   amount=1                               white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   amount=70                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   amount=50                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   amount=99                              white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   amount=100                             white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   all min                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+matrix                   all max                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+retro                    default                                white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+retro                    palette=gameboy                        white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+retro                    palette=cga                            white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+retro                    palette=nes                            white=no alpha_bad=0 identity=n/a alpha_bad=0  PASS
+
+204 checks, 0 failure(s)
+EFFECTS SWEEP PASS

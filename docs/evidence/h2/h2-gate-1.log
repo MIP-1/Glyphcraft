@@ -1,0 +1,76 @@
+npm notice run glyphcraft@1.0.0 gate
+npm notice run python tests/gate/run_gate.py
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 76680 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/h2/
+  docs/evidence/h2/dark-1280-fullest-top.png
+  docs/evidence/h2/dark-1280-fullest-effects.png
+  docs/evidence/h2/dark-1280-file-menu.png
+  docs/evidence/h2/dark-1280-view-menu.png
+  docs/evidence/h2/dark-1280-edit-menu.png
+  docs/evidence/h2/dark-1280-zoom-menu.png
+  docs/evidence/h2/dark-1280-size-picker.png
+  docs/evidence/h2/dark-1280-select-focus.png
+  docs/evidence/h2/dark-1280-focus-theme.png
+  docs/evidence/h2/dark-1280-hover-theme-tooltip.png
+  docs/evidence/h2/dark-1280-hover-preset.png
+  docs/evidence/h2/dark-1280-hover-primary.png
+  docs/evidence/h2/dark-360-fullest-top.png
+  docs/evidence/h2/dark-360-fullest-effects.png
+  docs/evidence/h2/dark-360-file-menu.png
+  docs/evidence/h2/dark-360-view-menu.png
+  docs/evidence/h2/dark-360-edit-menu.png
+  docs/evidence/h2/dark-360-zoom-menu.png
+  docs/evidence/h2/dark-360-size-picker.png
+  docs/evidence/h2/dark-360-select-focus.png
+  docs/evidence/h2/dark-360-focus-theme.png
+  docs/evidence/h2/dark-360-hover-theme-tooltip.png
+  docs/evidence/h2/dark-360-hover-preset.png
+  docs/evidence/h2/dark-360-hover-primary.png
+  docs/evidence/h2/light-1280-fullest-top.png
+  docs/evidence/h2/light-1280-fullest-effects.png
+  docs/evidence/h2/light-1280-file-menu.png
+  docs/evidence/h2/light-1280-view-menu.png
+  docs/evidence/h2/light-1280-edit-menu.png
+  docs/evidence/h2/light-1280-zoom-menu.png
+  docs/evidence/h2/light-1280-size-picker.png
+  docs/evidence/h2/light-1280-select-focus.png
+  docs/evidence/h2/light-1280-focus-theme.png
+  docs/evidence/h2/light-1280-hover-theme-tooltip.png
+  docs/evidence/h2/light-1280-hover-preset.png
+  docs/evidence/h2/light-1280-hover-primary.png
+  docs/evidence/h2/light-360-fullest-top.png
+  docs/evidence/h2/light-360-fullest-effects.png
+  docs/evidence/h2/light-360-file-menu.png
+  docs/evidence/h2/light-360-view-menu.png
+  docs/evidence/h2/light-360-edit-menu.png
+  docs/evidence/h2/light-360-zoom-menu.png
+  docs/evidence/h2/light-360-size-picker.png
+  docs/evidence/h2/light-360-select-focus.png
+  docs/evidence/h2/light-360-focus-theme.png
+  docs/evidence/h2/light-360-hover-theme-tooltip.png
+  docs/evidence/h2/light-360-hover-preset.png
+  docs/evidence/h2/light-360-hover-primary.png
+  docs/evidence/h2/light-1280-real-clean-icon.png
+  docs/evidence/h2/light-1280-real-clean-T-light.png
+  docs/evidence/h2/light-1280-real-clean-reload-light.png
+  docs/evidence/h2/light-1280-host-dark-icon.png
+  docs/evidence/h2/light-1280-host-dark-T-light.png
+  docs/evidence/h2/light-1280-host-dark-reload-light.png
+  docs/evidence/h2/light-1280-host-os-light-os-light.png
+  docs/evidence/h2/light-360-real-clean-icon.png
+  docs/evidence/h2/light-360-real-clean-T-light.png
+  docs/evidence/h2/light-360-real-clean-reload-light.png
+  docs/evidence/h2/light-360-host-dark-icon.png
+  docs/evidence/h2/light-360-host-dark-T-light.png
+  docs/evidence/h2/light-360-host-dark-reload-light.png
+  docs/evidence/h2/light-360-host-os-light-os-light.png
+G4 PASS frame timings: dark 1280: median=16.69999999999891ms p95=16.700000000000728ms frames=78, dark 360: median=16.69999999999891ms p95=16.799999999999272ms frames=73, light 1280: median=16.69999999999891ms p95=16.700000000000728ms frames=78, light 360: median=16.700000000000728ms p95=33.29999999999927ms frames=82
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (217.5s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 PASS top-bar geometry: 0 violation(s)
+G9 PASS numeric steppers: 65 measurements, 15 hold-rate rows
+G10 PASS effects: 239 checks, 0 failure(s) (54.2s)
+
+GATE PASS 

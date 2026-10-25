@@ -1,0 +1,38 @@
+check                    case                                   detail                                         verdict
+a identity amount=0      hatch=0                                hash equal                                     PASS
+a identity amount=0      hatch=40                               hash equal                                     PASS
+a identity amount=0      hatch=100                              hash equal                                     PASS
+a identity size          1x1                                    ok                                             PASS
+a identity size          2x2                                    ok                                             PASS
+a identity size          17x13                                  ok                                             PASS
+a identity size          31x7                                   ok                                             PASS
+b tonal dark-vs-light    hatch=0 gap=0.32                       dark=155.1 light=237.1                         PASS
+b tonal dark-vs-light    hatch=40 gap=0.34                      dark=151.0 light=236.8                         PASS
+b tonal dark-vs-light    hatch=100 gap=0.38                     dark=139.3 light=235.6                         PASS
+c not white              gradient amount=10 hatch=0             mean=0.5271 std=0.2748                         PASS
+c not white              gradient amount=10 hatch=100           mean=0.5238 std=0.2773                         PASS
+c not white              gradient amount=70 hatch=0             mean=0.69 std=0.1908                           PASS
+c not white              gradient amount=70 hatch=100           mean=0.6667 std=0.2124                         PASS
+c not white              dark photo amount=10 hatch=0           mean=0.2692 std=0.1611                         PASS
+c not white              dark photo amount=10 hatch=100         mean=0.2634 std=0.163                          PASS
+c not white              dark photo amount=70 hatch=0           mean=0.5131 std=0.13                           PASS
+c not white              dark photo amount=70 hatch=100         mean=0.4723 std=0.1555                         PASS
+c not white              color bars amount=10 hatch=0           mean=0.5265 std=0.3553                         PASS
+c not white              color bars amount=10 hatch=100         mean=0.5231 std=0.3583                         PASS
+c not white              color bars amount=70 hatch=0           mean=0.6872 std=0.2431                         PASS
+c not white              color bars amount=70 hatch=100         mean=0.6627 std=0.2674                         PASS
+d hatch density          amount=50 ink 18576 -> 43350 (x2.33)   denser                                         PASS
+d hatch density          amount=100 ink 18576 -> 43350 (x2.33)  denser                                         PASS
+param path               amount=cross=''                        {'w': 512, 'h': 512, 'mean': 0.6844, 'std': 0.1965, 'whiteFrac': 0.0391, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 42, 'max': 255, 'hash': 714948157} PASS
+param path               amount=cross='-'                       {'w': 512, 'h': 512, 'mean': 0.6844, 'std': 0.1965, 'whiteFrac': 0.0391, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 42, 'max': 255, 'hash': 714948157} PASS
+param path               amount=cross='.'                       {'w': 512, 'h': 512, 'mean': 0.6844, 'std': 0.1965, 'whiteFrac': 0.0391, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 42, 'max': 255, 'hash': 714948157} PASS
+param path               amount=cross='0'                       {'w': 512, 'h': 512, 'mean': 0.5, 'std': 0.2898, 'whiteFrac': 0.0234, 'blackFrac': 0.0234, 'alphaBad': 0, 'nonFinite': 0, 'min': 0, 'max': 255, 'hash': 389586373} PASS
+param path               amount=cross='-5'                      {'w': 512, 'h': 512, 'mean': 0.5, 'std': 0.2898, 'whiteFrac': 0.0234, 'blackFrac': 0.0234, 'alphaBad': 0, 'nonFinite': 0, 'min': 0, 'max': 255, 'hash': 389586373} PASS
+param path               amount=cross='150'                     {'w': 512, 'h': 512, 'mean': 0.7381, 'std': 0.19, 'whiteFrac': 0.0547, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 60, 'max': 255, 'hash': 2324507745} PASS
+param path               amount=cross='1e3'                     {'w': 512, 'h': 512, 'mean': 0.7381, 'std': 0.19, 'whiteFrac': 0.0547, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 60, 'max': 255, 'hash': 2324507745} PASS
+param path               amount=cross=' 40 '                    {'w': 512, 'h': 512, 'mean': 0.6054, 'std': 0.2342, 'whiteFrac': 0.0313, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 24, 'max': 255, 'hash': 2950928077} PASS
+param path               amount=cross=None                      {'w': 512, 'h': 512, 'mean': 0.6844, 'std': 0.1965, 'whiteFrac': 0.0391, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 42, 'max': 255, 'hash': 714948157} PASS
+param path               amount=cross='abc'                     {'w': 512, 'h': 512, 'mean': 0.6844, 'std': 0.1965, 'whiteFrac': 0.0391, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 42, 'max': 255, 'hash': 714948157} PASS
+
+34 checks, 0 failure(s)
+EFFECTS SWEEP PASS

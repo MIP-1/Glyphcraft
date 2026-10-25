@@ -67,6 +67,14 @@ function fxClone(src) {
   return c;
 }
 function fxClamp(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+// One parameter reader for every effect: rejects empty/null/boolean/NaN input
+// and clamps to the range the UI exposes, so a value that never came through
+// the controls (pasted state, old preset, fuzz) cannot blow up a render.
+function fxNum(v, lo, hi, def) {
+  if (v === null || v === undefined || v === "" || typeof v === "boolean") return def;
+  const n = +v;
+  return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : def;
+}
 function fxLuma(r, g, b) { return 0.2126 * r + 0.7152 * g + 0.0722 * b; }
 function fxHex(hex) {
   const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || "#000");
@@ -77,7 +85,7 @@ function fxData(canvas) {
 }
 
 function fxHalftone(c, p) {
-  const s = Math.max(2, p.size | 0), w = c.width, h = c.height;
+  const s = Math.round(fxNum(p.size, 2, 14, 5)), w = c.width, h = c.height;
   const d = fxData(c).data;
   const out = fxCanvas(w, h), ctx = fxContext(out);
   ctx.fillStyle = "#f4efe2";
@@ -106,8 +114,8 @@ function fxCRT(c, p) {
   const src = fxData(c).data;
   const out = fxCanvas(w, h), octx = fxContext(out);
   const img = octx.createImageData(w, h), o = img.data;
-  const curve = (p.curve / 100) * 0.22;
-  const scan = p.scan / 100, mask = p.mask / 100;
+  const curve = (fxNum(p.curve, 0, 100, 25) / 100) * 0.22;
+  const scan = fxNum(p.scan, 0, 100, 45) / 100, mask = fxNum(p.mask, 0, 100, 35) / 100;
   const cx = w / 2, cy = h / 2;
   for (let y = 0; y < h; y++) {
     const ny = (y - cy) / cy;
@@ -134,7 +142,7 @@ function fxCRT(c, p) {
 function fxGlitch(c, p) {
   const w = c.width, h = c.height;
   const out = fxCanvas(w, h), ctx = fxContext(out);
-  const sx = Math.max(1, p.shift | 0);
+  const sx = Math.max(1, Math.round(fxNum(p.shift, 0, 40, 8)));
   ctx.drawImage(c, 0, 0);
   ctx.globalCompositeOperation = "screen";
   ctx.globalAlpha = 0.55;
@@ -142,7 +150,8 @@ function fxGlitch(c, p) {
   ctx.drawImage(c, -sx, 0);
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = "source-over";
-  for (let i = 0; i < (p.slices | 0); i++) {
+  const slices = Math.round(fxNum(p.slices, 0, 40, 8));
+  for (let i = 0; i < slices; i++) {
     const y = Math.floor(Math.random() * h);
     const hh = 1 + Math.floor(Math.random() * Math.max(2, h * 0.04));
     const dx = Math.round((Math.random() - 0.5) * sx * 3);
@@ -154,14 +163,14 @@ function fxGlitch(c, p) {
 function fxVHS(c, p) {
   const w = c.width, h = c.height;
   const out = fxCanvas(w, h), ctx = fxContext(out);
-  const bleed = Math.max(0, p.bleed | 0);
+  const bleed = Math.round(fxNum(p.bleed, 0, 100, 40));
   ctx.drawImage(c, 0, 0);
   ctx.globalAlpha = 0.35;
   ctx.drawImage(c, bleed, 0);
   ctx.globalAlpha = 1;
   const d = fxContext(out).getImageData(0, 0, w, h);
   const a = d.data;
-  const noise = p.noise / 100;
+  const noise = fxNum(p.noise, 0, 100, 30) / 100;
   for (let y = 0; y < h; y++) {
     const band = Math.random() < 0.06;
     for (let x = 0; x < w; x++) {
@@ -177,7 +186,7 @@ function fxVHS(c, p) {
 }
 
 function fxPixelate(c, p) {
-  const s = Math.max(2, p.size | 0);
+  const s = Math.round(fxNum(p.size, 2, 40, 8));
   const w = Math.max(1, Math.round(c.width / s)), h = Math.max(1, Math.round(c.height / s));
   const small = fxCanvas(w, h);
   fxContext(small).drawImage(c, 0, 0, w, h);
@@ -192,7 +201,7 @@ function fxPixelSort(c, p) {
   const w = c.width, h = c.height;
   const out = fxClone(c);
   const img = fxData(out), d = img.data;
-  const thresh = (p.threshold / 100) * 255, amount = p.amount / 100;
+  const thresh = (fxNum(p.threshold, 0, 100, 50) / 100) * 255, amount = fxNum(p.amount, 0, 100, 60) / 100;
   for (let y = 0; y < h; y++) {
     if (Math.random() > amount * 0.6) continue;
     let x = 0;
@@ -227,8 +236,8 @@ function fxBloom(c, p) {
   bctx.fillRect(0, 0, bright.width, bright.height);
   bctx.globalCompositeOperation = "source-over";
   ctx.globalCompositeOperation = "screen";
-  ctx.globalAlpha = p.amount / 100;
-  ctx.filter = `blur(${Math.max(1, p.radius | 0)}px) brightness(1.35)`;
+  ctx.globalAlpha = fxNum(p.amount, 0, 100, 55) / 100;
+  ctx.filter = `blur(${Math.round(fxNum(p.radius, 1, 30, 8))}px) brightness(1.35)`;
   ctx.drawImage(bright, 0, 0);
   ctx.filter = "none";
   ctx.globalAlpha = 1;
@@ -238,7 +247,7 @@ function fxBloom(c, p) {
 
 function fxGrain(c, p) {
   const out = fxClone(c);
-  const img = fxData(out), d = img.data, a = (p.amount / 100) * 70;
+  const img = fxData(out), d = img.data, a = (fxNum(p.amount, 0, 100, 35) / 100) * 70;
   for (let i = 0; i < d.length; i += 4) {
     const n = (Math.random() - 0.5) * a;
     d[i] = fxClamp(d[i] + n);
@@ -252,9 +261,9 @@ function fxGrain(c, p) {
 function fxVignette(c, p) {
   const out = fxClone(c);
   const ctx = fxContext(out), w = out.width, h = out.height;
-  const g = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * (p.size / 200), w / 2, h / 2, Math.max(w, h) * 0.72);
+  const g = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * (fxNum(p.size, 10, 100, 65) / 200), w / 2, h / 2, Math.max(w, h) * 0.72);
   g.addColorStop(0, "rgba(0,0,0,0)");
-  g.addColorStop(1, `rgba(0,0,0,${(p.amount / 100) * 0.9})`);
+  g.addColorStop(1, `rgba(0,0,0,${(fxNum(p.amount, 0, 100, 55) / 100) * 0.9})`);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
   return out;
@@ -277,7 +286,7 @@ function fxDuotone(c, p) {
 function fxPosterize(c, p) {
   const out = fxClone(c);
   const img = fxData(out), d = img.data;
-  const levels = Math.max(2, p.levels | 0), step = 255 / (levels - 1);
+  const levels = Math.round(fxNum(p.levels, 2, 16, 5)), step = 255 / (levels - 1);
   for (let i = 0; i < d.length; i += 4) {
     d[i] = Math.round(d[i] / step) * step;
     d[i + 1] = Math.round(d[i + 1] / step) * step;
@@ -289,10 +298,23 @@ function fxPosterize(c, p) {
 
 function fxEdges(c, p) {
   const w = c.width, h = c.height;
+  const amount = fxNum(p.amount, 0, 100, 80) / 100;
+  // Amount 0 means "no edges to detect", which is the untouched image, not a
+  // black page.
+  if (amount <= 0) return fxClone(c);
   const src = fxData(c).data;
   const out = fxCanvas(w, h), ctx = fxContext(out);
   const img = ctx.createImageData(w, h), o = img.data;
-  const amount = p.amount / 100;
+  // The Sobel loop leaves the 1px frame untouched; give it opaque alpha so the
+  // effect never punches a transparent border into the exported PNG.
+  for (let x = 0; x < w; x++) {
+    o[(x) * 4 + 3] = 255;
+    o[((h - 1) * w + x) * 4 + 3] = 255;
+  }
+  for (let y = 0; y < h; y++) {
+    o[(y * w) * 4 + 3] = 255;
+    o[(y * w + w - 1) * 4 + 3] = 255;
+  }
   const gx = [-1, 0, 1, -2, 0, 2, -1, 0, 1], gy = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
   for (let y = 1; y < h - 1; y++) {
     for (let x = 1; x < w - 1; x++) {
@@ -314,26 +336,48 @@ function fxEdges(c, p) {
   return out;
 }
 
+// Pencil Sketch / Crosshatch.
+// Tonal crosshatch: the paper stays light, and hatch layers are added by
+// darkness (L < .75 / .50 / .30 / .15), each at its own angle, so dark areas of
+// the source come out visibly denser than light ones. Hatch controls the line
+// spacing (higher = denser, never blank and never a solid fill). Amount mixes
+// the sketch over the source, and Amount 0 returns the source untouched.
 function fxSketch(c, p) {
-  const out = fxCanvas(c.width, c.height), ctx = fxContext(out);
-  ctx.filter = "grayscale(1) invert(1) blur(3px)";
-  ctx.drawImage(c, 0, 0);
-  ctx.filter = "none";
-  ctx.globalCompositeOperation = "color-dodge";
-  ctx.drawImage(c, 0, 0);
-  ctx.globalCompositeOperation = "source-over";
-  const img = fxData(out), d = img.data;
-  const amt = p.amount / 100, cross = p.cross / 100;
-  for (let i = 0; i < d.length; i += 4) {
-    let v = 255 - (255 - d[i]) * amt;
-    if (cross > 0.05) {
-      const x = (i / 4) % out.width, y = Math.floor(i / 4 / out.width);
-      if ((x + y) % 9 === 0) v -= 40 * cross;
-      if ((x - y + 900) % 11 === 0) v -= 30 * cross;
+  const w = c.width, h = c.height;
+  const out = fxCanvas(w, h), ctx = fxContext(out);
+  const amount = fxNum(p && p.amount, 0, 100, 70) / 100;
+  const hatch = fxNum(p && p.cross, 0, 100, 40) / 100;
+  if (amount <= 0) { ctx.putImageData(fxData(c), 0, 0); return out; }
+  const src = fxData(c).data;
+  const img = ctx.createImageData(w, h), o = img.data;
+  // Spacing per layer at hatch 0 .. 100. Each range is >2x so Hatch measurably
+  // changes stroke density, and neither end is below 4px (would read as fill).
+  const sp45 = Math.round(14 - 8 * hatch);
+  const sp135 = Math.round(15 - 9 * hatch);
+  const spAxis = Math.round(16 - 9 * hatch);
+  const spDense = Math.round(11 - 5 * hatch);
+  const lat = w + h + 1; // keeps (x - y) positive inside the diagonal modulo
+  const pencil = 0.72;   // one hatch layer over paper: graphite gray, not black
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const L = fxLuma(src[i], src[i + 1], src[i + 2]) / 255;
+      // Graphite shading under the hatching: the paper stays white in the
+      // highlights and only the darker tones are shaded, so a dark source can
+      // never come out as a blank white page.
+      let paper = 255 * (0.60 + 0.40 * L);
+      if (L < 0.75 && (x + y) % sp45 === 0) paper *= pencil;
+      if (L < 0.50 && (x - y + lat) % sp135 === 0) paper *= pencil;
+      if (L < 0.30 && (x % spAxis === 0 || y % spAxis === 0)) paper *= pencil;
+      if (L < 0.15 && ((x + y) % spDense === 0 || (x - y + lat) % spDense === 0)) paper *= pencil;
+      const v = Math.max(paper, 60);
+      o[i] = src[i] + (v - src[i]) * amount;
+      o[i + 1] = src[i + 1] + (v - src[i + 1]) * amount;
+      o[i + 2] = src[i + 2] + (v - src[i + 2]) * amount;
+      o[i + 3] = 255;
     }
-    d[i] = d[i + 1] = d[i + 2] = fxClamp(v);
   }
-  fxContext(out).putImageData(img, 0, 0);
+  ctx.putImageData(img, 0, 0);
   return out;
 }
 
@@ -342,7 +386,7 @@ function fxOil(c, p) {
   const src = fxData(c).data;
   const out = fxCanvas(w, h), ctx = fxContext(out);
   const img = ctx.createImageData(w, h), o = img.data;
-  const r = Math.max(1, Math.min(3, p.radius | 0));
+  const r = Math.round(fxNum(p.radius, 1, 3, 2));
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       let bestVar = Infinity, best = [0, 0, 0];
@@ -372,6 +416,7 @@ function fxOil(c, p) {
 }
 
 function fxConvolve(c, kernel, amount) {
+  amount = Math.min(1, Math.max(0, Number.isFinite(amount) ? amount : 0));
   const w = c.width, h = c.height;
   const src = fxData(c).data;
   const out = fxCanvas(w, h), ctx = fxContext(out);
@@ -399,16 +444,44 @@ function fxConvolve(c, kernel, amount) {
 }
 
 function fxEmboss(c, p) {
-  return fxConvolve(c, [-2, -1, 0, -1, 1, 1, 0, 1, 2], p.amount / 100);
+  return fxConvolve(c, [-2, -1, 0, -1, 1, 1, 0, 1, 2], fxNum(p.amount, 0, 100, 70) / 100);
 }
 function fxSharpen(c, p) {
-  return fxConvolve(c, [0, -1, 0, -1, 5, -1, 0, -1, 0], p.amount / 100);
+  return fxConvolve(c, [0, -1, 0, -1, 5, -1, 0, -1, 0], fxNum(p.amount, 0, 100, 60) / 100);
 }
 function fxBlur(c, p) {
-  const out = fxCanvas(c.width, c.height), ctx = fxContext(out);
-  ctx.filter = `blur(${Math.max(0, p.radius)}px)`;
-  ctx.drawImage(c, 0, 0);
-  ctx.filter = "none";
+  const w = c.width, h = c.height;
+  const r = fxNum(p.radius, 0, 20, 4);
+  const out = fxCanvas(w, h), ctx = fxContext(out);
+  if (r <= 0) { ctx.drawImage(c, 0, 0); return out; }
+  // A blurred image samples outside itself; without padding those samples are
+  // transparent and the output keeps semi-transparent, dark fringes at every
+  // edge (visible as a halo and as alpha < 255 in the exported PNG). Extend the
+  // edge pixels outwards first, then blur the padded copy and crop it back.
+  const pad = Math.ceil(r * 2) + 1;
+  const padded = fxCanvas(w + pad * 2, h + pad * 2);
+  const pctx = fxContext(padded);
+  pctx.drawImage(c, pad, pad);
+  pctx.drawImage(c, 0, 0, w, 1, pad, 0, w, pad);
+  pctx.drawImage(c, 0, h - 1, w, 1, pad, pad + h, w, pad);
+  pctx.drawImage(c, 0, 0, 1, h, 0, pad, pad, h);
+  pctx.drawImage(c, w - 1, 0, 1, h, pad + w, pad, pad, h);
+  pctx.drawImage(c, 0, 0, 1, 1, 0, 0, pad, pad);
+  pctx.drawImage(c, w - 1, 0, 1, 1, pad + w, 0, pad, pad);
+  pctx.drawImage(c, 0, h - 1, 1, 1, 0, pad + h, pad, pad);
+  pctx.drawImage(c, w - 1, h - 1, 1, 1, pad + w, pad + h, pad, pad);
+  const blurred = fxCanvas(w + pad * 2, h + pad * 2);
+  const bctx = fxContext(blurred);
+  bctx.filter = `blur(${r}px)`;
+  bctx.drawImage(padded, 0, 0);
+  bctx.filter = "none";
+  ctx.drawImage(blurred, pad, pad, w, h, 0, 0, w, h);
+  // Cropping at the padded edge leaves a sub-255 alpha ring from premultiplied
+  // blending; the effect output must be fully opaque.
+  const img = ctx.getImageData(0, 0, w, h), d = img.data;
+  let fixed = false;
+  for (let i = 3; i < d.length; i += 4) if (d[i] !== 255) { d[i] = 255; fixed = true; }
+  if (fixed) ctx.putImageData(img, 0, 0);
   return out;
 }
 function fxInvert(c) {
@@ -418,7 +491,7 @@ function fxInvert(c) {
   return out;
 }
 function fxSepia(c, p) {
-  const out = fxClone(c), img = fxData(out), d = img.data, a = p.amount / 100;
+  const out = fxClone(c), img = fxData(out), d = img.data, a = fxNum(p.amount, 0, 100, 80) / 100;
   for (let i = 0; i < d.length; i += 4) {
     const r = d[i], g = d[i + 1], b = d[i + 2];
     const sr = 0.393 * r + 0.769 * g + 0.189 * b;
@@ -432,7 +505,7 @@ function fxSepia(c, p) {
   return out;
 }
 function fxThermal(c, p) {
-  const out = fxClone(c), img = fxData(out), d = img.data, a = p.amount / 100;
+  const out = fxClone(c), img = fxData(out), d = img.data, a = fxNum(p.amount, 0, 100, 80) / 100;
   for (let i = 0; i < d.length; i += 4) {
     const l = fxLuma(d[i], d[i + 1], d[i + 2]) / 255;
     const r = fxClamp(255 * Math.min(1, l * 2.2));
@@ -454,7 +527,7 @@ function fxMatrix(c, p) {
   const cols = Math.ceil(out.width / cell);
   ctx.font = `${cell}px monospace`;
   ctx.textBaseline = "top";
-  const density = p.density / 100, glow = p.amount / 100;
+  const density = fxNum(p.density, 10, 100, 55) / 100, glow = fxNum(p.amount, 0, 100, 70) / 100;
   for (let i = 0; i < cols * density; i++) {
     const x = Math.floor(Math.random() * cols) * cell;
     const len = 2 + Math.floor(Math.random() * 10);

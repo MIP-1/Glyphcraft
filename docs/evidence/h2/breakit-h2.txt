@@ -1,0 +1,13 @@
+1a amount=0 identity (UI)      amount=0 hash all=1729710553 without=1729710553                                PASS
+1b amount=0 identity in stack  stack=posterize+sketch hash all=4098655269 without=4098655269                  PASS
+2 hatch extremes 1x1/2x2/17x13 9 runs, 0 bad                                                                  PASS
+3 paste ''                     amount=70 invalid_during='true' mean=0.6831 std=0.1584                         PASS
+3 paste '-'                    amount=70 invalid_during='true' mean=0.6831 std=0.1584                         PASS
+3 paste 'abc'                  amount=70 invalid_during='true' mean=0.6831 std=0.1584                         PASS
+3 paste '1e3'                  amount=100 invalid_during='true' mean=0.7633 std=0.1389                        PASS
+3 paste ' 50 '                 amount=50 invalid_during=None mean=0.6295 std=0.1756                           PASS
+4 undo/redo                    base=40/3611139 changed=90/3979507346 undo=40/3611139 redo=90/3979507346       PASS
+5 4K six-effect stack          ids=['posterize', 'edges', 'sketch', 'emboss', 'blur', 'sharpen'] source=4000x3000 stack=7468.5ms sketch-alone=639ms mean=0.4656 std=0.0084 alphaBad=0 PASS
+
+10 checks, 0 failure(s)
+BREAK-IT PASS

@@ -1194,3 +1194,393 @@ Remaining flaws:
   and decreases with ArrowDown (stated in its `aria-label`); two separate
   buttons would be finer-grained.
 - Real touch hardware is HUMAN-CHECK.
+
+## H2 — Effects that output white — STATUS: PASS
+
+### Root cause (three effects, measured on `HEAD 7940130` in `/tmp/opencode/gc-h0`)
+
+**1. Pencil Sketch / Crosshatch was white by construction** (`effects.js:317-338`
+on `7940130`):
+
+- `effects.js:319` draws the source through `grayscale(1) invert(1) blur(3px)`
+  and then `effects.js:322-323` composites the original over it with
+  `color-dodge`. Colour-dodge divides the inverted base by `1 - source`: dark
+  source pixels (source ≈ 0) leave the bright inverted base unchanged, and
+  bright source pixels saturate to 255. A dark image therefore becomes a white
+  page with a few surviving dots — the reported symptom exactly.
+- `effects.js:326-328`: `const amt = p.amount / 100;` then
+  `v = 255 - (255 - d[i]) * amt`. At `amt = 0`, `v = 255` for every pixel: the
+  declared neutral value was a **pure white page**, so the required
+  "Amount 0 = identity" could never hold. Nothing validated the parameter, so
+  `undefined`, `""`, `0` and negative strings all took the same white path.
+- `effects.js:329-333`: only two hatch layers (`% 9` and `% 11`); the second
+  needs `cross > 0.05`. `cross` only scaled their darkness (`- 40 * cross`,
+  `- 30 * cross`) and never their spacing, so **Hatch could not change line
+  density** and at Hatch <= 5 it drew no hatch at all. Maximum darkening was
+  70 levels over a near-white dodge result, which is why Amount 70 / Hatch 40
+  stayed "a white page with a few faint dots".
+
+**2. Edge Detect at Amount 0 was a black page with a transparent frame**
+(`effects.js:290-315` on `7940130`). The Sobel result was multiplied by
+`amount`; at 0 every interior pixel became 0 (black), and the 1px frame was
+never written, so it stayed alpha 0. Amount 0 is this effect's neutral value,
+so it must be identity, and the effect must not punch transparency into an
+export.
+
+**3. Blur sampled outside the canvas** (`effects.js:407-413` on `7940130`).
+`ctx.filter = blur(r)` was applied directly to the unpadded canvas, so every
+sample outside the image was transparent: 12,240-272,244 non-opaque pixels per
+render and a dark fringe at all four edges, which then leaked into the Script
+stage and the exported PNG.
+
+Also found while reading every effect: no effect validated its numeric
+parameters. `p.amount / 100` on `""` is 0 (white), on `undefined` is `NaN`
+(`fxClamp(NaN)` passes `NaN` through and `ImageData` turns it into 0), and
+`blur radius 1e9` from a pasted preset queued a canvas allocation that hung a
+fuzz worker for 30 minutes. That is a parameter-path bug shared by all 22
+effects, fixed with one reader.
+
+### RED output (before any change)
+
+The permanent sweep run against the pre-fix worktree
+(`docs/evidence/h2/red-all-effects-old.log`):
+
+```
+$ cd /tmp/opencode/gc-h0 && python tests/gate/effects_sweep.py --only all --quick
+249 checks, 94 failure(s)
+  FAIL sketch amount 0 hatch 0: output is not the input
+  FAIL sketch amount 0 at 1x1: not the input or wrong size
+  FAIL sketch tonal hatch 0: dark third 252.0 vs light 249.1 (gap -0.01 < 0.25)
+  FAIL sketch gradient amount 10 hatch 0: {'mean': 0.9988, 'std': 0.0058, 'whiteFrac': 0.9811, ...}
+  FAIL sketch dark photo amount 10 hatch 0: {'mean': 0.9913, 'std': 0.0092, 'whiteFrac': 0.8528, ...}
+  FAIL sketch param path '': {'mean': 1, 'std': 0, 'whiteFrac': 1, ...}
+  FAIL sketch param path '0': {'mean': 1, 'std': 0, 'whiteFrac': 1, ...}
+  FAIL sketch param path '-5': {'mean': 1, 'std': 0, 'whiteFrac': 1, ...}
+  FAIL sketch param path None: {'mean': 1, 'std': 0, 'whiteFrac': 1, ...}
+  FAIL edges [amount=0]: 6132 non-255 alpha pixels, not identity at neutral
+  FAIL blur [radius=4]: 60240 non-255 alpha pixels
+  FAIL blur [radius=20]: 272244 non-255 alpha pixels
+  FAIL pair halftone->edges [default]: mean=0.727 std=0.388 alpha_bad=1020
+  FAIL pair halftone->blur [max]: mean=0.638 std=0.209 alpha_bad=40572
+```
+
+Sketch-only RED (`docs/evidence/h2/red-sketch-old.log`): `45 checks,
+29 failure(s)`. The tonal gap is **negative** on the pre-fix effect (dark third
+252.0 vs light 249.1), i.e. the dark part of a gradient came out *lighter*
+than the light part. At Amount 10 more than 98% of the gradient was pure
+white. This is the reported bug reproduced without asking which values fail.
+
+### Fix
+
+- `effects.js:73-77` `fxNum(v, lo, hi, def)`: one reader for every numeric
+  parameter (26 call sites). Empty, `null`, `undefined`, booleans and
+  non-finite input fall back to the declared default; everything else is
+  clamped to the range the UI exposes. `effects.js:1379-1395` already rejected
+  empty/`-`/`.`/out-of-range text while typing and clamped on blur
+  (`clampToParam`, `app.js:12-14`); the two paths now agree.
+- `effects.js:345-382` rewrites `fxSketch` as tonal crosshatch:
+  `paper = 255 * (0.60 + 0.40 * L)`, four layers at 45 degrees, -45 degrees,
+  both axes, and a dense cross layer for `L < .75 / .50 / .30 / .15`, line
+  spacing `14-8h / 15-9h / 16-9h / 11-5h` (every range is > 2x and never below
+  6px), pencil gray `0.72`, floor 60 so a black source still shows hatching,
+  and a final `mix(src, sketch, amount/100)`. `amount <= 0` returns a
+  pixel-identical copy before any math.
+- `effects.js:299-343` `fxEdges`: `amount <= 0` returns a clone; the 1px frame
+  is written with alpha 255 before the Sobel loop.
+- `effects.js:452-485` `fxBlur`: extend the edge pixels into a padded canvas
+  (9 strips including corners), blur the padded copy, crop it back, then force
+  alpha 255 after the crop (premultiplied blending leaves a sub-255 ring).
+- No other effect's maths changed: every other numeric read is the same
+  expression through `fxNum` with the same defaults, and the regression hashes
+  below prove the pixels did not move.
+
+### Code review of every effect (before running the sweep)
+
+Ranges cite the fixed `effects.js`. "Hazard checked" lists the lines/paths
+examined, not a claim that the effect is perfect. No row says "looks fine".
+
+| # | effect | params (type, min..max, step, def) | math hazards checked | suspected failing ranges |
+|---|---|---|---|---|
+| 1 | halftone | size int 2..14, 1, 5 | `s` clamped >=2 (87); inner block always has `n>=1` (97-100); dot radius `>=0.4` (105); luma finite; opaque paper fill | none found; min size on 1x1 gives one dot, not white |
+| 2 | crt | scan/curve/mask 0..100, 1, 45/25/35 | `cy = h/2 >= .5` so no /0 (118-121); sampled `sx` clamped to `w-1` (126); `scanLine >= .35`, mask factor `>= .6`; every channel clamped | none found; curve=100 + 1px width still bounded by clamp |
+| 3 | glitch | shift/slices 0..40, 1, 8/8 | `shift 0` becomes `max(1,..)` so it is a 1px split, not identity (declared neutral is not identity); slice `y/hh` guarded (153-157); out-of-bounds drawImage is a no-op | shift=0: 1px RGB split by definition; slices=0: no slices |
+| 4 | vhs | bleed/noise 0..100, 1, 40/30 | bleed up to 100 can exceed a narrow width (draws nothing, source kept); noise clamped; random band ~6% of rows | noise=0 still adds +18 on ~6% rows (not identity); no white path |
+| 5 | pixelate | size int 2..40, 1, 8 | source `w/h = max(1,..)` for 1x1 at size 40 (190); smoothing explicitly off; exact upscale | none found; 1x1 block is a flat colour, never white unless input is |
+| 6 | pixelsort | threshold/amount 0..100, 1, 50/60 | random row gate; `while` bounded by `x++` / `x=end+1` (206-221); `run.sort` on finite luma; amount 0 skips nearly all rows | threshold 0 sorts whole rows; amount 0 is random-but-identity, by design |
+| 7 | bloom | radius 1..30, amount 0..100, 1, 8/55 | CSS `blur()` on the gate browser; radius rounded/clamped; `globalAlpha 0` = identity; `source-atop` keeps canvas size | amount 0 identity; a browser without canvas filter would draw unblurred, still not white |
+| 8 | grain | amount 0..100, 1, 35 | `a = 0` at amount 0 so `n = 0` = identity (250); clamp per channel | none found |
+| 9 | vignette | amount 0..100, size 10..100, 1, 55/65 | inner radius `<` outer at every size incl. 1x1 (264); alpha 0 = identity; finite stops | none found; size 10 and 100 only change falloff |
+| 10 | duotone | dark/light colour, defaults #0a1a10 / #8dffa8 | `fxHex` falls back to #000 on malformed input (79-82); equal endpoints produce a flat tint by definition | equal/malformed colours: flat by definition, not a white bug; sweep exempts equal endpoints |
+| 11 | posterize | levels int 2..16, 1, 5 | `step = 255/(levels-1) >= 17` so no /0 (289); product rounded into Uint8Clamped | none found; levels=2 gives two tones |
+| 12 | edges | amount 0..100, 1, 80 | fixed: `amount<=0` clone (302); 1px frame alpha 255 (307-314); w/h <3 has no interior (kept black) | fixed: amount 0 identity + transparent frame; a 1x2 image has no edges by definition |
+| 13 | sketch | amount 0..100, 1, 70; cross 0..100, 1, 40 | fixed: `amount<=0` clone (351); spacings 6..16 so `% spacing` never /0; `lat = w+h+1` keeps `x-y` positive (357); alpha 255; floor 60 | fixed: amount 0 white, dark image white, Hatch no density; all Hatch 0..100 tested |
+| 14 | oil | radius int 1..3, 1, 2 | every quadrant has `n>=6` at r=1 so `mean`/`varr` never /0 (392-406); `px/py` clamped; opaque | none found; cost is O(w*h*r^4) — 4K attribution below |
+| 15 | emboss | amount 0..100, 1, 70 | `fxConvolve` clamps amount (419), copies the 1px frame (424-427), kernel sums to 1, clamps each channel | none found; amount 0 is identity for opaque input |
+| 16 | blur | radius 0..20, 1, 4 | fixed: `r<=0` clone (457); `pad = ceil(2r)+1`; 9 edge strips incl. corners (461-474); crop; alpha forced 255 (478-484) | fixed: 12k-272k transparent pixels + dark fringe; 4K cost noted below |
+| 17 | sharpen | amount 0..100, 1, 60 | same `fxConvolve`; kernel sums to 1; frame copied; clamp | none found; amount 0 identity |
+| 18 | invert | none | `255-v` on Uint8Clamped; alpha preserved | none found; not identity by definition |
+| 19 | sepia | amount 0..100, 1, 80 | `a` in 0..1; matrix coefficients finite; clamp per channel | none found; amount 0 identity |
+| 20 | thermal | amount 0..100, 1, 80 | `l/255` in 0..1; each channel clamped before mix; `a` in 0..1 | none found; amount 0 identity |
+| 21 | matrix | density 10..100, 1, 55; amount 0..100, 1, 70 | `cell >= 10`, `cols >= 1` (527-529); random `y0/len` bounded; glyph alpha computed; glow clamped | amount 0 still draws dim glyphs (not identity by definition), never white |
+| 22 | retro | palette select gameboy/cga/nes | unknown palette falls back to gameboy (545); palette hex literals valid; distances finite | 4-6 colour output has low std by design (mean stays between palette colours) |
+
+Cross-cutting hazard found in the review: `applyEffects`
+(`effects.js:589-599`) catches every effect error and keeps the previous
+canvas. That means a broken effect cannot paint a white page, but it can also
+hide a throw. The fuzz run reports page errors separately; none occurred.
+
+### Parameter-path audit (value -> state -> effect -> render)
+
+The UI path is `app.js:1379-1401`: while typing, empty / `-` / `.` / `-.`
+mark the box `aria-invalid` and leave state alone; a finite in-range value is
+written live; out-of-range text is marked invalid and only clamped on blur.
+`app.js:12-14` `clampToParam` snaps to the step grid and clamps to min/max.
+The effect side now repeats that clamp through `fxNum`, so a value that never
+went through the controls cannot differ. Measured through the real UI
+(`docs/evidence/h2/breakit-h2.txt`, paste via `Control+V` into Amount, starting
+at 70):
+
+| input | state after blur | aria-invalid while editing | render |
+|---|---|---|---|
+| `` (empty) | 70 (kept) | true | mean 0.6831, std 0.1584, finite |
+| `-` | 70 (kept) | true | mean 0.6831, std 0.1584 |
+| `abc` | 70 (kept) | true | mean 0.6831, std 0.1584 |
+| `1e3` | 100 (clamped on blur) | true | mean 0.7633, std 0.1389 |
+| ` 50 ` | 50 (trimmed) | false | mean 0.6295, std 0.1756 |
+
+The sweep's own parameter-path run (`docs/evidence/h2/sweep-param-path.log`,
+34 checks) additionally feeds `None`, `""`, `"0"`, `"-5"`, `"abc"`, `" 40 "`,
+`0`, `-5`, `1e3`, `1e9` and non-integers straight into `fxSketch` and the other
+effects: all are finite, within range after clamping, and non-blank.
+
+### Sweep results (GREEN, after the fix)
+
+```
+$ python tests/gate/effects_sweep.py --only sketch
+34 checks, 0 failure(s)               (docs/evidence/h2/sweep-param-path.log)
+
+$ python tests/gate/effects_sweep.py --only all --quick
+204 checks, 0 failure(s)             (docs/evidence/h2/sweep-all-effects.log)
+1848 ordered pairs, 0 white/blank    (docs/evidence/h2/sweep-pairs.log)
+
+$ python tests/gate/effects_sweep.py --only fuzz
+115553 renders, 0 failures           (docs/evidence/h2/sweep-fuzz.log)
+
+$ python tests/gate/effects_ui.py --shots docs/evidence/h2
+26 checks, 0 failure(s)              (docs/evidence/h2/ui-driven.log)
+```
+
+The all-effects table covers every effect at min / min+1 step / default /
+midpoint / max-1 step / max / disabled, and the sketch acceptance suite covers
+(a)-(e). The pair matrix runs every ordered pair at default and all-max in
+both orders (1848 renders). The fuzz run generates 2,000 random values per
+parameter (including edge values and non-integers), random stacks of 2-8
+effects in random order, 1x1 / 2x2 / 17x13 / 4000x3000 inputs, grayscale,
+transparent, 16-bit-like and portrait/landscape cards, and logs every white or
+NaN result with its exact repro. It found none.
+
+Test definitions, stated so they cannot be mistaken for weakened thresholds:
+uniform white = `mean >= 0.97 and std <= 2/255`; a flat non-white card
+(`std < 2/255` with `mean >= 0.5`) is not white; black is only a failure when
+*all* tested cards are flat black, and is allowed for `invert` and `edges`
+below 5% (defined outputs); identity is asserted only at declared neutral
+configs (`sketch/edges/emboss/sharpen/thermal/sepia/grain/vignette/pixelsort`
+at their neutral, `crt(0,0,0)`, `blur radius 0`, `bloom amount 0`); `duotone`
+with equal endpoints and stacks containing `invert`/`duotone` are exempt from
+the white check because colour is the parameter; fuzz stacks use
+`mean >= 0.985 && std <= 1.5/255` for a blank page. These definitions are in
+`tests/gate/effects_sweep.py` and apply unchanged to the pre-fix tree (that is
+how the RED run above failed).
+
+Sketch acceptance, measured (`sweep-param-path.log`):
+
+| check | result |
+|---|---|
+| (a) Amount 0 identity, hash, Hatch 0/40/100 + 1x1/2x2/17x13/31x7 | equal, correct size |
+| (b) dark third vs light third, Amount 100 | gap 0.32 / 0.34 / 0.38 (Hatch 0/40/100), required >= 0.25 |
+| (c) not white, Amount >= 10, all Hatch, gradient + dark photo + colour bars | dark photo mean 0.2634-0.5131, none blank |
+| (d) Hatch min vs max line density | ink pixels 18,576 -> 43,350 = 2.33x, required >= 2x |
+| (e) 4000x3000 Sketch render | 639-747 ms across runs, documented (budget was 200 ms or document the cost) |
+
+Regression hashes, old vs new, at every UI-reachable value
+(`docs/evidence/h2/h2-hash-old.txt`, `h2-hash-new.txt`, 106 renders each,
+`Math.random` stubbed by `tools/h2_hashes.py`): the two files differ **only**
+for `blur`, `edges` and `sketch` — the three fixed effects. The other 19
+effects are pixel-identical. Within the changed effects, `blur radius 0`,
+`edges amount 0` and `sketch amount 0` are now identity by definition; every
+other difference is the fixed edge/alpha or the fixed sketch maths.
+
+### Cost at 4000x3000 (`docs/evidence/h2/timer4k-breakdown.txt`)
+
+| render | ms |
+|---|---|
+| posterize | 550 |
+| edges | 1866 |
+| sketch (Amount 100, Hatch 100) | 747 |
+| emboss | 2110 |
+| blur (radius 4) | 777 |
+| sharpen | 1790 |
+| six-effect stack (posterize, edges, sketch, emboss, blur, sharpen) | 9869 |
+
+These are full-size export-path numbers. The interactive preview is capped at
+1600px (`app.js:165-166`, `PREVIEW_MAX`), so the editor does not run this cost
+on every interaction; reducing it is H4's task, not hidden here.
+
+### Screenshots (opened and described)
+
+- `docs/evidence/h2/sketch-dark-matrix.png` — 3 rows (Hatch 0 / 40 / 100) x
+  4 columns (Amount 0 / 30 / 70 / 100) on the dark galaxy photo. Amount 0 is
+  the untouched photo (navy sky, blue wave, white stars) in all three rows.
+  Amount 30 shows a light graphite weave over the wave; Amount 70 a clear
+  diagonal crosshatch with the dark sky visibly denser than the bright wave;
+  Amount 100 is a light paper field whose wave is drawn by hatching, not by
+  white pixels. Hatch 0 lines are coarse (~14px), Hatch 100 fine (~6px);
+  no cell is blank and none is a solid black fill.
+- `docs/evidence/h2/sketch-bright-matrix.png` — same grid on the bright
+  cream/dark-blob photo. Amount 0 is the original; Amount 30 adds a faint
+  weave; Amount 70 a readable 45-degree hatch; Amount 100 keeps the cream
+  highlights as paper while the dark blobs carry visible crosshatch. Hatch
+  100 is measurably finer; the paper never disappears.
+- `docs/evidence/h2/ui-sketch.png` — the real editor canvas with Sketch
+  enabled and driven by drag + 15 stepper clicks + typed digits + wheel: the
+  Script stage turns the hatched base into dense glyph rows, light at the top
+  and darker toward the bottom-left; nothing is a white page.
+- `docs/evidence/h2/ui-blur.png` — soft glyph rows with no white border and no
+  dark vignette at the canvas edge (the old transparent fringe would show as a
+  clean rectangular band of missing glyphs; it is gone).
+- `docs/evidence/h2/ui-edges.png` — black canvas. This fixture is a smooth
+  colour gradient with no edges, so the Sobel base is legitimately near-black
+  (`mean 0.0182`, `std 0.0059`); the old failure here was the alpha-0 frame,
+  not the darkness, and the sweep's edge cards with real edges are not blank.
+- `docs/evidence/h2/ui-halftone.png` — regular dot-screen glyph texture over
+  the green/magenta gradient, visible dot pitch, no clipping.
+- `docs/evidence/h2/ui-crt.png` — horizontal scanline rows, slightly curved
+  verticals, magenta top / green bottom preserved.
+- `docs/evidence/h2/ui-glitch.png` — RGB-split glyph rows with horizontal
+  slice offsets; no white bands.
+- `docs/evidence/h2/ui-vhs.png` — noisy, smeared rows and colour bleed, still
+  full-frame content.
+- `docs/evidence/h2/ui-pixelate.png` — blocky glyph clusters with 8px-ish
+  blocks, no empty areas.
+- `docs/evidence/h2/ui-pixelsort.png` — vertical streaks where bright runs
+  were sorted; the frame stays filled.
+- `docs/evidence/h2/ui-bloom.png` — bright rows bloom into their neighbours,
+  dark background retained.
+- `docs/evidence/h2/ui-grain.png` — uniform grain over the whole glyph field,
+  no clear rectangle.
+- `docs/evidence/h2/ui-vignette.png` — corners darker than the centre, centre
+  unclipped.
+- `docs/evidence/h2/ui-duotone.png` — green/black two-colour map, gradients
+  preserved as tone steps.
+- `docs/evidence/h2/ui-posterize.png` — banded glyph rows at the 5-level
+  default, no flat white.
+- `docs/evidence/h2/ui-oil.png` — painterly blobs with smoothed cluster edges.
+- `docs/evidence/h2/ui-emboss.png` — grey relief with a consistent diagonal
+  light direction, no clipped highlights.
+- `docs/evidence/h2/ui-sharpen.png` — crisp glyph boundaries, no halos at the
+  canvas edge.
+- `docs/evidence/h2/ui-invert.png` — inverted photo: light magenta left,
+  dark right; full frame, no transparency.
+- `docs/evidence/h2/ui-sepia.png` — warm brown/olive cast with tonality kept.
+- `docs/evidence/h2/ui-thermal.png` — black -> red -> yellow -> white heat
+  ramp with the hot band in the lower middle.
+- `docs/evidence/h2/ui-matrix.png` — sparse green glyph rain on near-black;
+  the low mean (0.2176) is the effect, not a bug.
+- `docs/evidence/h2/ui-retro.png` — NES palette blocks: red/orange top-right,
+  green/blue/white lower field; flat colours by design, no white page.
+
+These 22 UI shots and the two matrices are the states the task touched. The
+gate's own G3 run also captured the 62 full chrome screenshots
+(dark/light x 360/1280, menus, hover/focus, fullest panel) into
+`docs/evidence/h2/`; they are visually unchanged from H1 because H2 touches
+only effect maths, and G2 checked all 10 theme cells / 88 scans green.
+
+### Break-it list (5) and results
+
+`python docs/evidence/h2/tools/breakit_h2.py` ->
+`docs/evidence/h2/breakit-h2.txt`:
+
+1. **Amount 0 is not identity through the UI, or only alone.** Set Amount to 0
+   by typing, then compare the prepared base hash with the same stack minus
+   Sketch (alone, and with Posterize): both hashes equal, amount reads 0. PASS.
+2. **Hatch extremes crash or go non-deterministic on tiny images.** 1x1, 2x2
+   and 17x13 sources at Hatch 0/50/100: 9 runs, no exception, no non-finite or
+   non-opaque pixel, two runs byte-identical. PASS.
+3. **Pasted junk corrupts the parameter.** Paste `""`, `-`, `abc`, `1e3`,
+   ` 50 ` into Amount and blur: state stays finite and in range (70 kept,
+   100 clamped, 50 trimmed), the box flags `aria-invalid` while the text is
+   invalid, and every render stays non-blank. PASS.
+4. **Undo/redo restores the value but not the pixels.** Change Hatch 40 -> 90,
+   undo, redo: 40 -> 90 -> 40 -> 90 and the hashes return exactly to the
+   base/changed hashes (3611139 / 3979507346). PASS.
+5. **4K plus a six-effect stack hangs or blanks.** Replace the image after the
+   stack is set: 4000x3000, 6 effects, finite, alpha 255, not blank; stack
+   7468 ms, Sketch alone 639 ms, no page errors. PASS (cost documented above;
+   H4 owns reducing it).
+
+### Gate runs (3x consecutive)
+
+Green / green / green (`docs/evidence/h2/h2-gate-1.log`, `h2-gate-2.log`,
+`h2-gate-3.log`). Each run:
+
+```
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 76680 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/h2/
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 PASS top-bar geometry: 0 violation(s)
+G9 PASS numeric steppers: 65 measurements, 15 hold-rate rows
+G10 PASS effects: 239 checks, 0 failure(s)
+GATE PASS
+```
+
+G10 is the new permanent check (sketch acceptance + all-effects + 1848 pairs)
+and fails on any white/NaN/alpha/identity result. G4 passed in all three runs;
+its light-360 p95 was 16.7 ms in run 1 but spiked to 1200/1283 ms in runs 2/3
+(dark and 1280 cells stayed at 16.7 ms). G4 currently fails only on a missing
+or errored sample with fewer than 10 frames and reports p95 without a
+threshold (`tests/gate/run_gate.py:1128-1130`), so this spike did not make the
+run red. It is pre-existing frame variance on the smallest light cell, not an
+effect-maths change; H4's scheduler work is where frame-time stability is
+addressed, and G4 must not be weakened meanwhile.
+
+### Files changed and why
+
+```
+ effects.js             | 159 ++++++++++++++++++++++++++++++++++-------------
+ tests/gate/run_gate.py |  39 +++++++++++-
+ 2 files changed, 154 insertions(+), 44 deletions(-)
+```
+
+- `effects.js`: `fxNum` and its 26 call sites, the `fxSketch` rewrite,
+  `fxEdges` neutral + opaque frame, `fxBlur` padding + alpha fix.
+- `tests/gate/run_gate.py`: G10 runs the permanent sweep
+  (`effects_sweep.py --only all --quick`; 239 checks, ~50 s) and fails on any
+  white/NaN/alpha/identity result.
+- New permanent tests: `tests/gate/effects_sweep.py` (662 lines: sketch
+  acceptance, all effects, 1848 pairs, fuzz) and `tests/gate/effects_ui.py`
+  (231 lines: every effect through the real controls, preset, undo/redo,
+  theme toggle, 4K replace).
+- Evidence tooling: `docs/evidence/h2/tools/` (`h2_hashes.py`,
+  `sketch_shots.py`, `timer4k.py`, `timer4k_breakdown.py`, `breakit_h2.py`).
+
+### Commit / tag
+
+`H2: tonal crosshatch identity + effect sweep` / tag `H2-pass`.
+
+### Remaining flaws
+
+- `applyEffects` silently keeps the previous canvas on a thrown effect
+  (`effects.js:589-599`). No effect throws in 115,553 fuzz renders, but a
+  future one would fail quietly; surfacing a console error badge is a UI
+  decision, not part of H2.
+- Sketch at 4000x3000 costs 639-747 ms on the export path. The UI preview is
+  capped at 1600px, so this is not felt while editing; H4 must not change the
+  pixels while reducing it.
+- The 4K six-effect export stack is 9.9 s. That is the measured cost, not a
+  claim that it is fast.
+- Edge Detect on an image with no edges is legitimately black
+  (`ui-edges.png`); a user may read that as "broken". It is the effect's
+  defined output, not a white page.

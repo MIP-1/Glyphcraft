@@ -1704,6 +1704,37 @@ def g9_steppers() -> tuple[bool, list[str], str]:
 BASE_URL = ""
 
 
+# ---------------------------------------------------------------------------
+# G10 - effects: sketch acceptance + every effect at its range ends (H2)
+# ---------------------------------------------------------------------------
+
+def g10_effects() -> tuple[bool, list[str], str]:
+    started = time.time()
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(ROOT / "tests" / "gate" / "effects_sweep.py"),
+             "--only", "all", "--quick"],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=1800,
+        )
+    except subprocess.TimeoutExpired:
+        return False, ["tests/gate/effects_sweep.py: timed out after 1800s"], ""
+    output = (proc.stdout or "") + (proc.stderr or "")
+    lines = output.splitlines()
+    summary = next((line for line in reversed(lines) if "checks," in line and "failure" in line), "")
+    problems = [line.strip() for line in lines if line.strip().startswith("FAIL ")]
+    if proc.returncode != 0:
+        problems.insert(0, f"tests/gate/effects_sweep.py exited {proc.returncode}")
+    match = re.search(r"(\d+) checks, (\d+) failure", summary)
+    checks = int(match.group(1)) if match else 0
+    if checks < 30:
+        problems.append(f"effects sweep ran only {checks} checks")
+    if "EFFECTS SWEEP PASS" not in output:
+        problems.append("effects sweep did not report PASS")
+    elapsed = time.time() - started
+    detail = f"{summary or 'no summary'} ({elapsed:.1f}s)"
+    return not problems, problems[:40], detail
+
+
 def main() -> int:
     global BASE_URL
     ensure_fixtures()
@@ -1772,11 +1803,17 @@ def main() -> int:
         for problem in g9_problems[:80]:
             print("  " + problem)
         results["G9"] = {"pass": g9_ok, "problems": g9_problems}
+
+        g10_ok, g10_problems, g10_detail = g10_effects()
+        print(("G10 PASS" if g10_ok else "G10 FAIL") + " effects: " + g10_detail)
+        for problem in g10_problems:
+            print("  " + problem)
+        results["G10"] = {"pass": g10_ok, "problems": g10_problems}
     finally:
         httpd.shutdown()
         httpd.server_close()
 
-    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9") if not results.get(name, {}).get("pass")]
+    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10") if not results.get(name, {}).get("pass")]
     print("")
     print("GATE " + ("PASS" if not failed else "FAIL") + " " + ", ".join(failed))
     return 0 if not failed else 1

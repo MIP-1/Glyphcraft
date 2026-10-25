@@ -1,0 +1,78 @@
+check                    case                                   detail                                         verdict
+a identity amount=0      hatch=0                                DIFF 389586373 != 1273798085                   FAIL
+a identity amount=0      hatch=40                               DIFF 389586373 != 1393048597                   FAIL
+a identity amount=0      hatch=100                              DIFF 389586373 != 3794237373                   FAIL
+a identity size          1x1                                    DIFF                                           FAIL
+a identity size          2x2                                    DIFF                                           FAIL
+a identity size          17x13                                  DIFF                                           FAIL
+a identity size          31x7                                   DIFF                                           FAIL
+b tonal dark-vs-light    hatch=0 gap=-0.01                      dark=252.0 light=249.1                         FAIL
+b tonal dark-vs-light    hatch=40 gap=-0.01                     dark=249.2 light=246.2                         FAIL
+b tonal dark-vs-light    hatch=100 gap=-0.01                    dark=244.9 light=241.9                         FAIL
+c not white              gradient amount=10 hatch=0             {'w': 512, 'h': 512, 'mean': 0.9988, 'std': 0.0058, 'whiteFrac': 0.9811, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 237, 'max': 255, 'hash': 70831557} FAIL
+c not white              gradient amount=10 hatch=40            {'w': 512, 'h': 512, 'mean': 0.9875, 'std': 0.0246, 'whiteFrac': 0.7928, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 210, 'max': 255, 'hash': 408293533} FAIL
+c not white              gradient amount=10 hatch=100           {'w': 512, 'h': 512, 'mean': 0.9707, 'std': 0.0601, 'whiteFrac': 0.7928, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 168, 'max': 255, 'hash': 3415278901} FAIL
+c not white              gradient amount=30 hatch=0             {'w': 512, 'h': 512, 'mean': 0.9961, 'std': 0.0175, 'whiteFrac': 0.9594, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 202, 'max': 255, 'hash': 2324768061} FAIL
+c not white              gradient amount=30 hatch=40            {'w': 512, 'h': 512, 'mean': 0.9848, 'std': 0.0297, 'whiteFrac': 0.7753, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 175, 'max': 255, 'hash': 2396185741} FAIL
+c not white              gradient amount=50 hatch=0             {'w': 512, 'h': 512, 'mean': 0.9935, 'std': 0.0293, 'whiteFrac': 0.9461, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 167, 'max': 255, 'hash': 958381909} FAIL
+c not white              gradient amount=50 hatch=40            {'w': 512, 'h': 512, 'mean': 0.9823, 'std': 0.0378, 'whiteFrac': 0.7645, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 141, 'max': 255, 'hash': 1923646221} FAIL
+c not white              gradient amount=70 hatch=0             {'w': 512, 'h': 512, 'mean': 0.991, 'std': 0.0409, 'whiteFrac': 0.9276, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 132, 'max': 255, 'hash': 2257231005} FAIL
+c not white              gradient amount=70 hatch=40            {'w': 512, 'h': 512, 'mean': 0.9797, 'std': 0.0474, 'whiteFrac': 0.7495, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 107, 'max': 255, 'hash': 2491765573} FAIL
+c not white              gradient amount=70 hatch=100           mean=0.9629 std=0.0725                         PASS
+c not white              gradient amount=100 hatch=0            {'w': 512, 'h': 512, 'mean': 0.987, 'std': 0.0585, 'whiteFrac': 0.9106, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 79, 'max': 255, 'hash': 3812821573} FAIL
+c not white              gradient amount=100 hatch=40           {'w': 512, 'h': 512, 'mean': 0.9758, 'std': 0.0632, 'whiteFrac': 0.7358, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 55, 'max': 255, 'hash': 3896827229} FAIL
+c not white              dark photo amount=10 hatch=0           {'w': 512, 'h': 512, 'mean': 0.9913, 'std': 0.0092, 'whiteFrac': 0.8528, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 238, 'max': 255, 'hash': 884400083} FAIL
+c not white              dark photo amount=10 hatch=40          {'w': 512, 'h': 512, 'mean': 0.98, 'std': 0.0256, 'whiteFrac': 0.6891, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 216, 'max': 255, 'hash': 3832378163} FAIL
+c not white              dark photo amount=10 hatch=100         mean=0.9632 std=0.0605                         PASS
+c not white              dark photo amount=30 hatch=0           {'w': 512, 'h': 512, 'mean': 0.9741, 'std': 0.028, 'whiteFrac': 0.654, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 205, 'max': 255, 'hash': 3873788332} FAIL
+c not white              dark photo amount=70 hatch=0           mean=0.939 std=0.0649                          PASS
+c not white              dark photo amount=70 hatch=100         mean=0.9109 std=0.0882                         PASS
+c not white              color bars amount=10 hatch=0           mean=0.9692 std=0.0388                         PASS
+c not white              color bars amount=10 hatch=100         mean=0.9411 std=0.0713                         PASS
+c not white              color bars amount=70 hatch=0           mean=0.7824 std=0.2755                         PASS
+c not white              color bars amount=70 hatch=100         mean=0.7542 std=0.2819                         PASS
+d hatch density          amount=50 ink 0 -> 49920 (x49920.00)   denser                                         PASS
+d hatch density          amount=100 ink 0 -> 49920 (x49920.00)  denser                                         PASS
+param path               amount=cross=''                        {'w': 512, 'h': 512, 'mean': 1, 'std': 0, 'whiteFrac': 1, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 255, 'max': 255, 'hash': 1273798085} FAIL
+param path               amount=cross='-'                       {'w': 512, 'h': 512, 'mean': 0, 'std': 0, 'whiteFrac': 0, 'blackFrac': 1, 'alphaBad': 0, 'nonFinite': 0, 'min': 0, 'max': 0, 'hash': 3938229701} PASS
+param path               amount=cross='.'                       {'w': 512, 'h': 512, 'mean': 0, 'std': 0, 'whiteFrac': 0, 'blackFrac': 1, 'alphaBad': 0, 'nonFinite': 0, 'min': 0, 'max': 0, 'hash': 3938229701} PASS
+param path               amount=cross='0'                       {'w': 512, 'h': 512, 'mean': 1, 'std': 0, 'whiteFrac': 1, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 255, 'max': 255, 'hash': 1273798085} FAIL
+param path               amount=cross='-5'                      {'w': 512, 'h': 512, 'mean': 1, 'std': 0, 'whiteFrac': 1, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 255, 'max': 255, 'hash': 1273798085} FAIL
+param path               amount=cross='150'                     {'w': 512, 'h': 512, 'mean': 0.9385, 'std': 0.1243, 'whiteFrac': 0.7095, 'blackFrac': 0.0023, 'alphaBad': 0, 'nonFinite': 0, 'min': 0, 'max': 255, 'hash': 188342712} PASS
+param path               amount=cross='1e3'                     {'w': 512, 'h': 512, 'mean': 0.7506, 'std': 0.4103, 'whiteFrac': 0.6376, 'blackFrac': 0.2183, 'alphaBad': 0, 'nonFinite': 0, 'min': 0, 'max': 255, 'hash': 2439244034} PASS
+param path               amount=cross=' 40 '                    {'w': 512, 'h': 512, 'mean': 0.9836, 'std': 0.0334, 'whiteFrac': 0.7685, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 158, 'max': 255, 'hash': 2893736309} FAIL
+param path               amount=cross=None                      {'w': 512, 'h': 512, 'mean': 1, 'std': 0, 'whiteFrac': 1, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 255, 'max': 255, 'hash': 1273798085} FAIL
+param path               amount=cross='abc'                     {'w': 512, 'h': 512, 'mean': 0, 'std': 0, 'whiteFrac': 0, 'blackFrac': 1, 'alphaBad': 0, 'nonFinite': 0, 'min': 0, 'max': 0, 'hash': 3938229701} PASS
+e 4000x3000              1078.5ms                               off the interaction path                       PASS
+
+45 checks, 29 failure(s)
+  FAIL sketch amount 0 hatch 0: output is not the input
+  FAIL sketch amount 0 hatch 40: output is not the input
+  FAIL sketch amount 0 hatch 100: output is not the input
+  FAIL sketch amount 0 at 1x1: not the input or wrong size
+  FAIL sketch amount 0 at 2x2: not the input or wrong size
+  FAIL sketch amount 0 at 17x13: not the input or wrong size
+  FAIL sketch amount 0 at 31x7: not the input or wrong size
+  FAIL sketch tonal hatch 0: dark third 252.0 vs light 249.1 (gap -0.01 < 0.25)
+  FAIL sketch tonal hatch 40: dark third 249.2 vs light 246.2 (gap -0.01 < 0.25)
+  FAIL sketch tonal hatch 100: dark third 244.9 vs light 241.9 (gap -0.01 < 0.25)
+  FAIL sketch gradient amount 10 hatch 0: {'w': 512, 'h': 512, 'mean': 0.9988, 'std': 0.0058, 'whiteFrac': 0.9811, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 237, 'max': 255, 'hash': 70831557}
+  FAIL sketch gradient amount 10 hatch 40: {'w': 512, 'h': 512, 'mean': 0.9875, 'std': 0.0246, 'whiteFrac': 0.7928, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 210, 'max': 255, 'hash': 408293533}
+  FAIL sketch gradient amount 10 hatch 100: {'w': 512, 'h': 512, 'mean': 0.9707, 'std': 0.0601, 'whiteFrac': 0.7928, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 168, 'max': 255, 'hash': 3415278901}
+  FAIL sketch gradient amount 30 hatch 0: {'w': 512, 'h': 512, 'mean': 0.9961, 'std': 0.0175, 'whiteFrac': 0.9594, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 202, 'max': 255, 'hash': 2324768061}
+  FAIL sketch gradient amount 30 hatch 40: {'w': 512, 'h': 512, 'mean': 0.9848, 'std': 0.0297, 'whiteFrac': 0.7753, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 175, 'max': 255, 'hash': 2396185741}
+  FAIL sketch gradient amount 50 hatch 0: {'w': 512, 'h': 512, 'mean': 0.9935, 'std': 0.0293, 'whiteFrac': 0.9461, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 167, 'max': 255, 'hash': 958381909}
+  FAIL sketch gradient amount 50 hatch 40: {'w': 512, 'h': 512, 'mean': 0.9823, 'std': 0.0378, 'whiteFrac': 0.7645, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 141, 'max': 255, 'hash': 1923646221}
+  FAIL sketch gradient amount 70 hatch 0: {'w': 512, 'h': 512, 'mean': 0.991, 'std': 0.0409, 'whiteFrac': 0.9276, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 132, 'max': 255, 'hash': 2257231005}
+  FAIL sketch gradient amount 70 hatch 40: {'w': 512, 'h': 512, 'mean': 0.9797, 'std': 0.0474, 'whiteFrac': 0.7495, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 107, 'max': 255, 'hash': 2491765573}
+  FAIL sketch gradient amount 100 hatch 0: {'w': 512, 'h': 512, 'mean': 0.987, 'std': 0.0585, 'whiteFrac': 0.9106, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 79, 'max': 255, 'hash': 3812821573}
+  FAIL sketch gradient amount 100 hatch 40: {'w': 512, 'h': 512, 'mean': 0.9758, 'std': 0.0632, 'whiteFrac': 0.7358, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 55, 'max': 255, 'hash': 3896827229}
+  FAIL sketch dark photo amount 10 hatch 0: {'w': 512, 'h': 512, 'mean': 0.9913, 'std': 0.0092, 'whiteFrac': 0.8528, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 238, 'max': 255, 'hash': 884400083}
+  FAIL sketch dark photo amount 10 hatch 40: {'w': 512, 'h': 512, 'mean': 0.98, 'std': 0.0256, 'whiteFrac': 0.6891, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 216, 'max': 255, 'hash': 3832378163}
+  FAIL sketch dark photo amount 30 hatch 0: {'w': 512, 'h': 512, 'mean': 0.9741, 'std': 0.028, 'whiteFrac': 0.654, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 205, 'max': 255, 'hash': 3873788332}
+  FAIL sketch param path '': {'w': 512, 'h': 512, 'mean': 1, 'std': 0, 'whiteFrac': 1, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 255, 'max': 255, 'hash': 1273798085}
+  FAIL sketch param path '0': {'w': 512, 'h': 512, 'mean': 1, 'std': 0, 'whiteFrac': 1, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 255, 'max': 255, 'hash': 1273798085}
+  FAIL sketch param path '-5': {'w': 512, 'h': 512, 'mean': 1, 'std': 0, 'whiteFrac': 1, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 255, 'max': 255, 'hash': 1273798085}
+  FAIL sketch param path ' 40 ': {'w': 512, 'h': 512, 'mean': 0.9836, 'std': 0.0334, 'whiteFrac': 0.7685, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 158, 'max': 255, 'hash': 2893736309}
+  FAIL sketch param path None: {'w': 512, 'h': 512, 'mean': 1, 'std': 0, 'whiteFrac': 1, 'blackFrac': 0, 'alphaBad': 0, 'nonFinite': 0, 'min': 255, 'max': 255, 'hash': 1273798085}
+EFFECTS SWEEP FAIL
