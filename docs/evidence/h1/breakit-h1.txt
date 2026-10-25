@@ -1,0 +1,53 @@
+{
+ "touch_tap_once": {
+  "value": 11,
+  "state": 11,
+  "pass": true
+ },
+ "keyboard": {
+  "space": 21,
+  "enter": 22,
+  "up": 23,
+  "down": 22,
+  "pass": true
+ },
+ "non_primary_click": {
+  "value": 5,
+  "pass": true
+ },
+ "undo_per_press": {
+  "after3": 3,
+  "undo1": 2,
+  "undo2": 1,
+  "pass": true
+ },
+ "undo_burst_is_one_entry": {
+  "after5": 5,
+  "after_undo": 1,
+  "pass": true
+ },
+ "layout": {
+  "at320": {
+   "docW": 320,
+   "winW": 320,
+   "stepRight": 628,
+   "cardRight": 628,
+   "w": 44,
+   "h": 44
+  },
+  "text200": {
+   "docW": 320,
+   "winW": 320,
+   "stepRight": 628,
+   "visible": true
+  },
+  "pass": true
+ },
+ "heavy_4k_20_clicks": {
+  "value": 20,
+  "state": 20,
+  "pass": true
+ },
+ "page_errors": []
+}
+BREAK-IT PASS

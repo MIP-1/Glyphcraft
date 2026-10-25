@@ -963,3 +963,234 @@ minimum that still fits all three values without clipping; if a future value
 string is longer than `400% 4000×3000 8742ms`, the status box grows until it
 reaches the bar width, then the 1px-clip check will fail the gate rather than
 silently truncate.
+
+---
+
+## H1 — Stepper arrows: rapid clicks, hold speed, exact values — STATUS: PASS
+
+Root cause (measured on `HEAD 7940130` in a real browser, before any change):
+
+The up/down arrows were the browser's own number spinner on
+`input[type="number"]` (`index.html:150,184,227,234,277,326-375,425`), not an
+application control. Three measured defects:
+
+1. **Hit area.** In a 44px-high field only a ~6×6px strip inside the right
+   edge responds. A 4×7 probe grid over the field's right edge stepped only at
+   `x = right−17..−14`, `y = top+14..17` (21 of 21 tested points that produced a
+   step were inside that 6px strip). Everything else focused the field and did
+   nothing → "the arrow does not always grab / does not step reliably".
+2. **A burst of rapid presses is a double-click gesture, and the field's
+   `dblclick` is a reset.** The value field owns reset-to-default
+   (`app.js:1339` on HEAD: `numInput.addEventListener("dblclick", () =>
+   commit(p.def, true))`, and `app.js:1957` `setVal(+slider.defaultValue)`),
+   and adjustment defaults are 0 (`index.html:326-375`). The browser counts
+   repeated presses in one spot as clickCount 1, 2, 3… and dispatches
+   `dblclick` on the second one. Measured with real counting (CDP `clickCount`,
+   8 presses 120ms apart, `docs/evidence/h1/red-multiclick.txt`):
+   - brightness `20 → 21 → **0** → 1 → 2 → 3 → 4 → 5 → 6`
+   - halftone Dot `5 → 6 → **5** → 6 → 7 → 8 → 9 → 10 → 11`
+
+   That is the reported symptom word for word: "adds 1–3 steps then the value
+   falls back to 0". A plain double-click on the field also does it on its own
+   (`42 → 0`).
+3. **Slow hold.** The native spinner repeats at ~17/s (measured 17 steps in the
+   first second), which is under the required steady rate.
+
+Correction to an earlier draft of this section: "only +9 steps then dead" on
+`fx.halftone.size` was that control's clamp (min 2, **max 14**), not a dead
+spinner. Re-measured with a clamp-aware probe, the native spinner delivers all
+30 presses when `clickCount` is held at 1
+(`docs/evidence/h1/red-native-spinner.txt`). The application's own value path
+was already exact: 30 rapid presses on `depth-num` produced `80 → 110` with one
+write per step. So the defects were the affordance (6px hit strip, a gesture
+that lands on a reset handler) and the hold rate — not the state model.
+
+Fix (one component, one value writer):
+
+- `app.js:24` `attachStepper()` — a 44×44 `button.stepper` split into two
+  22×21 halves (`[data-step=up|down]`), one `pointerdown` = one **synchronous**
+  step, pointer capture, hold repeat after `STEP_INITIAL_DELAY = 300ms`
+  (`app.js:21`) at `STEP_REPEAT_MS = 35ms` (`app.js:22`), release ends the
+  gesture and schedules **one** coalesced render. No render can run during the
+  gesture, so a slow render can never delay, drop or overwrite a step.
+- The arrows are a separate element from the value field, so a burst can never
+  become a `dblclick` reset on that field.
+- Every numeric control now steps through the single clamps used everywhere
+  else (`commit()` for effect params, `setVal()`/`roundToStep()` for
+  adjustments), and keyboard (`ArrowUp/Down`, `Shift` ×10, `PageUp/Down` ×10),
+  wheel, typing and drag keep working.
+- The browser's spinner is hidden only where this component replaces it
+  (`input[type="number"].has-stepper`, `style.css:740`); the output
+  width/height fields, which have no stepper, keep their native arrows.
+
+RED output (before, `docs/evidence/h1/red-multiclick.txt`, real click counting;
+the probe scripts are kept in `docs/evidence/h1/tools/`):
+
+```
+$ python red_multiclick.py <HEAD-worktree> 8 120 adj-brightness-num 20
+=== adj-brightness-num  kind=native-spinner  clicks=8 spacing=120ms  hit=(1251, 466)
+  click 1: value=21
+  click 2: value=0
+  click 3: value=1
+  ...
+dblclick targets: ['adj-brightness-num']
+VERDICT value fell back to the default 0
+
+$ python red_multiclick.py <HEAD-worktree> 8 120 fx.halftone.size 5
+  click 1: value=6
+  click 2: value=5
+  ...
+dblclick targets: ['INPUT']
+VERDICT non-monotonic
+```
+
+Native spinner, clamp-aware probe (`docs/evidence/h1/red-native-spinner.txt`):
+
+```
+=== fx.halftone.size  kind=native-spinner  clicks=30 spacing=20ms
+start input=5 state=5 | end input=14 state=14 | writes=0
+VERDICT expected end 14 (clamp 2..14), got 14 | value writes=0 for 30 clicks
+=== depth-num  kind=native-spinner  clicks=30 spacing=20ms
+start input=80 state=80 | end input=110 state=110 | writes=60
+VERDICT expected end 110 (clamp 20..240), got 110 | value writes=60 for 30 clicks
+```
+
+Real double-click on the value text, and the same burst on the fixed tree
+(`docs/evidence/h1/green-multiclick.txt` → `dblclick targets: ['BUTTON']`,
+`VERDICT monotonic`, 21…28 / 6…13 with no fall-back).
+
+GREEN output (after): G9 in the gate drives the real UI for **every** numeric
+control (42 controls: 6 digitiser/export + 8 adjustments + 28 effect params
+across all 22 effects) with real mouse events and no artificial waits:
+
+```
+G9 PASS numeric steppers: 65 measurements, 15 hold-rate rows
+```
+
+Post-fix write log for a 30-click burst at 20ms
+(`docs/evidence/h1/green-stepper.txt`):
+
+```
+=== fx.halftone.size  kind=step-btn  clicks=30 spacing=20ms
+start input=5 state=5 | end input=14 state=14 | writes=30
+VERDICT expected end 14 (clamp 2..14), got 14 | value writes=30 for 30 clicks
+=== depth-num  kind=step-btn  clicks=30 spacing=20ms
+start input=80 state=80 | end input=110 state=110 | writes=60
+VERDICT expected end 110 (clamp 20..240), got 110 | value writes=60 for 30 clicks
+```
+
+30 writes for 30 clicks on the clamped control (each click still commits and is
+clamped), and the 20..240 control moves exactly +30 with no lost step.
+
+Covered per control: 30 up-clicks at 25ms → `start + 30·step` clamped, then 30
+down-clicks back to `start`; mixed burst 10↑/5↓/10↑/3↓; 30 × ArrowUp, 10 ×
+Shift+ArrowUp, 10 × PageDown; 30 wheel-up + 30 wheel-down ticks; 100 clicks at
+0–10ms; double- and triple-click on the arrow with a real increasing
+`click_count` (one step per press, the exact gesture that used to trigger the
+reset); click-then-hold; and on a 4000×3000 image with a 6-effect stack
+(`halftone, posterize, edges, emboss, blur, sharpen`) the same bursts plus
+30-up/30-down and mixed bursts. Value **and** `state.opts` are asserted after
+every burst. The green burst trace above shows the same 8-click gesture that
+resets the pre-fix field stays monotonic on the stepper.
+
+Hold rate, old (native spinner) vs new, 5 controls × 1s/2s/3s, two/three runs
+each (`docs/evidence/h1/hold-old.jsonl`, `hold-new.jsonl`):
+
+| control | 1s old → new | 2s old → new | 3s old → new |
+|---|---|---|---|
+| adj-brightness | 17 → 21 | 37 → 50 | 57 → 78 |
+| adj-contrast | 17 → 21 | 37 → 50 | 57 → 78 |
+| adj-hue | 17 → 21 | 36 → 50 | 57 → 78 |
+| depth | 17 → 21 | 37 → 50 | 57 → 78 |
+| char-offset | 17 → 21 | 37 → 50 | 57 → 78 |
+
+New rate 21/s over the first second (300ms delay + 28.6/s steady, sampled at
+26/s by rAF) — **≥ the old rate at every duration**, initial delay 300ms
+(inside the required 300–500ms window), steady rate inside 15–30/s.
+
+Input latency (`pointerdown` → displayed value): 0.01–2ms on an idle stack and
+with a 4K heavy stack pending (budget 16ms).
+
+Gate runs (3x): green / green / green (`/tmp/opencode/h1-gate-1.log`,
+`h1-gate-2.log`, `h1-gate-3.log`; G9 65 measurements/15 hold rows each, G5
+169/0 each).
+
+Screenshots (path — what I see):
+- `docs/evidence/h1/dark-1280-steppers.png` — adjustments section: every row
+  has a full-width slider, a 56px value box and a 44×44 stepper flush with the
+  panel's right edge; chevrons centered in each half with a 1px divider; all
+  eight rows share the same baseline and box height.
+- `docs/evidence/h1/light-1280-steppers.png` — same geometry on the light
+  theme: white stepper boxes with the warm 1px border, dark chevrons, visible
+  divider; no dark panel leaks into the cream sidebar.
+- `docs/evidence/h1/dark-360-steppers.png` — 360px: slider ~190px, value box,
+  then the 44px stepper; the stepper's right border sits 8px inside the
+  viewport, nothing clipped; the top row is under the sticky action bar only
+  because the capture scrolled it there.
+- `docs/evidence/h1/light-360-h1-row-zoom.png` and
+  `light-360-stepper-clip-4x.png` — 3×/4× crops of one row: rounded corners on
+  all four sides of the stepper, 1px internal divider, chevrons not touching
+  the borders, 4px gap to the value box.
+- `docs/evidence/h1/dark-1280-h1-effects.png` / `light-1280-h1-effects.png` —
+  effect cards: label, 84px slider, 56px value box, 44px stepper; the stepper
+  is inside the card (right edge 1268 = card edge), no overlap with Reset /
+  Remove.
+- `docs/evidence/h1/dark-360-h1-effects.png` / `dark-360-h1-adjustments.png` —
+  the same rows at 360px; nothing overflows the card and the slider stays
+  usable.
+- `docs/evidence/h1/dark-1280-step-hover.png`, `dark-1280-step-focus.png`,
+  `dark-1280-step-pressed.png` (and the `light-360-*` equivalents) — hover
+  darkens the pressed half, focus draws the 2px accent ring outside the box,
+  pressed shows `--surface-active`; the ring is not clipped by the card.
+
+Break-it list (5) and results
+(`python docs/evidence/h1/tools/breakit_h1.py` → `BREAK-IT PASS`):
+1. **Touch press steps twice or not at all** — `has_touch` context, `page.tap`
+   on the up half: 10 → 11, state 11 (exactly one step).
+2. **Keyboard double-fires** — focus the stepper: Space 21, Enter 22, ArrowUp
+   23, ArrowDown 22 (one step per press; the button's `click` is prevented).
+3. **Wrong button / stray gesture steps** — right-click and middle-click on the
+   up half: value stays 5.
+4. **Undo history polluted or lost** — three presses 700ms apart: 3 → undo 2 →
+   undo 1. A 5-press burst inside the app's 600ms history window is one entry
+   (5 → undo 1), identical to the slider's existing coalescing.
+5. **Layout breaks at the smallest width / text zoom / with a heavy 4K stack** —
+   320px: `scrollWidth == innerWidth`, stepper inside its card, all panel
+   controls ≥44×44 (the existing 169-test touch-target check passes); 200% text
+   zoom: still visible, no page overflow; 4K + 4 effects + 20 rapid presses:
+   value 20, state 20.
+
+Files changed (git diff --stat) and why:
+```
+ app.js                 | 129 ++++++++++++-
+ index.html             |   2 +-
+ style.css              |  41 +++-
+ tests/gate/run_gate.py | 497 ++++++++++++++++++++++++++++++++++
+```
+- `app.js`: the shared `attachStepper()` component, its use in the effect
+  param rows and in `syncSliderNumber()`, synchronous stepping with deferred
+  render, step snapping for the adjustment path, PageUp/PageDown and wheel on
+  both groups, and the `has-stepper` marker.
+- `index.html`: the cell-size / glyph-weight row becomes
+  `.control-row control-row-stack` (two 44px steppers no longer fit side by
+  side in a half-width control).
+- `style.css`: the `.stepper`/`.step-btn` component (44×44, 1px border, 6px
+  radius, hover/active/focus states), spinner removal scoped to
+  `.has-stepper`, the stacked row, and a 56px value box in effect cards.
+- `tests/gate/run_gate.py`: permanent G9 (real mouse events, all controls,
+  heavy 4K stack, hold-rate and latency measurements).
+- Also in `app.js`: the deferred render after typing/arrow-key commits moved
+  from 40ms to 140ms so a key-repeat burst coalesces into one frame instead of
+  one render per key; stepping is unaffected (it is synchronous and commits
+  with `notify = false`), and pointer-down latency stays 0.01–2ms.
+
+Commit / tag: `H1: shared stepper replaces the native number spinner` / tag `H1-pass`.
+
+Remaining flaws:
+- A held press shows no live preview until release: renders are deliberately
+  deferred for the duration of the gesture (that is what makes the hold fast
+  and exact). H4's render scheduler replaces this with per-frame coalescing.
+- The stepper is one button: a screen-reader user increases with Enter/Space
+  and decreases with ArrowDown (stated in its `aria-label`); two separate
+  buttons would be finer-grained.
+- Real touch hardware is HUMAN-CHECK.

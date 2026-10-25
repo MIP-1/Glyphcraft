@@ -1,0 +1,18 @@
+# RED on HEAD 7940130 (git worktree /tmp/opencode/gc-h0), corrected verdict: the
+# probe now accounts for the control's clamp, so a 'stop' at max is not a defect.
+
+
+=== fx.halftone.size  kind=native-spinner  clicks=30 spacing=20ms  hit=(1179, 466)
+start input=5 state=5 | end input=14 state=14 | writes=0
+ idx      t(ms)   old -> new    state   app.js call site
+VERDICT expected end 14 (clamp 2..14), got 14 | value writes=0 for 30 clicks
+
+=== depth-num  kind=native-spinner  clicks=30 spacing=20ms  hit=(1251, 466)
+start input=80 state=80 | end input=110 state=110 | writes=60
+ idx      t(ms)   old -> new    state   app.js call site
+VERDICT expected end 110 (clamp 20..240), got 110 | value writes=60 for 30 clicks
+dblclick events seen: [0, None]
+
+# Real double-click on the value text (the gesture a burst produces):
+DOUBLE-CLICK on the value text: {'input': '42', 'state': 42} -> {'input': '0', 'state': 0}
+6 rapid clicks on the text: {'input': '42', 'state': 42}

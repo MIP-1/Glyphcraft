@@ -1,0 +1,28 @@
+# GREEN: the same bursts on the fixed tree
+=== adj-brightness-num  kind=stepper  clicks=8 spacing=120ms  hit=(1246, 463.5)
+start value=20  state=None
+  click 1: value=21
+  click 2: value=22
+  click 3: value=23
+  click 4: value=24
+  click 5: value=25
+  click 6: value=26
+  click 7: value=27
+  click 8: value=28
+dblclick targets: ['BUTTON']
+final value: 28
+VERDICT monotonic
+
+=== fx.halftone.size  kind=stepper  clicks=8 spacing=120ms  hit=(1218, 463.5)
+start value=5  state=None
+  click 1: value=6
+  click 2: value=7
+  click 3: value=8
+  click 4: value=9
+  click 5: value=10
+  click 6: value=11
+  click 7: value=12
+  click 8: value=13
+dblclick targets: ['BUTTON']
+final value: 13
+VERDICT monotonic

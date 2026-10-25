@@ -243,6 +243,7 @@ h1, h2, h3, h4, h5, h6, .section-title, .logo, .btn {
 .menubar-right > .icon-btn:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
 .menubar-right > .icon-btn svg { width: 18px; height: 18px; }
 
+
 .menu { position: relative; }
 .menu-btn {
   background: transparent;
@@ -610,6 +611,8 @@ h1, h2, h3, h4, h5, h6, .section-title, .logo, .btn {
 }
 .control-unit { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
 .control-row { display: flex; gap: var(--space-2); }
+.control-row-stack { flex-direction: column; gap: var(--space-3); }
+.control-row-stack .control.half { flex: none; width: 100%; }
 .control.half { flex: 1; min-width: 0; }
 
 select,
@@ -731,6 +734,42 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--border-focus); o
 .control-input-wrap { display: flex; align-items: center; gap: var(--space-1); width: 100%; }
 .control-input-wrap input[type="number"] { flex: 1; width: auto; }
 
+/* Where the shared stepper replaces the native spin buttons, hide them: they
+   stop stepping after a few rapid presses and their hit area is a few pixels
+   wide (see docs/GATE.md H1). Fields without a stepper keep their arrows. */
+input[type="number"].has-stepper { -moz-appearance: textfield; appearance: textfield; }
+input[type="number"].has-stepper::-webkit-inner-spin-button,
+input[type="number"].has-stepper::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+.stepper {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-input);
+  color: var(--text-primary);
+  overflow: hidden;
+  cursor: pointer;
+}
+.step-btn {
+  flex: 1 1 50%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-btn + .step-btn { border-top: 1px solid var(--border-subtle); }
+.step-btn:hover { background: var(--surface-hover); }
+.step-btn:active { background: var(--surface-active); }
+.stepper:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.step-btn svg { width: 10px; height: 6px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+
+
 .palette-swatches { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
 .palette-swatch {
   width: 44px;
@@ -851,7 +890,7 @@ body.reorder-active * { cursor: grabbing !important; }
 }
 .effect-item .param > span { white-space: nowrap; }
 .effect-item .param input[type="range"] { width: 84px; flex: none; }
-.effect-item .param input[type="number"] { width: 64px; height: 44px; padding: 4px 8px; font-size: 12px; }
+.effect-item .param input[type="number"] { width: 56px; height: 44px; padding: 4px 8px; font-size: 12px; }
 .effect-item .param select { height: 44px; padding: 4px 28px 4px 8px; font-size: 12px; width: 92px; }
 .effect-item .param input[type="color"] { width: 44px; height: 44px; padding: 2px; flex: none; }
 .effect-empty { padding: var(--space-4); text-align: center; color: var(--text-muted); font-size: 13px; }

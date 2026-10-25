@@ -13,6 +13,82 @@ function clampToParam(value, param) {
   return Math.min(param.max, Math.max(param.min, roundToStep(value, param.step, param.min)));
 }
 
+// One stepper component for every numeric control. The whole control is a
+// single 44x44 button (the gate's minimum touch target): its top half steps up,
+// its bottom half steps down. A pointerdown applies one step synchronously;
+// holding repeats after a short delay. Rendering is never started while the
+// gesture is in progress, so a slow render can never delay or lose a change.
+const STEP_INITIAL_DELAY = 300;
+const STEP_REPEAT_MS = 35;
+
+function attachStepper(container, controlId, label, onStep, onEnd) {
+  if (!container) return null;
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "stepper";
+  btn.dataset.control = controlId;
+  btn.setAttribute("aria-label", (label || "Value") + " stepper. Top half increases, bottom half decreases; arrow keys also work.");
+  ["up", "down"].forEach(dir => {
+    const half = document.createElement("span");
+    half.className = "step-btn";
+    half.dataset.step = dir;
+    half.setAttribute("aria-hidden", "true");
+    half.innerHTML = dir === "up"
+      ? '<svg viewBox="0 0 10 6" focusable="false"><path d="M1 5l4-4 4 4"/></svg>'
+      : '<svg viewBox="0 0 10 6" focusable="false"><path d="M1 1l4 4 4-4"/></svg>';
+    btn.appendChild(half);
+  });
+
+  let delayTimer = null;
+  let repeatTimer = null;
+  let active = false;
+  let direction = "up";
+  const stop = () => {
+    if (!active) return;
+    active = false;
+    clearTimeout(delayTimer);
+    clearInterval(repeatTimer);
+    delayTimer = repeatTimer = null;
+    if (onEnd) onEnd();
+  };
+  const directionAt = e => {
+    const half = e.target && e.target.closest ? e.target.closest("[data-step]") : null;
+    if (half) return half.dataset.step;
+    const box = btn.getBoundingClientRect();
+    return e.clientY - box.top < box.height / 2 ? "up" : "down";
+  };
+  btn.addEventListener("pointerdown", e => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (active) stop();
+    active = true;
+    direction = directionAt(e);
+    if (btn.setPointerCapture) { try { btn.setPointerCapture(e.pointerId); } catch (err) {} }
+    onStep(direction, true);
+    delayTimer = setTimeout(() => {
+      if (!active) return;
+      repeatTimer = setInterval(() => { if (active) onStep(direction, false); }, STEP_REPEAT_MS);
+    }, STEP_INITIAL_DELAY);
+  });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => btn.addEventListener(ev, stop));
+  btn.addEventListener("keydown", e => {
+    const dir = e.key === "ArrowDown" ? "down" : (e.key === "ArrowUp" || e.key === "Enter" || e.key === " ") ? "up" : null;
+    if (!dir) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onStep(dir, true);
+    if (onEnd) onEnd();
+  });
+  btn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); });
+  // The browser's own spinner is only hidden where this control replaces it,
+  // so numeric fields outside the shared component keep their arrows.
+  const field = container.querySelector('input[type="number"]');
+  if (field) field.classList.add("has-stepper");
+  container.appendChild(btn);
+  return btn;
+}
+
 function defaultEffects() {
   return (typeof EFFECTS !== "undefined" ? EFFECTS : []).map(e => makeEffect(e.id, false));
 }
@@ -1277,14 +1353,14 @@ function renderEffectsList() {
           // Commit a finished value: clamp, snap to the step grid, rewrite both
           // controls, and re-render. Typing uses a separate path so a partial
           // entry ("" or "1" on the way to "12") is never rewritten mid-typing.
-          const commit = (value, history) => {
+          const commit = (value, history, notify = true) => {
             const next = clampToParam(Number.isFinite(value) ? value : p.def, p);
             fx.params[p.key] = next;
             input.value = next;
             numInput.value = next;
             numInput.removeAttribute("aria-invalid");
             if (history) pushHistory("fx-" + fx.id + "-" + p.key);
-            scheduleRender(40);
+            if (notify) scheduleRender(140);
             return next;
           };
           const finishTyping = () => {
@@ -1296,7 +1372,7 @@ function renderEffectsList() {
             const next = clampToParam(+input.value, p);
             fx.params[p.key] = next;
             numInput.value = next;
-            scheduleRender(40);
+            scheduleRender(140);
           });
           input.addEventListener("change", () => pushHistory("fx-" + fx.id + "-" + p.key));
 
@@ -1316,14 +1392,19 @@ function renderEffectsList() {
             fx.params[p.key] = raw;
             input.value = raw;
             numInput.removeAttribute("aria-invalid");
-            scheduleRender(40);
+            scheduleRender(140);
           });
           numInput.addEventListener("blur", finishTyping);
           numInput.addEventListener("keydown", (e) => {
+            const mult = e.shiftKey ? 10 : 1;
             if (e.key === "ArrowUp" || e.key === "ArrowDown") {
               e.preventDefault();
               const base = Number.isFinite(parseFloat(numInput.value)) ? parseFloat(numInput.value) : fx.params[p.key];
-              commit(base + (e.key === "ArrowUp" ? p.step : -p.step), true);
+              commit(base + (e.key === "ArrowUp" ? p.step * mult : -p.step * mult), true);
+            } else if (e.key === "PageUp" || e.key === "PageDown") {
+              e.preventDefault();
+              const base = Number.isFinite(parseFloat(numInput.value)) ? parseFloat(numInput.value) : fx.params[p.key];
+              commit(base + (e.key === "PageUp" ? p.step * 10 : -p.step * 10), true);
             } else if (e.key === "Enter") {
               e.preventDefault();
               finishTyping();
@@ -1340,6 +1421,16 @@ function renderEffectsList() {
 
           inputWrap.appendChild(input);
           inputWrap.appendChild(numInput);
+          attachStepper(
+            inputWrap,
+            "fx." + fx.id + "." + p.key,
+            def.name + " " + p.label,
+            (dir, first) => {
+              const base = Number.isFinite(parseFloat(numInput.value)) ? parseFloat(numInput.value) : fx.params[p.key];
+              commit(base + (dir === "up" ? p.step : -p.step), first, false);
+            },
+            () => scheduleRender(140)
+          );
           wrap.appendChild(inputWrap);
           params.appendChild(wrap);
           return;
@@ -1924,8 +2015,10 @@ function setupEventListeners() {
     const min = +slider.min, max = +slider.max, step = +slider.step;
     let lastValid = slider.value;
     function clamp(v) { return Math.max(min, Math.min(max, v)); }
-    function setVal(v) {
-      const clamped = clamp(v);
+    function setVal(v, notify = true) {
+      // Snap to the control's step grid in the same place every other numeric
+      // control does, so repeated stepping cannot accumulate float noise.
+      const clamped = clamp(roundToStep(v, step, min));
       slider.value = clamped;
       numInput.value = clamped;
       const parts = optPath.split(".");
@@ -1933,7 +2026,7 @@ function setupEventListeners() {
       for (let i = 0; i < parts.length - 1; i++) obj = obj[parts[i]];
       obj[parts[parts.length - 1]] = clamped;
       lastValid = clamped;
-      if (onChange) onChange();
+      if (onChange && notify) onChange();
     }
     function getCurrentVal() {
       const parts = optPath.split(".");
@@ -1950,11 +2043,27 @@ function setupEventListeners() {
       if (isNaN(parseFloat(numInput.value))) numInput.value = lastValid;
     });
     numInput.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp") { e.preventDefault(); setVal(getCurrentVal() + step * (e.shiftKey ? 10 : 1)); }
-      if (e.key === "ArrowDown") { e.preventDefault(); setVal(getCurrentVal() - step * (e.shiftKey ? 10 : 1)); }
+      const mult = e.shiftKey ? 10 : 1;
+      if (e.key === "ArrowUp") { e.preventDefault(); setVal(getCurrentVal() + step * mult); }
+      if (e.key === "ArrowDown") { e.preventDefault(); setVal(getCurrentVal() - step * mult); }
+      if (e.key === "PageUp") { e.preventDefault(); setVal(getCurrentVal() + step * 10); }
+      if (e.key === "PageDown") { e.preventDefault(); setVal(getCurrentVal() - step * 10); }
     });
+    // The wheel is a first-class step input on every numeric control, and it
+    // must never scroll the panel while stepping.
+    numInput.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      setVal(getCurrentVal() + (e.deltaY < 0 ? step : -step));
+    }, { passive: false });
     slider.addEventListener("dblclick", () => setVal(+slider.defaultValue));
     numInput.addEventListener("dblclick", () => { numInput.value = slider.defaultValue; setVal(+slider.defaultValue); });
+    attachStepper(
+      numInput.parentElement,
+      numInput.id || optPath,
+      optPath.split(".").pop(),
+      (dir) => { setVal(getCurrentVal() + (dir === "up" ? step : -step), false); },
+      () => { if (onChange) onChange(); }
+    );
   }
 
   syncSliderNumber(els.cellSize, els.cellSizeNum, "cellSize", () => { pushHistory("cellSize"); scheduleRender(); });

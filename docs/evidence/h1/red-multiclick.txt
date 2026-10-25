@@ -1,0 +1,29 @@
+# RED: real browser multi-click (clickCount increments) on the pre-fix tree 7940130
+# repro: python red_multiclick.py <tree> <clicks> <spacing_ms> <control> <start>
+=== adj-brightness-num  kind=native-spinner  clicks=8 spacing=120ms  hit=(1251, 466)
+start value=20  state=None
+  click 1: value=21
+  click 2: value=0
+  click 3: value=1
+  click 4: value=2
+  click 5: value=3
+  click 6: value=4
+  click 7: value=5
+  click 8: value=6
+dblclick targets: ['adj-brightness-num']
+final value: 6
+VERDICT value fell back to the default 0
+
+=== fx.halftone.size  kind=native-spinner  clicks=8 spacing=120ms  hit=(1179, 466)
+start value=5  state=None
+  click 1: value=6
+  click 2: value=5
+  click 3: value=6
+  click 4: value=7
+  click 5: value=8
+  click 6: value=9
+  click 7: value=10
+  click 8: value=11
+dblclick targets: ['INPUT']
+final value: 11
+VERDICT non-monotonic

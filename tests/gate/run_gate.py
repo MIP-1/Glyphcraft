@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Glyphcraft gate: G1-G8.
+"""Glyphcraft gate: G1-G9.
 
 Run with `npm run gate` (which calls this file). The gate is intentionally
 strict: it uses a real Chromium page and reports file:line or selector evidence
@@ -1211,6 +1211,493 @@ def g5_existing_tests() -> tuple[bool, list[str], str]:
 
 
 # ---------------------------------------------------------------------------
+# G9 - numeric steppers (H1)
+# ---------------------------------------------------------------------------
+
+FIXTURE_4K = Path("/tmp/glyphcraft_gate_4k.png")
+
+G9_INSTRUMENT_JS = r"""
+() => {
+  if (window.__gc) return;
+  window.__gc = {writes: 0, times: [], downT: 0, writesAtDown: 0, renders: 0, lastWrite: 0};
+  const proto = HTMLInputElement.prototype;
+  const desc = Object.getOwnPropertyDescriptor(proto, 'value');
+  Object.defineProperty(proto, 'value', {
+    configurable: true,
+    get() { return desc.get.call(this); },
+    set(v) {
+      if (this.type === 'number') {
+        window.__gc.writes += 1;
+        window.__gc.lastWrite = performance.now();
+        window.__gc.times.push(window.__gc.lastWrite);
+      }
+      desc.set.call(this, v);
+    }
+  });
+  const originalRender = window.render;
+  window.render = function () {
+    window.__gc.renders += 1;
+    return originalRender.apply(this, arguments);
+  };
+  window.addEventListener('pointerdown', e => {
+    const btn = e.target && e.target.closest ? e.target.closest('.step-btn') : null;
+    if (!btn) return;
+    window.__gc.downT = performance.now();
+    window.__gc.writesAtDown = window.__gc.writes;
+  }, true);
+}
+"""
+
+G9_CONTROLS_JS = r"""
+() => Array.from(document.querySelectorAll('.stepper[data-control]')).map(group => {
+  const input = group.parentElement.querySelector('input[type=number]');
+  if (!input) return {id: group.dataset.control, missing: true};
+  return {
+    id: group.dataset.control,
+    min: +input.min,
+    max: +input.max,
+    step: +input.step,
+    value: +input.value,
+    up: group.querySelector('[data-step="up"]') ? true : false,
+    down: group.querySelector('[data-step="down"]') ? true : false,
+    width: group.getBoundingClientRect().width,
+    height: group.getBoundingClientRect().height
+  };
+})
+"""
+
+G9_STATE_JS = r"""
+(id) => {
+  const fx = id.match(/^fx\.([^.]+)\.(.+)$/);
+  if (fx) {
+    const item = (state.opts.effects || []).find(e => e.id === fx[1]);
+    return item ? item.params[fx[2]] : null;
+  }
+  if (id.startsWith('adj.') && !id.endsWith('-num')) return state.opts.adj[id.slice(4)];
+  if (id.startsWith('adj-') && id.endsWith('-num')) return state.opts.adj[id.slice(4, -4)];
+  const map = {'depth-num': 'depth', 'char-offset-num': 'charOffset', 'cell-size-num': 'cellSize',
+               'glyph-weight-num': 'glyphWeight', 'dither-depth-num': 'ditherDepth', 'jpg-quality-num': 'jpgQuality'};
+  return map[id] ? state.opts[map[id]] : null;
+}
+"""
+
+
+def _g9_decimals(step: float) -> int:
+    text = repr(step)
+    return len(text.split(".")[1]) if "." in text and "e" not in text else 0
+
+
+def _g9_clamp_step(value: float, param: dict, steps: int) -> float:
+    mn, mx, step = param["min"], param["max"], param["step"]
+    # Same order as app.js: snap to the step grid anchored at min, then clamp.
+    snapped = mn + round((value - mn) / step) * step
+    snapped = round(snapped, _g9_decimals(step))
+    return min(mx, max(mn, snapped))
+
+
+def _g9_apply(param: dict, steps: int) -> float:
+    """Apply `steps` one-step presses to the current value, clamping each step."""
+    value = param["value"]
+    direction = 1 if steps >= 0 else -1
+    for _ in range(abs(steps)):
+        value = _g9_clamp_step(value + direction * param["step"], param, 1)
+    return value
+
+
+def _g9_input(page, control_id: str):
+    return page.locator(f'.stepper[data-control="{control_id}"]').locator("xpath=..").locator('input[type="number"]')
+
+
+def _g9_button(page, control_id: str, direction: str):
+    return page.locator(f'.stepper[data-control="{control_id}"] .step-btn[data-step="{direction}"]')
+
+
+def _g9_reset(page, control_id: str, param: dict) -> None:
+    inp = _g9_input(page, control_id)
+    inp.scroll_into_view_if_needed(timeout=5000)
+    inp.fill(str(param["min"]))
+    inp.press("Enter")
+    page.evaluate("() => document.activeElement && document.activeElement.blur()")
+    param["value"] = param["min"]
+    # Let the reset's debounced render run and finish before the burst starts,
+    # so the burst measures input handling, not a render already in flight.
+    page.wait_for_timeout(170)
+    page.evaluate("() => window.__gc && window.__gc.renders")
+    page.wait_for_timeout(30)
+
+
+def _g9_click(page, control_id: str, direction: str, count: int, spacing_ms: int = 25) -> None:
+    button = _g9_button(page, control_id, direction)
+    button.scroll_into_view_if_needed(timeout=5000)
+    box = button.bounding_box()
+    if not box or box["width"] < 8 or box["height"] < 8:
+        raise RuntimeError(f"stepper button {control_id}/{direction} has no usable box: {box}")
+    x = box["x"] + box["width"] / 2
+    y = box["y"] + box["height"] / 2
+    page.mouse.move(x, y)
+    for _ in range(count):
+        page.mouse.click(x, y)
+        if spacing_ms:
+            page.wait_for_timeout(spacing_ms)
+
+
+def _g9_value(page, control_id: str) -> float:
+    return float(_g9_input(page, control_id).input_value())
+
+
+def _g9_check_value(page, control_id: str, param: dict, label: str, failures: list[str]) -> float:
+    got = _g9_value(page, control_id)
+    expected = param["value"]
+    if abs(got - expected) > 1e-9:
+        failures.append(f"{control_id} {label}: value {got!r} != expected {expected!r}")
+    state_value = page.evaluate(G9_STATE_JS, control_id)
+    if state_value is None or abs(float(state_value) - expected) > 1e-9:
+        failures.append(f"{control_id} {label}: state {state_value!r} != expected {expected!r}")
+    return got
+
+
+def _g9_wait_render(page, before: int, failures: list[str], control_id: str, label: str) -> None:
+    try:
+        page.wait_for_function("n => window.__gc.renders > n", arg=before, timeout=20000)
+    except Exception:
+        failures.append(f"{control_id} {label}: no render after the gesture")
+
+
+def g9_steppers() -> tuple[bool, list[str], str]:
+    """Real-mouse acceptance test for every numeric control (H1)."""
+    if not FIXTURE_4K.exists():
+        make_png(FIXTURE_4K, width=4000, height=3000, seed=5)
+    failures: list[str] = []
+    summary: list[str] = []
+    rates: list[str] = []
+
+    def light_page(browser):
+        context = browser.new_context(viewport={"width": 1280, "height": 900}, color_scheme="dark")
+        page = context.new_page()
+        page.goto(BASE_URL + "/index.html", wait_until="load", timeout=30000)
+        page.wait_for_timeout(400)
+        page.set_input_files("#file-input", str(FIXTURE))
+        page.wait_for_selector(".canvas-area.has-content", timeout=20000)
+        page.wait_for_timeout(700)
+        page.evaluate(EXPAND_SECTIONS_JS)
+        page.wait_for_timeout(250)
+        return context, page
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        try:
+            # ---- light stack: every control, real 25 ms clicks ----
+            context, page = light_page(browser)
+            page_errors: list[str] = []
+            page.on("pageerror", lambda exc: page_errors.append(str(exc)))
+            try:
+                page.evaluate(G9_INSTRUMENT_JS)
+                controls = page.evaluate(G9_CONTROLS_JS)
+                bad = [c for c in controls if c.get("missing") or not c.get("up") or not c.get("down")]
+                if bad:
+                    failures.append(f"controls without both stepper buttons: {[c['id'] for c in bad]}")
+                if len(controls) < 42:
+                    failures.append(f"expected at least 42 numeric steppers, got {len(controls)}")
+                effect_controls = [c for c in controls if c["id"].startswith("fx.")]
+                if len(effect_controls) < 28:
+                    failures.append(f"expected at least 28 effect steppers, got {len(effect_controls)}")
+                if not controls:
+                    return False, [
+                        "no .stepper[data-control] groups: the numeric arrows are not a shared, testable control"
+                    ], "0 controls"
+
+                for param in controls:
+                    if param.get("missing") or not param.get("up") or not param.get("down"):
+                        continue
+                    cid = param["id"]
+                    if param["step"] <= 0:
+                        failures.append(f"{cid}: non-positive step {param['step']}")
+                        continue
+
+                    # Two numeric controls are only visible in another mode or
+                    # export format; switch through the real selects, then back.
+                    switched = None
+                    inp_handle = _g9_input(page, cid)
+                    if not inp_handle.evaluate("el => !!(el.offsetWidth || el.offsetHeight)"):
+                        if cid == "dither-depth-num":
+                            page.select_option("#select-mode", "dither")
+                            switched = ("#select-mode", "script")
+                        elif cid == "jpg-quality-num":
+                            page.select_option("#export-format", "jpg")
+                            switched = ("#export-format", "png")
+                        else:
+                            failures.append(f"{cid}: control is not reachable in the real UI")
+                            continue
+                        page.wait_for_timeout(350)
+
+                    # 1. 30 up-clicks then 30 down-clicks at 25 ms spacing.
+                    _g9_reset(page, cid, param)
+                    renders = page.evaluate("() => window.__gc.renders")
+                    _g9_click(page, cid, "up", 30, 25)
+                    param["value"] = _g9_apply(param, 30)
+                    got = _g9_check_value(page, cid, param, "30 up", failures)
+                    summary.append(f"{cid}=+30->{got:g}")
+                    _g9_wait_render(page, renders, failures, cid, "30 up")
+                    _g9_click(page, cid, "down", 30, 25)
+                    param["value"] = _g9_apply(param, -30)
+                    _g9_check_value(page, cid, param, "30 down", failures)
+
+                    # 2. Mixed burst: 10 up, 5 down, 10 up, 3 down.
+                    _g9_reset(page, cid, param)
+                    for direction, count in (("up", 10), ("down", 5), ("up", 10), ("down", 3)):
+                        _g9_click(page, cid, direction, count, 25)
+                        param["value"] = _g9_apply(param, count if direction == "up" else -count)
+                    _g9_check_value(page, cid, param, "mixed burst", failures)
+
+                    # 3. Keyboard: 30 rapid ArrowUp, Shift+ArrowUp x10, PageUp x10.
+                    _g9_reset(page, cid, param)
+                    inp = _g9_input(page, cid)
+                    inp.focus()
+                    for _ in range(30):
+                        page.keyboard.press("ArrowUp")
+                    param["value"] = _g9_apply(param, 30)
+                    _g9_check_value(page, cid, param, "30 ArrowUp", failures)
+                    for _ in range(10):
+                        page.keyboard.press("Shift+ArrowUp")
+                    param["value"] = _g9_apply(param, 100)
+                    _g9_check_value(page, cid, param, "10 Shift+ArrowUp", failures)
+                    for _ in range(10):
+                        page.keyboard.press("PageDown")
+                    param["value"] = _g9_apply(param, -100)
+                    _g9_check_value(page, cid, param, "10 PageDown", failures)
+
+                    # 4. Wheel bursts: 30 ticks up, then 30 ticks down.
+                    _g9_reset(page, cid, param)
+                    inp.hover()
+                    for _ in range(30):
+                        page.mouse.wheel(0, -100)
+                    param["value"] = _g9_apply(param, 30)
+                    _g9_check_value(page, cid, param, "30 wheel up", failures)
+                    for _ in range(30):
+                        page.mouse.wheel(0, 100)
+                    param["value"] = _g9_apply(param, -30)
+                    _g9_check_value(page, cid, param, "30 wheel down", failures)
+
+                    if switched:
+                        page.select_option(switched[0], switched[1])
+                        page.wait_for_timeout(300)
+
+                # 9. Extreme speed on three contrasting controls.
+                by_id = {c["id"]: c for c in controls}
+                extreme_ids = [cid for cid in ("adj-brightness-num", "fx.blur.radius", "fx.halftone.size") if cid in by_id]
+                for cid in extreme_ids:
+                    param = by_id[cid]
+                    _g9_reset(page, cid, param)
+                    box = _g9_button(page, cid, "up").bounding_box()
+                    x = box["x"] + box["width"] / 2
+                    y = box["y"] + box["height"] / 2
+                    page.mouse.move(x, y)
+                    for _ in range(100):
+                        page.mouse.click(x, y)
+                    param["value"] = _g9_apply(param, 100)
+                    _g9_check_value(page, cid, param, "100 clicks at 0-10 ms", failures)
+
+                    # Double and triple click on the arrow itself. down/up with
+                    # an increasing click count is exactly what a real
+                    # double/triple click sends (one pointerdown per click).
+                    for clicks, expected_steps in ((2, 2), (3, 3)):
+                        _g9_reset(page, cid, param)
+                        box = _g9_button(page, cid, "up").bounding_box()
+                        x = box["x"] + box["width"] / 2
+                        y = box["y"] + box["height"] / 2
+                        page.mouse.move(x, y)
+                        for n in range(1, clicks + 1):
+                            page.mouse.down(click_count=n)
+                            page.mouse.up(click_count=n)
+                            if n < clicks:
+                                page.wait_for_timeout(20)
+                        param["value"] = _g9_apply(param, expected_steps)
+                        _g9_check_value(page, cid, param, f"double/triple click ({clicks} clicks)", failures)
+
+                    # Click then immediately hold: every applied step is visible.
+                    _g9_reset(page, cid, param)
+                    page.wait_for_timeout(200)
+                    box = _g9_button(page, cid, "up").bounding_box()
+                    page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+                    page.mouse.down()
+                    page.wait_for_timeout(600)
+                    page.mouse.up()
+                    page.wait_for_timeout(150)
+                    total = page.evaluate("() => window.__gc.writes - window.__gc.writesAtDown")
+                    if total < 5:
+                        failures.append(f"{cid} click-then-hold: only {total} value writes")
+                    param["value"] = _g9_apply(param, total)
+                    _g9_check_value(page, cid, param, f"click-then-hold ({total} steps)", failures)
+
+                # 8. Input latency on an idle light stack.
+                cid = "adj-brightness-num"
+                if cid in by_id:
+                    _g9_reset(page, cid, by_id[cid])
+                    page.wait_for_timeout(300)
+                    box = _g9_button(page, cid, "up").bounding_box()
+                    page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+                    page.mouse.down()
+                    page.mouse.up()
+                    latency = page.evaluate("() => window.__gc.lastWrite - window.__gc.downT")
+                    summary.append(f"latency={latency:.2f}ms")
+                    if latency > 16:
+                        failures.append(f"{cid}: pointerdown->display latency {latency:.2f}ms > 16ms")
+
+                if page_errors:
+                    failures.extend(f"page error: {e}" for e in page_errors)
+            finally:
+                context.close()
+
+            # ---- 7. Hold rate: 1 s, 2 s, 3 s on five controls ----
+            hold_ids = ["adj-brightness-num", "adj-contrast-num", "adj-hue-num", "depth-num", "cell-size-num"]
+            context, page = light_page(browser)
+            try:
+                page.evaluate(G9_INSTRUMENT_JS)
+                controls = {c["id"]: c for c in page.evaluate(G9_CONTROLS_JS)}
+                for cid in hold_ids:
+                    if cid not in controls:
+                        failures.append(f"{cid}: hold-rate control is missing")
+                        continue
+                    param = controls[cid]
+                    for seconds in (1, 2, 3):
+                        _g9_reset(page, cid, param)
+                        page.wait_for_timeout(300)
+                        box = _g9_button(page, cid, "up").bounding_box()
+                        page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+                        page.mouse.down()
+                        page.wait_for_timeout(seconds * 1000)
+                        page.mouse.up()
+                        page.wait_for_timeout(180)
+                        data = page.evaluate("() => ({times: window.__gc.times.slice(window.__gc.writesAtDown), downT: window.__gc.downT})")
+                        times = data["times"]
+                        if len(times) < 3:
+                            failures.append(f"{cid} hold {seconds}s: only {len(times)} steps")
+                            continue
+                        delay = times[1] - data["downT"]
+                        intervals = [b - a for a, b in zip(times[1:], times[2:])]
+                        intervals.sort()
+                        median = intervals[len(intervals) // 2]
+                        rate = 1000.0 / median if median > 0 else 0
+                        rate_text = f"{cid} {seconds}s: delay={delay:.0f}ms rate={rate:.1f}/s steps={len(times)}"
+                        summary.append(rate_text)
+                        rates.append(rate_text)
+                        if not (280 <= delay <= 520):
+                            failures.append(f"{cid} hold {seconds}s: initial delay {delay:.0f}ms outside 300-500ms")
+                        if not (15 <= rate <= 30):
+                            failures.append(f"{cid} hold {seconds}s: repeat rate {rate:.1f}/s outside 15-30/s")
+                        expected = _g9_apply(param, len(times))
+                        got = _g9_value(page, cid)
+                        if abs(got - expected) > 1e-9:
+                            failures.append(f"{cid} hold {seconds}s: value {got!r} != {expected!r} after {len(times)} steps")
+            finally:
+                context.close()
+
+            # ---- 5. Heavy stack on a 4000x3000 image ----
+            context = browser.new_context(viewport={"width": 1280, "height": 900}, color_scheme="dark")
+            page = context.new_page()
+            heavy_errors: list[str] = []
+            page.on("pageerror", lambda exc: heavy_errors.append(str(exc)))
+            try:
+                page.goto(BASE_URL + "/index.html", wait_until="load", timeout=30000)
+                page.wait_for_timeout(400)
+                page.set_input_files("#file-input", str(FIXTURE_4K))
+                page.wait_for_selector(".canvas-area.has-content", timeout=30000)
+                page.wait_for_timeout(1200)
+                page.evaluate(EXPAND_SECTIONS_JS)
+                page.select_option("#export-format", "jpg")
+                names = page.evaluate("() => Object.fromEntries(EFFECTS.map(e => [e.id, e.name]))")
+                heavy = [("halftone", "size", 14), ("posterize", "levels", 2), ("edges", "amount", 100),
+                         ("emboss", "amount", 100), ("blur", "radius", 8), ("sharpen", "amount", 100)]
+                for effect_id, key, value in heavy:
+                    name = names[effect_id]
+                    page.locator(f'.effect-item input[type="checkbox"][aria-label="Enable {name}"]').check()
+                    inp = _g9_input(page, f"fx.{effect_id}.{key}")
+                    inp.scroll_into_view_if_needed(timeout=5000)
+                    inp.fill(str(value))
+                    inp.press("Enter")
+                    page.evaluate("() => document.activeElement && document.activeElement.blur()")
+                page.wait_for_timeout(3000)
+                page.evaluate(G9_INSTRUMENT_JS)
+                controls = {c["id"]: c for c in page.evaluate(G9_CONTROLS_JS)}
+                heavy_ids = ["adj-brightness-num", "adj-hue-num", "depth-num", "fx.blur.radius",
+                             "fx.sharpen.amount", "fx.halftone.size", "fx.posterize.levels", "jpg-quality-num"]
+                for cid in heavy_ids:
+                    if cid not in controls:
+                        failures.append(f"{cid}: heavy-stack control is missing")
+                        continue
+                    param = controls[cid]
+                    _g9_reset(page, cid, param)
+                    _g9_click(page, cid, "up", 30, 25)
+                    param["value"] = _g9_apply(param, 30)
+                    _g9_check_value(page, cid, param, "heavy 30 up", failures)
+                    _g9_click(page, cid, "down", 30, 25)
+                    param["value"] = _g9_apply(param, -30)
+                    _g9_check_value(page, cid, param, "heavy 30 down", failures)
+                    _g9_reset(page, cid, param)
+                    for direction, count in (("up", 10), ("down", 5), ("up", 10), ("down", 3)):
+                        _g9_click(page, cid, direction, count, 25)
+                        param["value"] = _g9_apply(param, count if direction == "up" else -count)
+                    _g9_check_value(page, cid, param, "heavy mixed burst", failures)
+
+                # Latency with a slow render pending is measured on an idle stack only:
+                # a synchronous render blocks event dispatch, which no input handler can avoid.
+                for cid in ("adj-brightness-num", "fx.blur.radius"):
+                    if cid not in controls:
+                        failures.append(f"{cid}: heavy latency control is missing")
+                        continue
+                    param = controls[cid]
+                    _g9_reset(page, cid, param)
+                    page.wait_for_timeout(2500)
+                    box = _g9_button(page, cid, "up").bounding_box()
+                    page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+                    page.mouse.down()
+                    page.mouse.up()
+                    latency = page.evaluate("() => window.__gc.lastWrite - window.__gc.downT")
+                    summary.append(f"heavy latency {cid}={latency:.2f}ms")
+                    if latency > 16:
+                        failures.append(f"{cid}: heavy pointerdown->display latency {latency:.2f}ms > 16ms")
+
+                # Hold rates with the heavy stack.
+                for cid in hold_ids:
+                    if cid not in controls:
+                        failures.append(f"{cid}: heavy hold control is missing")
+                        continue
+                    param = controls[cid]
+                    _g9_reset(page, cid, param)
+                    page.wait_for_timeout(300)
+                    box = _g9_button(page, cid, "up").bounding_box()
+                    page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+                    page.mouse.down()
+                    page.wait_for_timeout(3000)
+                    page.mouse.up()
+                    page.wait_for_timeout(180)
+                    data = page.evaluate("() => ({times: window.__gc.times.slice(window.__gc.writesAtDown), downT: window.__gc.downT})")
+                    times = data["times"]
+                    if len(times) < 3:
+                        failures.append(f"{cid} heavy hold: only {len(times)} steps")
+                        continue
+                    intervals = sorted(b - a for a, b in zip(times[1:], times[2:]))
+                    median = intervals[len(intervals) // 2]
+                    rate = 1000.0 / median if median > 0 else 0
+                    summary.append(f"heavy {cid} 3s: rate={rate:.1f}/s steps={len(times)}")
+                    if not (15 <= rate <= 30):
+                        failures.append(f"{cid} heavy hold: repeat rate {rate:.1f}/s outside 15-30/s")
+                    expected = _g9_apply(param, len(times))
+                    got = _g9_value(page, cid)
+                    if abs(got - expected) > 1e-9:
+                        failures.append(f"{cid} heavy hold: value {got!r} != {expected!r} after {len(times)} steps")
+                if heavy_errors:
+                    failures.extend(f"heavy page error: {e}" for e in heavy_errors)
+            finally:
+                context.close()
+        finally:
+            browser.close()
+
+    detail = f"{len(summary)} measurements, {len(rates)} hold-rate rows"
+    return not failures, failures, detail
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -1279,11 +1766,17 @@ def main() -> int:
         for violation in g8["violations"]:
             print(f"  [{violation['cell']}] {violation['kind']}: {violation['detail']}")
         results["G8"] = {"pass": g8["pass"], "violations": g8["violations"]}
+
+        g9_ok, g9_problems, g9_detail = g9_steppers()
+        print(("G9 PASS" if g9_ok else "G9 FAIL") + " numeric steppers: " + g9_detail)
+        for problem in g9_problems[:80]:
+            print("  " + problem)
+        results["G9"] = {"pass": g9_ok, "problems": g9_problems}
     finally:
         httpd.shutdown()
         httpd.server_close()
 
-    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8") if not results.get(name, {}).get("pass")]
+    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9") if not results.get(name, {}).get("pass")]
     print("")
     print("GATE " + ("PASS" if not failed else "FAIL") + " " + ", ".join(failed))
     return 0 if not failed else 1
