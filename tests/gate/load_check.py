@@ -422,6 +422,19 @@ def main() -> int:
         record("50 changes in one frame", f"renders={coalesce_renders} value={coalesce_value}",
                coalesce_renders == 1 and coalesce_value == 109 if not baseline else True)
 
+        # item 1: a render whose state key is unchanged is skipped entirely
+        hash_before = page.evaluate("() => window.__hashCanvas(document.getElementById('canvas'))")
+        page.evaluate("() => window.__resetLoad()")
+        page.evaluate("() => { render(); render(); }")
+        skip = page.evaluate("() => ({renders: __perf.renders, pipeline: __perf.pipeline})")
+        hash_after = page.evaluate("() => window.__hashCanvas(document.getElementById('canvas'))")
+        data["unchanged"] = {"renders": skip["renders"], "pipeline": skip["pipeline"],
+                             "same": hash_before == hash_after}
+        record("unchanged state skips the render",
+               f"pipeline={skip['pipeline']} render calls={skip['renders']} "
+               f"canvas same={hash_before == hash_after}",
+               skip["pipeline"] == 0 and hash_before == hash_after if not baseline else True)
+
         # (d) 100 changes then forced GC
         cdp.send("HeapProfiler.collectGarbage")
         heap0 = cdp.send("Runtime.getHeapUsage")["usedSize"]
