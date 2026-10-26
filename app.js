@@ -140,6 +140,8 @@ const state = {
   rafId: null,
   renderTimer: null,
   renderId: null,
+  renderDirty: false,
+  lastRenderKey: "",
   renderCache: null,
   sourceId: 0,
   pan: { x: 0, y: 0 },
@@ -556,14 +558,29 @@ function previewSize(full) {
 }
 
 function scheduleRender(delay) {
-  clearTimeout(state.renderTimer);
-  state.renderTimer = setTimeout(() => {
-    if (state.renderId) return;
-    state.renderId = requestAnimationFrame(() => {
-      state.renderId = null;
-      render();
-    });
-  }, delay == null ? 60 : delay);
+  // Mark dirty, then coalesce: many changes before the next frame produce one
+  // render of the latest state. Only callers that explicitly debounce (slider
+  // input that would otherwise render every pointer event) wait on a timer.
+  state.renderDirty = true;
+  if (delay) {
+    clearTimeout(state.renderTimer);
+    state.renderTimer = setTimeout(() => {
+      state.renderTimer = null;
+      requestRenderFrame();
+    }, delay);
+    return;
+  }
+  requestRenderFrame();
+}
+
+function requestRenderFrame() {
+  if (state.renderId) return;
+  state.renderId = requestAnimationFrame(() => {
+    state.renderId = null;
+    if (!state.renderDirty) return;
+    state.renderDirty = false;
+    render();
+  });
 }
 
 function renderToContext(base, ctx, w, h, opts) {
@@ -589,19 +606,32 @@ function render() {
     setStatusSegments("", "No image loaded", "");
     return;
   }
+  state.renderDirty = false;
   const start = performance.now();
   const full = computeOutputSize(state.sourceW, state.sourceH, state.opts.outputPreset, state.opts.outputWidth, state.opts.outputHeight, state.opts.outputFit);
   const pv = previewSize(full);
   const opts = renderOpts();
+  const optsKey = JSON.stringify(opts);
+  const still = state.sourceType !== "video" && !state.videoExporting;
+  const viewKey = optsKey + "|" + (state.compare ? state.compareFrac : "-") + "|" + (state.showOriginal ? "orig" : "");
+  const stateKey = pv.w + "x" + pv.h + "|" + state.sourceId + "|" + viewKey;
+  // A render that would produce the identical frame is skipped entirely. The
+  // key covers every input that changes pixels or compositing; pan/zoom are
+  // CSS transforms and are not part of it.
+  if (still && stateKey === state.lastRenderKey) return;
 
-  els.canvas.width = pv.w;
-  els.canvas.height = pv.h;
+  // Setting width/height to the same value still resets a canvas, so only
+  // resize when the preview size actually changed.
+  if (els.canvas.width !== pv.w || els.canvas.height !== pv.h) {
+    els.canvas.width = pv.w;
+    els.canvas.height = pv.h;
+  }
   state.scale = scaleForZoom(state.zoom);
   // Compare split drags and toggles only change how the finished frame is
   // composited. Cache the post-pipeline frame keyed by every input that can
   // change it, so moving the split never re-runs effects or the Script stage.
-  const canCache = state.sourceType !== "video" && !state.videoExporting;
-  const key = canCache ? renderCacheKey(pv) : null;
+  const canCache = still;
+  const key = canCache ? pv.w + "x" + pv.h + "|" + state.sourceId + "|" + optsKey : null;
   const cached = state.renderCache;
   if (canCache && cached && cached.key === key
       && cached.canvas.width === pv.w && cached.canvas.height === pv.h) {
@@ -619,14 +649,11 @@ function render() {
   }
 
   state.lastRender = performance.now() - start;
+  if (still) state.lastRenderKey = stateKey;
   applyTransform();
   applyZoomUI();
   updateCompareUI();
   updateStatus(full);
-}
-
-function renderCacheKey(pv) {
-  return pv.w + "x" + pv.h + "|" + state.sourceId + "|" + JSON.stringify(renderOpts());
 }
 
 function cacheRenderedFrame(key, pv) {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Glyphcraft gate: G1-G11.
+"""Glyphcraft gate: G1-G12.
 
 Run with `npm run gate` (which calls this file). The gate is intentionally
 strict: it uses a real Chromium page and reports file:line or selector evidence
@@ -1765,6 +1765,36 @@ def g11_compare() -> tuple[bool, list[str], str]:
     return not problems, problems[:40], detail
 
 
+# ---------------------------------------------------------------------------
+# G12 - load: idle, coalescing, stage cache, identity, memory, cached gain (H4)
+# ---------------------------------------------------------------------------
+
+def g12_load() -> tuple[bool, list[str], str]:
+    started = time.time()
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(ROOT / "tests" / "gate" / "load_check.py")],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=2400,
+        )
+    except subprocess.TimeoutExpired:
+        return False, ["tests/gate/load_check.py: timed out after 2400s"], ""
+    output = (proc.stdout or "") + (proc.stderr or "")
+    lines = output.splitlines()
+    summary = next((line for line in reversed(lines) if "checks," in line and "failure" in line), "")
+    problems = [line.strip() for line in lines if line.strip().startswith("FAIL ")]
+    if proc.returncode != 0:
+        problems.insert(0, f"tests/gate/load_check.py exited {proc.returncode}")
+    match = re.search(r"(\d+) checks, (\d+) failure", summary)
+    checks = int(match.group(1)) if match else 0
+    if checks < 15:
+        problems.append(f"load check ran only {checks} checks")
+    if "LOAD PASS" not in output:
+        problems.append("load check did not report PASS")
+    elapsed = time.time() - started
+    detail = f"{summary or 'no summary'} ({elapsed:.1f}s)"
+    return not problems, problems[:40], detail
+
+
 def main() -> int:
     global BASE_URL
     ensure_fixtures()
@@ -1845,11 +1875,17 @@ def main() -> int:
         for problem in g11_problems:
             print("  " + problem)
         results["G11"] = {"pass": g11_ok, "problems": g11_problems}
+
+        g12_ok, g12_problems, g12_detail = g12_load()
+        print(("G12 PASS" if g12_ok else "G12 FAIL") + " load: " + g12_detail)
+        for problem in g12_problems:
+            print("  " + problem)
+        results["G12"] = {"pass": g12_ok, "problems": g12_problems}
     finally:
         httpd.shutdown()
         httpd.server_close()
 
-    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11") if not results.get(name, {}).get("pass")]
+    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12") if not results.get(name, {}).get("pass")]
     print("")
     print("GATE " + ("PASS" if not failed else "FAIL") + " " + ", ".join(failed))
     return 0 if not failed else 1
