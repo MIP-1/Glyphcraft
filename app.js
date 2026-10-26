@@ -144,6 +144,7 @@ const state = {
   lastRenderKey: "",
   renderCache: null,
   sourceId: 0,
+  sourceUrl: null,
   pan: { x: 0, y: 0 },
   scale: 1,
   zoom: 1,
@@ -919,17 +920,25 @@ function loadFile(file) {
   }
   setDropZoneState("loading", { name: file.name });
   const url = URL.createObjectURL(file);
+  const previousUrl = state.sourceUrl;
   const isVideo = type.startsWith("video/");
   if (isVideo) {
     const vid = document.createElement("video");
     vid.src = url; vid.muted = true; vid.playsInline = true; vid.loop = true;
+    vid.addEventListener("play", startVideoLoop);
+    vid.addEventListener("pause", stopVideoLoop);
+    vid.addEventListener("ended", stopVideoLoop);
     vid.addEventListener("loadedmetadata", () => {
+      stopVideoLoop();
+      if (state.video && state.video !== vid) state.video.pause();
       state.video = vid;
       state.source = vid;
       state.sourceType = "video";
       state.sourceW = vid.videoWidth;
       state.sourceH = vid.videoHeight;
       state.sourceId++;
+      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      state.sourceUrl = url;
       els.canvasArea.classList.add("has-content");
       vid.play().catch(() => {});
       startVideoLoop();
@@ -945,12 +954,15 @@ function loadFile(file) {
   } else {
     const img = new Image();
     img.onload = () => {
+      stopVideoLoop();
+      if (state.video) { state.video.pause(); state.video = null; }
       state.source = img;
       state.sourceType = "image";
-      state.video = null;
       state.sourceW = img.naturalWidth;
       state.sourceH = img.naturalHeight;
       state.sourceId++;
+      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      state.sourceUrl = url;
       els.canvasArea.classList.add("has-content");
       if (state.opts.palette === "__auto__") extractAutoPalette(img);
       scheduleRender(0);
@@ -980,14 +992,22 @@ function extractAutoPalette(source) {
 }
 
 function startVideoLoop() {
-  if (state.rafId) cancelAnimationFrame(state.rafId);
+  stopVideoLoop();
+  if (!state.video || state.video.paused || state.video.ended) return;
+  if (document.hidden) return;
   function loop() {
-    if (state.video && !state.video.paused && !state.video.ended && !state.videoExporting) {
-      render();
-    }
+    state.rafId = null;
+    if (!state.video || state.video.paused || state.video.ended || state.videoExporting) return;
+    if (document.hidden) return;
+    render();
     state.rafId = requestAnimationFrame(loop);
   }
-  loop();
+  state.rafId = requestAnimationFrame(loop);
+}
+
+function stopVideoLoop() {
+  if (state.rafId) cancelAnimationFrame(state.rafId);
+  state.rafId = null;
 }
 
 function openFile() { els.fileInput.click(); }
@@ -2321,6 +2341,18 @@ function setupEventListeners() {
   window.addEventListener("resize", () => {
     updateCompareUI();
     applyZoomUI();
+  });
+
+  // A hidden tab must be truly idle: no pending render, no video rAF loop.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      if (state.renderTimer) { clearTimeout(state.renderTimer); state.renderTimer = null; }
+      if (state.renderId) { cancelAnimationFrame(state.renderId); state.renderId = null; }
+      stopVideoLoop();
+      return;
+    }
+    if (state.renderDirty) requestRenderFrame();
+    if (state.video && !state.video.paused && !state.video.ended) startVideoLoop();
   });
 }
 
