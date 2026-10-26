@@ -418,6 +418,23 @@ function fxOil(c, p) {
 function fxConvolve(c, kernel, amount) {
   amount = Math.min(1, Math.max(0, Number.isFinite(amount) ? amount : 0));
   const w = c.width, h = c.height;
+  // Amount 0 leaves every colour untouched; the only remaining job is the
+  // filter's existing alpha policy (opaque output). Skip the 9-tap loop and
+  // copy instead - the output is byte-identical.
+  if (amount <= 0) {
+    const out = fxCanvas(w, h), outCtx = fxContext(out);
+    outCtx.drawImage(c, 0, 0);
+    const img = outCtx.getImageData(0, 0, w, h), o = img.data;
+    let repaint = false;
+    for (let i = 3; i < o.length; i += 4) {
+      if (o[i] !== 255) { repaint = true; break; }
+    }
+    if (repaint) {
+      for (let i = 3; i < o.length; i += 4) o[i] = 255;
+      outCtx.putImageData(img, 0, 0);
+    }
+    return out;
+  }
   const src = fxData(c).data;
   const out = fxCanvas(w, h), ctx = fxContext(out);
   const img = ctx.createImageData(w, h), o = img.data;
@@ -610,6 +627,20 @@ function stageKey(prevKey, fx) {
   return s;
 }
 
+// Stages whose neutral value is a provable pixel-for-pixel copy of their
+// input (their own early-return path is a clone/blit). Skipping them saves a
+// full-canvas copy and cannot change a single byte of output.
+const NEUTRAL_COPY = {
+  edges: p => fxNum(p.amount, 0, 100, 80) <= 0,
+  sketch: p => fxNum(p.amount, 0, 100, 70) <= 0,
+  blur: p => fxNum(p.radius, 0, 20, 4) <= 0,
+};
+
+function isNeutralCopy(id, params) {
+  const test = NEUTRAL_COPY[id];
+  return !!test && test(params || {});
+}
+
 function stageCacheGet(index, key) {
   const slot = stageSlots[index];
   return slot && slot.key === key ? slot.canvas : null;
@@ -636,8 +667,15 @@ function applyEffects(sourceCanvas, effects, baseKey) {
       const hit = stageCacheGet(index, key);
       if (hit) { current = hit; chainKey = key; index++; continue; }
     }
+    const params = fx.params || effectDefaults(fx.id);
+    if (isNeutralCopy(fx.id, params)) {
+      // No runner call and no copy: the stage is a no-op for these params.
+      chainKey = key;
+      index++;
+      continue;
+    }
     try {
-      current = run(current, fx.params || effectDefaults(fx.id));
+      current = run(current, params);
       if (key) { stageCachePut(index, key, current); chainKey = key; }
       else chainKey = null;
     } catch (e) { console.warn("effect failed:", fx.id, e); chainKey = null; }
