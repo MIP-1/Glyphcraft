@@ -1,0 +1,23 @@
+toggle 1280x720 default   on pipeline=0 longest=81ms allocs=0 | off pipeline=0 longest=0ms allocs=0                                        PASS
+toggle 4K default         on pipeline=0 longest=0ms allocs=0 | off pipeline=0 longest=0ms allocs=0                                         PASS
+toggle 4K heavy           on pipeline=0 longest=0ms allocs=0 | off pipeline=0 longest=0ms allocs=0                                         PASS
+20 toggles leak           listeners 27->27 (delta 0), DOM canvases 1->1, heap 2.7->2.7MB (+0.4%), canvas allocations 0                     PASS
+idle rAF after toggles    0 callbacks/s                                                                                                    PASS
+hit area + styles         width=28px, center hit=True, +-10px hit=True, touch-action=none, pointer-events=auto, z=31 overlay z=30 pointer=none PASS
+pointer capture           hasPointerCapture=True                                                                                           PASS
+grab zoom 100%            50/50 drags started (misses [])                                                                                  PASS
+grab zoom 200%            50/50 drags started (misses [])                                                                                  PASS
+grab zoom 400%            50/50 drags started (misses [])                                                                                  PASS
+touch hit area            width=44px touch-action=none                                                                                     PASS
+drag 1280x720             frames=90 median=16.7ms p95=16.8ms pipeline=0 getImageData=0 toDataURL=0 longest=0ms                             PASS
+drag 4K heavy             frames=102 median=16.7ms p95=16.7ms pipeline=0 getImageData=0 toDataURL=0 longest=0ms                            PASS
+split initial             frac=0.350 left=409.3 expected=409.3 hidden=False                                                                PASS
+split zoom 200%           frac=0.350 left=186.0 expected=186.0 hidden=False                                                                PASS
+split pan                 frac=0.350 left=246.0 expected=246.0 hidden=False                                                                PASS
+split resize              frac=0.350 left=246.0 expected=246.0 hidden=False                                                                PASS
+split value change        frac=0.350 left=246.0 expected=246.0 hidden=False                                                                PASS
+split undo                frac=0.350 left=246.0 expected=246.0 hidden=False                                                                PASS
+split redo                frac=0.350 left=246.0 expected=246.0 hidden=False                                                                PASS
+
+20 checks, 0 failure(s)
+COMPARE PASS

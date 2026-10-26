@@ -1,0 +1,18 @@
+First 3x gate attempt on 2337812 (before the G11 harness fix), run output excerpts.
+
+RUN 1 EXIT 0 — GATE PASS (G1-G12 green)
+RUN 2 EXIT 1 — GATE FAIL G11
+  G11 FAIL compare split: 20 checks, 1 failure(s) (42.2s)
+  FAIL toggle 1280x720 default: on pipeline=0 longest=169ms allocs=0 | off pipeline=0 longest=0ms allocs=0
+RUN 3 EXIT 1 — GATE FAIL G11
+  G11 FAIL compare split: 20 checks, 2 failure(s) (39.8s)
+  FAIL toggle 1280x720 default: on pipeline=1 longest=174ms allocs=2 | off pipeline=0 longest=0ms allocs=0
+  FAIL drag 1280x720: frames=93 median=16.7ms p95=16.7ms pipeline=0 getImageData=0 toDataURL=0 longest=0ms
+
+Diagnosis: the 169-174 ms task was the 4K load's first render, delivered by the
+PerformanceObserver after the harness reset (the same late-delivery race already
+fixed in the H4 load harness). The drag median was 16.7000000000007 ms, the
+display interval, rejected by an exact <= 16.7 comparison.
+
+Fix: f29b224 (timestamp-filter long tasks by start time; 0.1 ms float tolerance
+on the one-frame median). Verification: g11-fix-{1,2,3}.log, 20/20 each.

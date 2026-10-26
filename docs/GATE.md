@@ -1881,11 +1881,17 @@ against a future regression.
 | paused video 5 s | 0 rAF, 1.4 ms task |
 | hidden tab 3 s | 0 rAF, 5.0 ms task |
 | stage counters, last / first effect | 1 stage / 6 stages |
-| 20 random stacks, cache on vs off | 20/20 identical |
+| 20 random stacks, cache on vs off | 20/20 identical (17 deterministic effects) |
+
+The identity test covers 17 of the 22 effects. The five that draw with
+`Math.random()` (glitch, vhs, pixelsort, grain, matrix) are not byte-identical
+between two *unoptimized* renders either, so they cannot be part of a
+hash-equality test; they are excluded from the cache and break the chain
+instead.
 
 Run-to-run variance across the four acceptance runs: 4K drag mean 72.95-92.27
 ms, cold render 793.5-929.2 ms, warm last-effect 280.2-291.4 ms; the ratios
-stayed between 0.30-0.35 and 0.09-0.11.
+stayed between 0.30-0.36 and 0.09-0.11.
 
 ### The drag numbers, honestly
 
@@ -1894,10 +1900,15 @@ drag ended*: the 60 ms debounce was re-armed by every pointer move, so a 3 s
 drag never got a frame until release. After H4 the same drag renders live, once
 per animation frame while the cache is warm. Total main-thread time inside the
 3 s interaction therefore rises (1867 -> 9515 ms at 1080p) because 151 frames
-now do real work instead of one. Per render it is 8-12x cheaper
+now do real work instead of one. Per render it is 10-12x cheaper
 (721.9 -> 57.35 ms, 909.4 -> 89.97 ms), and the user gets continuous feedback
 instead of one update on release. The gain acceptance is per render, as the
 task defines it (>= 30% lower); both ratios are ~0.10.
+
+The stepper row is the same trade: 2 -> 30 renders for 30 clicks. The old
+debounce collapsed the burst into one render of the final value; H4 renders
+each step as it is clicked, but never more than one per animation frame
+(30 renders / 30 frames).
 
 ### Test harness corrections (made before the RED run)
 
@@ -1917,6 +1928,23 @@ The first drafts were invalid and were fixed before either tree was measured:
   state first, so the final drag value cannot coincide with a cached frame.
 - The harness asserts `pipeline == 0` for the unchanged-state check because the
   instrumentation counts `render()` entries, not work.
+
+Two more corrections were needed by the **first** 3x gate attempt on `2337812`
+(run 1 PASS, runs 2-3 FAIL G11; `docs/evidence/h4/gate-attempt-1.txt`):
+
+- **Late long-task delivery.** G11 saw a 169-174 ms long task in a toggle window
+  with `pipeline=0`. It was the 4K load's first render: Chromium delivered its
+  PerformanceObserver entry after the harness reset, so it was charged to the
+  next window. The observer now drops entries whose `startTime` precedes the
+  reset (the same fix already used in the H4 load harness).
+- **Exact one-frame threshold.** The 1280 drag median is reported as
+  `16.7000000000007` (the display interval) on some runs, which `<= 16.7`
+  rejected even though it *is* one refresh. The check now allows 16.8 ms: a
+  0.1 ms float tolerance, still far below two frames (33.4 ms).
+
+`compare_check.py` then passed 20/20 on three consecutive standalone runs
+(`docs/evidence/h4/g11-fix-{1,2,3}.log`), and the full gate was re-run from
+scratch on the fixed commit.
 
 ### Neutral bypass measurement
 
@@ -1972,7 +2000,7 @@ and the fast path preserves that exactly).
  app.js                   | 118 +++++++---
  effects.js               |  99 +++++++-
  engine.js                |   4 +-
- tests/gate/load_check.py | new, 15 checks
+ tests/gate/load_check.py | new, 548 lines (15 checks)
  tests/gate/run_gate.py   |  40 +++-
 ```
 
@@ -1988,12 +2016,43 @@ and the fast path preserves that exactly).
 
 ### Gate runs (3x consecutive)
 
-See the table appended after the runs.
+Three consecutive full gates on the committed tree `f29b224`, each in a fresh
+worktree (`/tmp/opencode/h4-gate`), logs in
+`docs/evidence/h4/h4-gate-{1,2,3}.log`:
+
+| Run | G5 existing | G9 steppers | G10 effects | G11 compare | G12 load | G4 frame median (all 4 cells) | Verdict |
+|---|---|---|---|---|---|---|---|
+| 1 | 169 checks, 0 fail (175.6 s) | 65 measurements, 15 hold rows | 239 checks, 0 fail (36.8 s) | 20 checks, 0 fail (40.3 s) | 15 checks, 0 fail (162.5 s) | 16.7 ms | GATE PASS |
+| 2 | 169 checks, 0 fail (204.0 s) | 65 measurements, 15 hold rows | 239 checks, 0 fail (51.1 s) | 20 checks, 0 fail (38.8 s) | 15 checks, 0 fail (141.7 s) | 16.7 ms | GATE PASS |
+| 3 | 169 checks, 0 fail (181.7 s) | 65 measurements, 15 hold rows | 239 checks, 0 fail (36.4 s) | 20 checks, 0 fail (41.3 s) | 15 checks, 0 fail (123.8 s) | 16.7 ms | GATE PASS |
+
+G1, G2, G3, G6, G7 and G8 passed in all three runs with 0 violations
+(G2 76680 element/state checks, G3 62 screenshots). Run 3's G12 detail is kept
+as `docs/evidence/h4/h4-gate-3-acceptance.json`: 4K drag 78.86 ms avg over 151
+renders, cold 870 ms, warm last-effect 291.6 ms (ratio 0.335, drag ratio
+0.091), 0 rAF in every idle cell, unchanged state `pipeline=0`, 20/20 identity,
+heap +4.05%. G12 rewrites `acceptance.json` on every run, so only the last run's
+detail file survives; the three summary lines above are from the logs.
+
+G4's p95 was 800-850 ms in run 1, 1117-1200 ms in run 2 and 833-1483 ms in run
+3, while the median was 16.7 ms in all twelve cells. That is the pre-existing
+frame variance already noted under H2, not a render-path change: G4 has no p95
+threshold and fails only on a missing or errored sample. It is recorded here
+rather than hidden, and stays a H2/H4 open item.
 
 ### Commit / tag
 
-`da8e572` scheduler, `81f6e00` idle, `6c3031e` stage cache, `9cdc711` neutral,
-`a6909ee` acceptance check; tag `H4-pass`.
+| Commit | Contents |
+|---|---|
+| `da8e572` | scheduler: dirty flag, one rAF, unchanged-state skip, resize guard; adds `load_check.py` + G12 |
+| `81f6e00` | true idle: video loop on play/pause/ended, hidden tab, blob URL revoke |
+| `6c3031e` | pipeline stage cache (one slot per stage index, random effects excluded) |
+| `9cdc711` | neutral bypass: `fxConvolve` copy path, skip edges/sketch/blur at neutral |
+| `a6909ee` | acceptance check: unchanged state does no pipeline work |
+| `2337812` | evidence: baseline, RED, GREEN, acceptance, screenshots, break-its, GATE.md |
+| `f29b224` | G11 harness: long-task start-time attribution, one-frame float tolerance |
+
+Tag: `H4-pass` (on `f29b224`, the tree all three gate runs above were executed on).
 
 ### Remaining flaws
 
