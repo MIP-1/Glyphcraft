@@ -970,25 +970,42 @@ body.reorder-active * { cursor: grabbing !important; }
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 4px;
-  background: var(--accent);
+  width: 28px;
+  background: transparent;
   cursor: ew-resize;
   z-index: 31;
-  box-shadow: 0 0 8px var(--accent);
   pointer-events: auto;
+  touch-action: none;
+  transform: translateX(-50%);
+}
+/* 28px invisible hit area, 4px visible line down the middle. */
+.compare-slider::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  transform: translateX(-50%);
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
 }
 .compare-slider::before {
   content: "";
   position: absolute;
-  left: -8px;
+  left: 50%;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   width: 20px;
   height: 20px;
   background: var(--accent);
   border-radius: 50%;
   border: 2px solid var(--surface-panel);
   box-shadow: 0 0 8px var(--accent);
+  z-index: 1;
+}
+@media (pointer: coarse) {
+  .compare-slider { width: 44px; }
 }
 
 /* Output size preset picker */

@@ -1,0 +1,10 @@
+H3 break-it checks (real Chromium, real pointer/touch input)
+
+PASS touch drag moves the split — frac 0.500->0.664, width=44px
+PASS drag outside canvas keeps capture, no pan — frac 0.500->0.598->0.598, pan {'x': 29.400000000000034, 'y': 166.41250000000002} -> {'x': 29.400000000000034, 'y': 166.41250000000002}
+PASS 20 rapid toggles settle cleanly — flips=20, compare=True, renders=9, pipeline=0, longest=0ms, longtasks=[]
+PASS compare drag on a playing video — {'type': 'video', 'frac': 0.6875, 'active': True, 'w': 320, 'h': 240, 'left': 550, 'expected': 550}
+PASS split survives output-size change — canvas 1280->1600x900, left=365.3 expected=365.3, boundary lum delta=114
+
+5/5 passed
+BREAKIT PASS

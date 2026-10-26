@@ -1,0 +1,35 @@
+toggle 1280x720 default   on pipeline=1 longest=159ms allocs=2 | off pipeline=1 longest=204ms allocs=2                                     FAIL
+toggle 4K default         on pipeline=1 longest=170ms allocs=2 | off pipeline=1 longest=216ms allocs=2                                     FAIL
+toggle 4K heavy           on pipeline=1 longest=927ms allocs=10 | off pipeline=1 longest=980ms allocs=10                                   FAIL
+20 toggles leak           listeners 26->26 (delta 0), DOM canvases 1->1, heap 2.6->2.6MB (+0.5%), canvas allocations 200                   FAIL
+idle rAF after toggles    0 callbacks/s                                                                                                    PASS
+hit area + styles         width=4px, center hit=True, +-10px hit=False, touch-action=auto, pointer-events=auto, z=31 overlay z=30 pointer=none FAIL
+pointer capture           hasPointerCapture=False                                                                                          FAIL
+grab zoom 100%            0/50 drags started (misses [(470.0, 0.5018663680477791, 0.5034288680477791), (725.8, 0.5034288680477791, 0.5049913680477791), (306.1, 0.5049913680477791, 0.506553868047779)]) FAIL
+grab zoom 200%            0/50 drags started (misses [(125.8, 0.5, 0.50078125), (410.1, 0.50078125, 0.5015625), (108.4, 0.5015625, 0.50234375)]) FAIL
+grab zoom 400%            0/50 drags started (misses [(954.6, 0.5, 0.500390625), (927.1, 0.500390625, 0.50078125), (563.6, 0.50078125, 0.501171875)]) FAIL
+touch hit area            width=4px touch-action=auto                                                                                      FAIL
+drag 1280x720             frames=130 median=16.7ms p95=133.4ms pipeline=36 getImageData=72 toDataURL=0 longest=214ms                       FAIL
+drag 4K heavy             frames=129 median=16.7ms p95=183.3ms pipeline=37 getImageData=74 toDataURL=0 longest=266ms                       FAIL
+split initial             frac=0.350 left=409.3 expected=409.3 hidden=False                                                                PASS
+split zoom 200%           frac=0.350 left=186.0 expected=186.0 hidden=False                                                                PASS
+split pan                 frac=0.350 left=246.0 expected=246.0 hidden=False                                                                PASS
+split resize              frac=0.350 left=246.0 expected=246.0 hidden=False                                                                PASS
+split value change        frac=0.350 left=246.0 expected=246.0 hidden=False                                                                PASS
+split undo                frac=0.350 left=246.0 expected=246.0 hidden=False                                                                PASS
+split redo                frac=0.350 left=246.0 expected=246.0 hidden=False                                                                PASS
+
+20 checks, 12 failure(s)
+  FAIL toggle 1280x720 default: on pipeline=1 longest=159ms allocs=2 | off pipeline=1 longest=204ms allocs=2
+  FAIL toggle 4K default: on pipeline=1 longest=170ms allocs=2 | off pipeline=1 longest=216ms allocs=2
+  FAIL toggle 4K heavy: on pipeline=1 longest=927ms allocs=10 | off pipeline=1 longest=980ms allocs=10
+  FAIL 20 toggles leak: listeners 26->26 (delta 0), DOM canvases 1->1, heap 2.6->2.6MB (+0.5%), canvas allocations 200
+  FAIL hit area + styles: width=4px, center hit=True, +-10px hit=False, touch-action=auto, pointer-events=auto, z=31 overlay z=30 pointer=none
+  FAIL pointer capture: hasPointerCapture=False
+  FAIL grab zoom 100%: 0/50 drags started (misses [(470.0, 0.5018663680477791, 0.5034288680477791), (725.8, 0.5034288680477791, 0.5049913680477791), (306.1, 0.5049913680477791, 0.506553868047779)])
+  FAIL grab zoom 200%: 0/50 drags started (misses [(125.8, 0.5, 0.50078125), (410.1, 0.50078125, 0.5015625), (108.4, 0.5015625, 0.50234375)])
+  FAIL grab zoom 400%: 0/50 drags started (misses [(954.6, 0.5, 0.500390625), (927.1, 0.500390625, 0.50078125), (563.6, 0.50078125, 0.501171875)])
+  FAIL touch hit area: width=4px touch-action=auto
+  FAIL drag 1280x720: frames=130 median=16.7ms p95=133.4ms pipeline=36 getImageData=72 toDataURL=0 longest=214ms
+  FAIL drag 4K heavy: frames=129 median=16.7ms p95=183.3ms pipeline=37 getImageData=74 toDataURL=0 longest=266ms
+COMPARE FAIL

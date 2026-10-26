@@ -1584,3 +1584,201 @@ addressed, and G4 must not be weakened meanwhile.
 - Edge Detect on an image with no edges is legitimately black
   (`ui-edges.png`); a user may read that as "broken". It is the effect's
   defined output, not a white page.
+
+## H3 — Compare freeze + unreliable handle — STATUS: PASS
+
+### Root causes (measured, not guessed)
+
+1. **Every scheduled render re-ran the whole pipeline.** `render()`
+   (`app.js:597-621`) called `prepareBase()` (adjustments + all effects) and
+   `renderToContext()` (Script/Dither) unconditionally. The compare toggle and
+   every `pointermove` during a split drag called `scheduleRender(0)`, so a
+   single drag produced **36-37 full pipelines**, 72 `getImageData` calls and
+   2 canvas allocations each; p95 frame time was 133-183 ms and the longest
+   task 214-266 ms. A toggle on the 4K six-effect stack blocked for **927-980
+   ms** (RED log below).
+2. **The handle was a 4 px strip with no gesture ownership.** `.compare-slider`
+   was `width:4px` with `touch-action:auto` (`style.css:969`), used `window`
+   listeners and never called `setPointerCapture` (`app.js:2264-2283`), and its
+   `pointerdown` bubbled to `handlePointerDown` on `#canvas-area`
+   (`app.js:802`). When the image overflowed the canvas area (always at
+   100/200/400% in the test viewport) the canvas began panning; the pan's move
+   handler rewrote `state.compareFrac`, so the split barely moved. Result:
+   **0/50 grabs at every zoom**, even though the split position maths itself
+   was correct (7/7 split checks already passed before the fix).
+
+### Fix
+
+- `render()` now caches the **post-pipeline** frame keyed by
+  `pv.w x pv.h | sourceId | JSON.stringify(renderOpts())`
+  (`app.js:597-641`). Compare toggle and split drag composite from that cache;
+  the pipeline is not re-entered. `state.sourceId` increments on every image
+  and video load; video and video export bypass the cache because their source
+  changes per frame.
+- `.compare-slider` is a **28 px transparent hit area** (**44 px** under
+  `pointer: coarse`) with the 4 px accent line drawn on `::after` and the knob
+  centred on `::before`; `touch-action:none`; `translateX(-50%)` keeps
+  `style.left` equal to the split coordinate without moving the visual
+  (`style.css:969-1009`).
+- The drag snapshots the canvas rect and displayed width once, uses
+  `setPointerCapture`, keeps `pointermove/up/cancel/lostpointercapture` on the
+  slider, releases capture on end, and stops propagation so the canvas can
+  never pan from the handle (`app.js:2264-2292`). `handlePointerDown` also
+  ignores events originating in `#compare-slider` (`app.js:805-807`).
+
+### RED on the pre-H3 tree (`405c512`), same harness
+
+`docs/evidence/h3/red-h3-old-tree.log` — **12 of 20 checks fail**:
+
+| Check | Old tree |
+|---|---|
+| toggle 1280x720 | pipeline=1, longest 159 / 204 ms |
+| toggle 4K | pipeline=1, longest 170 / 216 ms |
+| toggle 4K heavy | pipeline=1, longest 927 / 980 ms |
+| 20 toggles | 200 canvas allocations |
+| hit area + styles | 4 px, `touch-action:auto`, ±10 px miss |
+| pointer capture | false |
+| grab 100 / 200 / 400% | **0/50** each |
+| touch hit area | 4 px |
+| drag 1280x720 | pipeline=36, `getImageData`=72, p95 133.4 ms |
+| drag 4K heavy | pipeline=37, `getImageData`=74, p95 183.3 ms |
+| split correctness (7) | PASS (already correct) |
+
+### GREEN (`docs/evidence/h3/green-h3.log`)
+
+`tests/gate/compare_check.py` — **20 checks, 0 failures**. Four acceptance
+groups:
+
+1. **No freeze / no leak.** Toggle on/off at 1280x720, 4K, and 4K with the
+   six-effect stack: `pipeline=0`, longest task 0 ms, 0 canvas allocations.
+   20 toggles: listeners 26→26, DOM canvases 1→1, heap +0.4%, allocations 0.
+   Idle rAF after toggles: 0 callbacks/s.
+2. **Handle always grabs.** 28 px hit area, `±10 px` hit at 25% height
+   (away from the knob), `touch-action:none`, `pointer-events:auto`, z=31 over
+   overlay z=30. `hasPointerCapture=true`. **50/50** grabs at 100%, 200% and
+   400%. Touch context: 44 px, `touch-action:none`.
+3. **Drag only redraws the split.** 1280x720: median 16.7 / p95 16.8 ms;
+   4K heavy: median 16.7 / p95 16.8 ms. `pipeline=0`, `getImageData=0`,
+   `toDataURL=0`, longest 0 ms in both.
+4. **Split stays correct.** 7/7: initial, zoom 200%, pan, resize, value
+   change, undo, redo — line left equals
+   `pan.x + canvas.width * scale * compareFrac` within 0.1 px.
+
+### Test harness corrections (made before the RED run)
+
+The first draft had three invalid probes, fixed before RED so both trees were
+measured identically: the ±10 px width probe ran at mid-height where the 20 px
+knob made a 4 px line pass (now 25% height); the grab loop sampled y across
+the unclipped slider box, including points outside the viewport/scroll
+container (now the visible intersection); and the drag direction only
+increased, walking the split off-screen during the 50 presses (now alternates
+±40 px). The zoom cells also pan the split to the middle before the presses,
+because a zoomed canvas can legitimately put it off-screen. No threshold was
+lowered.
+
+### Screenshots (16, opened and described)
+
+`docs/evidence/h3/`:
+
+- `dark-1280-compare-handle.png` — 4 px accent line at x=490 with the 20 px
+  knob; gradient original left, Script output right; no gap or double line.
+- `dark-1280-compare-dragged.png` — after a real mouse drag to 0.35 the line
+  and knob are at x=345; both sides stay aligned, panel unchanged.
+- `dark-1280-compare-zoom200.png` — 200% badge; line centred at x=490; left
+  is the zoomed gradient, right the enlarged glyphs; knob at mid-height.
+- `dark-1280-compare-zoom400.png` — 400% badge; same alignment, glyph edges
+  pixelated by design, line still 4 px.
+- `light-1280-compare-handle.png` — same geometry on cream; red line and
+  knob with a light ring remain legible.
+- `light-1280-compare-dragged.png` — line at x=351 after the drag; no
+  contrast loss on the light canvas surround.
+- `light-1280-compare-zoom200.png` — 200%: red line at x=490, gradient left,
+  glyphs right; panel and status stay light.
+- `light-1280-compare-zoom400.png` — 400%: line and knob unchanged, no
+  clipping or layout shift.
+- `dark-360-compare-handle.png` — 360 px layout, 350x197 canvas at 26%; knob
+  and line fully inside the image, side panel hidden.
+- `dark-360-compare-dragged.png` — line moved to 0.35 on the small canvas;
+  knob still centred on the line.
+- `dark-360-compare-zoom200.png` — full-bleed canvas, line at x=175 with
+  gradient left / glyphs right, knob visible.
+- `dark-360-compare-zoom400.png` — same at 400%; no horizontal scrollbar and
+  no clipped handle.
+- `light-360-compare-handle.png` — light equivalent of the 360 handle state;
+  knob ring reads against the cream page.
+- `light-360-compare-dragged.png` — drag to 0.35 on the light 360 layout.
+- `light-360-compare-zoom200.png` — 200%: boundary crisp at x=175, no fade.
+- `light-360-compare-zoom400.png` — 400%: same boundary, line and knob fully
+  visible.
+
+### Break-it list (5) and results
+
+`docs/evidence/h3/breakit-h3.txt` — **5/5 PASS**:
+
+1. **Real touch drag.** CDP touchStart/move/end on a 390x844 touch context:
+   frac 0.500→0.664, hit width 44 px. PASS.
+2. **Drag far outside the canvas.** Press the handle, move 150 px below the
+   canvas area and 90 px right: the split still tracks (0.500→0.598), pointer
+   capture holds, and `state.pan` is byte-identical before/after (no stolen
+   pan). PASS.
+3. **20 rapid toggles.** 20 flips, 9 coalesced renders, `pipeline=0`, longest
+   task 0 ms, no page error, compare ends on (even count). PASS.
+4. **Compare during a playing video.** 320x240 WebM: compare active, split
+   dragged 0.500→0.6875, line left 550 = expected 550, no error (video
+   correctly bypasses the still-frame cache). PASS.
+5. **Output-size change.** Preset Original → 1080p: canvas 1280x720 →
+   1600x900, line 365.3 = expected 365.3, and the content boundary at the
+   line still differs by 114 luminance levels (line and pixels agree). PASS.
+
+### Files changed and why
+
+```
+ app.js                         | +45 -8
+ style.css                      | +35 -8
+ tests/gate/run_gate.py         | +33
+ tests/gate/compare_check.py    | new, 20 checks
+```
+
+- `app.js`: post-pipeline frame cache + `sourceId` invalidation, video
+  bypass, slider gesture ownership (capture, scoped listeners,
+  `stopPropagation`), pan guard.
+- `style.css`: 28/44 px invisible hit area, 4 px `::after` line, centred knob,
+  `touch-action:none`, split-centred transform.
+- `tests/gate/run_gate.py`: G11 runs `compare_check.py` (~150 s) and fails on
+  any FAIL, fewer than 20 checks, or a missing `COMPARE PASS`.
+- `tests/gate/compare_check.py`: permanent H3 acceptance (20 checks).
+
+### Gate runs (3x consecutive)
+
+Three runs in a git worktree of the committed H3 tree
+(`/tmp/opencode/h3-gate` at `2fd19a8`), `GATE_TASK=h3-gate npm run gate`;
+logs: `docs/evidence/h3/h3-gate-{1,2,3}.log`. **All three: `GATE PASS`**, with
+G1–G11 green and `G11 PASS compare split: 20 checks, 0 failure(s)` in each
+(41.3 / 41.8 / 42.6 s).
+
+| Run | G5 existing | G9 steppers | G10 effects | G11 compare | Verdict |
+|---|---|---|---|---|---|
+| 1 | 169 checks, 0 failures (203.7 s) | 65 measurements | 239 checks, 0 failures | 20 checks, 0 failures (41.8 s) | GATE PASS |
+| 2 | 169 checks, 0 failures (200.5 s) | 65 measurements | 239 checks, 0 failures | 20 checks, 0 failures (42.6 s) | GATE PASS |
+| 3 | 169 checks, 0 failures (198.4 s) | 65 measurements | 239 checks, 0 failures | 20 checks, 0 failures (41.3 s) | GATE PASS |
+
+The only post-gate edit is this paragraph and the three log files.
+
+### Commit / tag
+
+`H3: cache the compare frame and give the split handle its own gesture` /
+tag `H3-pass`.
+
+### Remaining flaws
+
+- At high zoom the split line can sit outside the visible canvas area after a
+  large frac change; the user must pan to it. The handle is then correctly
+  clipped, not lost. The grab test pans it into view first.
+- The cache costs one extra canvas of preview size (≤1600 px, ≈7.7 MB at
+  4:3) and is never used for video; video compare still runs the pipeline per
+  frame. H4 owns the remaining load.
+- A value/effect change while compare is on still runs the full pipeline once
+  (correct; the key changes) and only the subsequent split moves are cached.
+- `renderCacheKey` JSON-serialises the render options on every render. It is a
+  few microseconds at these option sizes, but it is a string allocation on the
+  hot path; H4 may replace it with a version counter if profiling shows it.

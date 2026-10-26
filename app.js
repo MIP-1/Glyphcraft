@@ -140,6 +140,8 @@ const state = {
   rafId: null,
   renderTimer: null,
   renderId: null,
+  renderCache: null,
+  sourceId: 0,
   pan: { x: 0, y: 0 },
   scale: 1,
   zoom: 1,
@@ -595,8 +597,20 @@ function render() {
   els.canvas.width = pv.w;
   els.canvas.height = pv.h;
   state.scale = scaleForZoom(state.zoom);
-  const base = prepareBase(state.source, pv.w, pv.h, opts);
-  renderToContext(base, els.ctx, pv.w, pv.h, opts);
+  // Compare split drags and toggles only change how the finished frame is
+  // composited. Cache the post-pipeline frame keyed by every input that can
+  // change it, so moving the split never re-runs effects or the Script stage.
+  const canCache = state.sourceType !== "video" && !state.videoExporting;
+  const key = canCache ? renderCacheKey(pv) : null;
+  const cached = state.renderCache;
+  if (canCache && cached && cached.key === key
+      && cached.canvas.width === pv.w && cached.canvas.height === pv.h) {
+    els.ctx.drawImage(cached.canvas, 0, 0);
+  } else {
+    const base = prepareBase(state.source, pv.w, pv.h, opts);
+    renderToContext(base, els.ctx, pv.w, pv.h, opts);
+    if (canCache) cacheRenderedFrame(key, pv);
+  }
 
   if (state.showOriginal) {
     drawOriginal(els.ctx, pv.w, pv.h, null);
@@ -609,6 +623,25 @@ function render() {
   applyZoomUI();
   updateCompareUI();
   updateStatus(full);
+}
+
+function renderCacheKey(pv) {
+  return pv.w + "x" + pv.h + "|" + state.sourceId + "|" + JSON.stringify(renderOpts());
+}
+
+function cacheRenderedFrame(key, pv) {
+  let cache = state.renderCache;
+  if (!cache) {
+    cache = state.renderCache = { canvas: document.createElement("canvas"), key: null };
+  }
+  if (cache.canvas.width !== pv.w || cache.canvas.height !== pv.h) {
+    cache.canvas.width = pv.w;
+    cache.canvas.height = pv.h;
+  }
+  const cctx = cache.canvas.getContext("2d");
+  cctx.clearRect(0, 0, pv.w, pv.h);
+  cctx.drawImage(els.canvas, 0, 0);
+  cache.key = key;
 }
 
 function outputMeta() {
@@ -769,6 +802,9 @@ function canvasFitsView() {
 
 function handlePointerDown(e) {
   if (!state.source) return;
+  // The compare handle owns its gesture; never start a canvas pan from it
+  // (a left-drag on the handle used to pan the image whenever it overflowed).
+  if (e.target && e.target.closest && e.target.closest("#compare-slider")) return;
   if (e.pointerType === "touch") {
     activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (activePointers.size === 2) {
@@ -866,6 +902,7 @@ function loadFile(file) {
       state.sourceType = "video";
       state.sourceW = vid.videoWidth;
       state.sourceH = vid.videoHeight;
+      state.sourceId++;
       els.canvasArea.classList.add("has-content");
       vid.play().catch(() => {});
       startVideoLoop();
@@ -886,6 +923,7 @@ function loadFile(file) {
       state.video = null;
       state.sourceW = img.naturalWidth;
       state.sourceH = img.naturalHeight;
+      state.sourceId++;
       els.canvasArea.classList.add("has-content");
       if (state.opts.palette === "__auto__") extractAutoPalette(img);
       scheduleRender(0);
@@ -2225,18 +2263,32 @@ function setupEventListeners() {
 
   const slider = els.compareSlider;
   on(slider, "pointerdown", e => {
+    if (e.button > 0) return;
     e.preventDefault();
+    e.stopPropagation();
+    // Snapshot the geometry once per gesture: reading it on every move forces
+    // a layout flush and lets pan/zoom changes mid-drag skew the split.
     const area = els.canvasArea.getBoundingClientRect();
-    const update = ev => {
-      const canvasW = els.canvas.width * state.scale;
+    const canvasW = els.canvas.width * state.scale;
+    const move = ev => {
       state.compareFrac = Math.max(0, Math.min(1, (ev.clientX - area.left - state.pan.x) / (canvasW || 1)));
       scheduleRender(0);
     };
-    update(e);
-    const move = ev => update(ev);
-    const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
+    move(e);
+    try { slider.setPointerCapture(e.pointerId); } catch (err) {}
+    const end = () => {
+      slider.removeEventListener("pointermove", move);
+      slider.removeEventListener("pointerup", end);
+      slider.removeEventListener("pointercancel", end);
+      slider.removeEventListener("lostpointercapture", end);
+      try {
+        if (slider.hasPointerCapture(e.pointerId)) slider.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+    };
+    slider.addEventListener("pointermove", move);
+    slider.addEventListener("pointerup", end);
+    slider.addEventListener("pointercancel", end);
+    slider.addEventListener("lostpointercapture", end);
   });
 
   window.addEventListener("resize", () => {
