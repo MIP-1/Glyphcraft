@@ -36,12 +36,17 @@ INIT_JS = r"""
 (() => {
   const P = window.__perf = {
     pipeline: 0, renders: 0, renderMs: [], longtasks: [], raf: 0,
+    ltFrom: 0,
     canvasCreated: 0, getImageData: 0, gidBytes: 0, toDataURL: 0,
     listeners: [],
   };
   try {
     new PerformanceObserver((list) => {
-      for (const e of list.getEntries()) P.longtasks.push(+e.duration.toFixed(1));
+      for (const e of list.getEntries()) {
+        // Chromium can deliver an entry well after the task ended. Attribute
+        // it to the window it started in, not the window it arrived in.
+        if (e.startTime >= P.ltFrom) P.longtasks.push(+e.duration.toFixed(1));
+      }
     }).observe({ entryTypes: ["longtask"] });
   } catch (err) {}
   const create = Document.prototype.createElement;
@@ -143,6 +148,7 @@ def reset(page):
       const P = __perf;
       P.pipeline = 0; P.renders = 0; P.renderMs = []; P.longtasks = [];
       P.raf = 0; P.canvasCreated = 0; P.getImageData = 0; P.gidBytes = 0; P.toDataURL = 0;
+      P.ltFrom = performance.now();
       window.__settleN = -1; window.__settleStart = performance.now();
     }""")
 
@@ -507,7 +513,10 @@ def main() -> int:
             fr = drag_frames(page)
             settle(page, quiet_ms=100)
             dr = perf(page)
-            med_ok = fr["median"] is not None and fr["median"] <= (16.7 if label == "1280x720" else 20)
+            # The frame interval is reported as 16.700000000000728 on some
+            # runs; 0.1 ms is float tolerance for "one refresh", not a
+            # relaxation (two frames is 33.4 ms).
+            med_ok = fr["median"] is not None and fr["median"] <= (16.8 if label == "1280x720" else 20)
             p95_ok = fr["p95"] is not None and fr["p95"] <= (25 if label == "1280x720" else 33)
             ok = med_ok and p95_ok and dr["pipeline"] == 0 and dr["getImageData"] == 0
             record(
