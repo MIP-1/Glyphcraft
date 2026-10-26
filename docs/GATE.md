@@ -1811,21 +1811,21 @@ Script depth slider; the stepper burst is 30 real clicks on the depth arrows.
 ### Root causes
 
 1. **The video loop always scheduled another frame.** `startVideoLoop()`
-   (`app.js:1001` at `c9140b8`) called `requestAnimationFrame(loop)` even after
-   `render()` declined to draw, so a paused video ran ~60 callbacks/s and a
-   hidden tab kept rendering (`document.hidden` was never consulted). That is
-   the 301 and 84 rAF rows above.
+   (`app.js:955-963` at `c9140b8`) called `requestAnimationFrame(loop)` at
+   `app.js:961` even after `render()` declined to draw, so a paused video ran
+   ~60 callbacks/s and a hidden tab kept rendering (`document.hidden` was never
+   consulted anywhere in the file). That is the 301 and 84 rAF rows above.
 2. **Every change re-ran the whole pipeline after a fixed 60 ms debounce.**
-   `scheduleRender()` re-armed one timer per change, and `render()` assigned
-   `canvas.width/height` (which resets the canvas) on every call. There was no
-   unchanged-state guard, so a repeat render of the same state still ran
-   effects and the Script stage.
-3. **The pipeline had no stage reuse.** `applyEffects()` fed each enabled effect
-   through `EFFECT_RUNNERS` in order on every render, so changing the last
-   effect re-ran all six.
-4. **Neutral stages did full work.** `fxConvolve()` ran its 9-tap loop over
-   every pixel even at amount 0, where the output is a copy; edges, sketch and
-   blur still allocated and filled a full canvas.
+   `scheduleRender()` (`app.js:558-566`) re-armed one timer per change, and
+   `render()` assigned `canvas.width/height` at `app.js:597-598` (which resets
+   the canvas) on every call. There was no unchanged-state guard, so a repeat
+   render of the same state still ran effects and the Script stage.
+3. **The pipeline had no stage reuse.** `applyEffects()` (`effects.js:581-590`)
+   fed each enabled effect through `EFFECT_RUNNERS` in order on every render, so
+   changing the last effect re-ran all six.
+4. **Neutral stages did full work.** `fxConvolve()` (`effects.js:418-444`) ran
+   its 9-tap loop over every pixel even at amount 0, where the output is a copy;
+   edges, sketch and blur still allocated and filled a full canvas.
 
 ### Fix — one optimization per commit
 
