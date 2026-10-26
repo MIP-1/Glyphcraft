@@ -1,0 +1,17 @@
+PASS idle 1920x1080 — rAF=0 frames=0 timeouts=0 intervals=0 longtask=0ms task=1.4ms
+PASS idle 4K — rAF=0 frames=0 timeouts=0 intervals=0 longtask=0ms task=1.2ms
+PASS drag depth 1920x1080 — {"renders": 150, "avg_ms": 58.0, "max_ms": 106.7, "pipeline": 150, "longtask_ms": 7212, "longest_ms": 110, "task_ms": 9607.4, "frames": 150}
+PASS drag depth 4K — {"renders": 151, "avg_ms": 72.93, "max_ms": 105.3, "pipeline": 151, "longtask_ms": 11446, "longest_ms": 108, "task_ms": 12092.8, "frames": 151}
+PASS last-effect render gain — cold=793.5ms warm_last_effect=283.2ms (64.3% lower)
+PASS drag render gain — cold=793.5ms drag_avg_4k=72.93ms (90.8% lower)
+PASS 30 stepper clicks — start=80 end=110 expected=110 renders=30 frames=30
+PASS 50 changes in one frame — renders=1 value=109
+PASS 100 changes memory — heap 2.7->2.8MB (+4.1%), DOM canvases 1->1
+PASS paused video idle — rAF=0 frames=0 timeouts=0 intervals=0 longtask=0ms task=1.7ms
+PASS hidden tab idle — rAF=0 timeouts=0 intervals=0 task=5.0ms
+PASS stage cache last effect — {"sharpen": 1}
+PASS stage cache first effect — {"posterize": 1, "edges": 1, "sketch": 1, "emboss": 1, "blur": 1, "sharpen": 1}
+PASS 20 stacks identical output — 20/20 match
+
+14 checks, 0 failure(s)
+LOAD PASS

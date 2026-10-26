@@ -1,0 +1,134 @@
+{
+  "fixtures": {},
+  "idle": {
+    "1920x1080": {
+      "raf": 0,
+      "timeouts": 0,
+      "intervals": 0,
+      "frames": 0,
+      "longtasks": [],
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "task_ms": 1.7,
+      "script_ms": 0.0,
+      "label": "idle 1920x1080"
+    },
+    "4K": {
+      "raf": 0,
+      "timeouts": 0,
+      "intervals": 0,
+      "frames": 0,
+      "longtasks": [],
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "task_ms": 1.0,
+      "script_ms": 0.0,
+      "label": "idle 4K"
+    },
+    "hidden": {
+      "raf": 0,
+      "timeouts": 0,
+      "intervals": 0,
+      "frames": 0,
+      "longtasks": [],
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "task_ms": 5.0,
+      "script_ms": 0.0,
+      "label": "hidden"
+    }
+  },
+  "drags": {
+    "1920x1080": {
+      "renders": 151,
+      "avg_ms": 57.35,
+      "max_ms": 92.3,
+      "pipeline": 151,
+      "longtask_ms": 7060,
+      "longest_ms": 94,
+      "task_ms": 9515.0,
+      "frames": 151
+    },
+    "4K": {
+      "renders": 151,
+      "avg_ms": 89.97,
+      "max_ms": 177.9,
+      "pipeline": 151,
+      "longtask_ms": 14015,
+      "longest_ms": 181,
+      "task_ms": 14875.1,
+      "frames": 151
+    }
+  },
+  "stepper": {
+    "start": 80,
+    "end": 110,
+    "frames": 30,
+    "renders": 30,
+    "expected": 110
+  },
+  "memory": {
+    "heap0": 2692644,
+    "heap1": 2801760,
+    "pct": 4.05,
+    "canvas0": 1,
+    "canvas1": 1
+  },
+  "video": {
+    "raf": 0,
+    "timeouts": 0,
+    "intervals": 0,
+    "frames": 0,
+    "longtasks": [],
+    "longtask_ms": 0,
+    "longest_ms": 0,
+    "task_ms": 1.4,
+    "script_ms": 0.0,
+    "label": "video paused"
+  },
+  "stages": {
+    "last": {
+      "sharpen": 1
+    },
+    "first": {
+      "posterize": 1,
+      "edges": 1,
+      "sketch": 1,
+      "emboss": 1,
+      "blur": 1,
+      "sharpen": 1
+    }
+  },
+  "identity": {
+    "mismatches": [],
+    "stacks": 20
+  },
+  "gain": {
+    "cold_render_ms": 842.6,
+    "cold_runs": [
+      842.6,
+      822.7,
+      1020
+    ],
+    "warm_last_effect_ms": 290.7,
+    "warm_runs": [
+      364.8,
+      282.2,
+      290.7
+    ],
+    "drag_avg_4k_ms": 89.97,
+    "warm_ratio": 0.345,
+    "drag_ratio": 0.107
+  },
+  "coalesce": {
+    "renders": 1,
+    "value": 109
+  },
+  "unchanged": {
+    "renders": 2,
+    "pipeline": 0,
+    "same": true
+  },
+  "baseline": false,
+  "generated": "2026-10-26T17:01:41"
+}

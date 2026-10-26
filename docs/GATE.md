@@ -1782,3 +1782,234 @@ tag `H3-pass`.
 - `renderCacheKey` JSON-serialises the render options on every render. It is a
   few microseconds at these option sizes, but it is a string allocation on the
   hot path; H4 may replace it with a version counter if profiling shows it.
+
+## H4 — Reduce load — STATUS: PASS
+
+### Baseline (pre-H4 tree `c9140b8`)
+
+`docs/evidence/h4/baseline.json` + `baseline.log`, captured with the same
+harness that produced the RED and GREEN runs. 1080p preview is 1600x900; 4K
+preview is 1600x1200. "Six effects" is the heavy stack (posterize, edges,
+sketch, emboss, blur, sharpen). The drag is a real 3 s mouse drag on the
+Script depth slider; the stepper burst is 30 real clicks on the depth arrows.
+
+| Measure | 1920x1080 | 4K |
+|---|---|---|
+| idle 5 s: rAF / timeouts / intervals / renderer task | 0 / 0 / 0 / 1.6 ms | 0 / 0 / 0 / 1.2 ms |
+| 3 s depth drag: renders / ms per render / total task | 1 / 721.9 / 1867.1 ms | 1 / 909.4 / 1983.1 ms |
+| cold full render (median of 3) | 814.1 ms | |
+| warm render after changing only the last effect | 837.4 ms (+2.9% vs cold) | |
+| 30 rapid stepper clicks: renders / frames | 2 / 2 (80 -> 110) | |
+| 50 changes in one frame: renders | 1 (value 109) | |
+| 100 random changes: heap / DOM canvases | 2.6 -> 2.7 MB (+4.09%) / 1 -> 1 | |
+| video loaded and paused, 5 s: rAF / task | 301 / 123.1 ms | |
+| tab hidden 3 s with a playing video: rAF / task | 84 / 2999.3 ms | |
+| stage counters, last effect changed | 6 stages (one per effect) | |
+| stage counters, first effect changed | 6 stages | |
+| 20 random deterministic stacks, cache on vs off | 20/20 identical | |
+
+### Root causes
+
+1. **The video loop always scheduled another frame.** `startVideoLoop()`
+   (`app.js:1001` at `c9140b8`) called `requestAnimationFrame(loop)` even after
+   `render()` declined to draw, so a paused video ran ~60 callbacks/s and a
+   hidden tab kept rendering (`document.hidden` was never consulted). That is
+   the 301 and 84 rAF rows above.
+2. **Every change re-ran the whole pipeline after a fixed 60 ms debounce.**
+   `scheduleRender()` re-armed one timer per change, and `render()` assigned
+   `canvas.width/height` (which resets the canvas) on every call. There was no
+   unchanged-state guard, so a repeat render of the same state still ran
+   effects and the Script stage.
+3. **The pipeline had no stage reuse.** `applyEffects()` fed each enabled effect
+   through `EFFECT_RUNNERS` in order on every render, so changing the last
+   effect re-ran all six.
+4. **Neutral stages did full work.** `fxConvolve()` ran its 9-tap loop over
+   every pixel even at amount 0, where the output is a copy; edges, sketch and
+   blur still allocated and filled a full canvas.
+
+### Fix — one optimization per commit
+
+| Commit | Optimization | Measured effect |
+|---|---|---|
+| `da8e572` | dirty flag + one rAF per frame, unchanged-state skip, resize only on size change | 50 changes in one frame -> 1 render of the latest value; a repeat render -> `pipeline=0`; no canvas reset |
+| `81f6e00` | true idle: loop stops on pause/ended/hidden, `visibilitychange` cancels pending work, blob URL revoked | paused video 301 -> 0 rAF (123.1 -> 1.4 ms); hidden tab 84 -> 0 rAF (2999 -> 5 ms) |
+| `6c3031e` | per-stage chain cache, one slot per stage index (max 8), random effects excluded | last effect 6 -> 1 stage; warm last-effect render 291 vs 843 ms cold (65.5% less); 4K drag 90 vs 843 ms (89.3% less) |
+| `9cdc711` | neutral bypass: `fxConvolve` copy path at 0, skip edges/sketch/blur at their neutral value | 4K neutral stack 543.8 -> 128.5 ms (-76.4%), output byte-identical |
+| `a6909ee` | acceptance check for the unchanged-state skip | `pipeline=0`, canvas hash unchanged |
+
+Memory hygiene (item 5) kept the parts that were measurable or obviously
+correct: the previous blob URL is revoked on replacement, evicted stage
+canvases are released with `width = height = 0`, and the preview canvas is no
+longer reset per render. `ImageBitmap`/`ImageData` buffer reuse was **not**
+added: the 100-change test shows +4.05% heap against a +20% budget and a
+constant canvas count, so there is no measured gain to keep (`canvasCreated`
+also stays flat during drags). No Worker was added and no output changed.
+
+### RED on the pre-H4 tree, same harness
+
+`docs/evidence/h4/red-h4-old-tree.log` — **5 of 15 checks fail**:
+
+| Check | Old tree |
+|---|---|
+| last-effect render gain | 839.9 ms vs 814.3 cold (+3.1%; needs <= 0.7x) |
+| drag render gain | 889.7 ms vs 814.3 cold (+9.3%) |
+| paused video idle | rAF=301, task 123.9 ms |
+| hidden tab idle | rAF=77, task 3002.7 ms |
+| stage cache, last effect | posterize..sharpen = 6 stages (expected 1) |
+
+The other ten pass on both trees. "Stage cache, first effect" is 6 on both by
+design, and "unchanged state skips the render" is already `pipeline=0` on the
+old tree because the H3 frame cache serves the second render; it guards
+against a future regression.
+
+### GREEN (`docs/evidence/h4/green-h4.log`)
+
+`tests/gate/load_check.py` — **15 checks, 0 failures, `LOAD PASS`**:
+
+| Measure | After |
+|---|---|
+| idle 5 s, 1080p / 4K | 0 rAF, 0 timers, 1.7 / 1.0 ms task |
+| 3 s depth drag 1080p | 151 renders, 57.35 ms avg, 9515.0 ms total task |
+| 3 s depth drag 4K | 151 renders, 89.97 ms avg, 14875.1 ms total task |
+| cold full render | 842.6 ms |
+| warm last-effect render | 290.7 ms (65.5% lower) |
+| drag render gain (4K) | 89.97 vs 842.6 ms (89.3% lower) |
+| 30 rapid stepper clicks | 30 renders / 30 frames, 80 -> 110 |
+| 50 changes in one frame | 1 render, final value 109 |
+| unchanged state | `pipeline=0`, identical canvas hash |
+| 100 random changes | 2.7 -> 2.8 MB (+4.05%), canvases 1 -> 1 |
+| paused video 5 s | 0 rAF, 1.4 ms task |
+| hidden tab 3 s | 0 rAF, 5.0 ms task |
+| stage counters, last / first effect | 1 stage / 6 stages |
+| 20 random stacks, cache on vs off | 20/20 identical |
+
+Run-to-run variance across the four acceptance runs: 4K drag mean 72.95-92.27
+ms, cold render 793.5-929.2 ms, warm last-effect 280.2-291.4 ms; the ratios
+stayed between 0.30-0.35 and 0.09-0.11.
+
+### The drag numbers, honestly
+
+The baseline's 721.9 / 909.4 ms "per render" is one render that ran *after the
+drag ended*: the 60 ms debounce was re-armed by every pointer move, so a 3 s
+drag never got a frame until release. After H4 the same drag renders live, once
+per animation frame while the cache is warm. Total main-thread time inside the
+3 s interaction therefore rises (1867 -> 9515 ms at 1080p) because 151 frames
+now do real work instead of one. Per render it is 8-12x cheaper
+(721.9 -> 57.35 ms, 909.4 -> 89.97 ms), and the user gets continuous feedback
+instead of one update on release. The gain acceptance is per render, as the
+task defines it (>= 30% lower); both ratios are ~0.10.
+
+### Test harness corrections (made before the RED run)
+
+The first drafts were invalid and were fixed before either tree was measured:
+
+- `state` is a top-level `const`, not `window.state`; the reset helper now uses
+  a guarded bare reference and tolerates the pre-H4 tree (no
+  `clearStageCache`, no `cacheDisabled`) so the same file yields the RED.
+- Long-task delivery can arrive after a window reset; the probe now timestamps
+  its own entries and filters by `startTime`.
+- The depth stepper is registered as `button.stepper[data-control="depth-num"]`
+  (the numeric input's id), not `...="depth"`.
+- Loading a playing video can never "settle"; `load_video()` no longer calls
+  `settle()`.
+- The cold-render loop reset the caches *inside* the loop; otherwise the median
+  was a frame-cache hit. The drag parks the slider at `max` and renders that
+  state first, so the final drag value cannot coincide with a cached frame.
+- The harness asserts `pipeline == 0` for the unchanged-state check because the
+  instrumentation counts `render()` entries, not work.
+
+### Neutral bypass measurement
+
+`docs/evidence/h4/neutral-bypass.txt`. 4K, six effects, caches disabled:
+all-neutral stack **543.8 -> 128.5 ms** (-76.4%). Per neutral stage before the
+change: emboss 230.0 ms, sharpen 218.6 ms, sketch 67.9, edges 64.8, blur 54.3.
+Output is byte-identical to the pre-H4 tree in **12/12** configurations: six
+neutral variants on the opaque fixture and the same six on an in-memory source
+with real transparency (which matters because `fxConvolve` forces opaque alpha
+and the fast path preserves that exactly).
+
+### Screenshots (8, opened and described)
+
+`docs/evidence/h4/`, six effects on in every shot:
+
+- `dark-1280-h4-six-effects.png` — 72% zoom; 1600x900 preview filled with the
+  Script render at character depth 80; panel shows Script options; status
+  `1280x720 571ms`; no clipping or layout shift.
+- `dark-1280-h4-compare.png` — compare at 50%: gradient original left, Script
+  output right, red line and 20 px knob at x=487; status `0ms` because the
+  composited frame comes from the H3 cache.
+- `light-1280-h4-six-effects.png` — same state on cream chrome; the render is
+  a black glyph block with white margins, panel and status stay light; 517 ms.
+- `light-1280-h4-compare.png` — split at 50% on light; line/knob legible on the
+  cream surround; status `0ms`.
+- `dark-360-h4-six-effects.png` — 360 px layout, panel hidden, canvas fitted at
+  26%, status `1280x720 510ms`; no horizontal scroll.
+- `dark-360-h4-compare.png` — split at 50% on the small canvas; knob centred on
+  the line, original gradient left / glyphs right; status `0ms`.
+- `light-360-h4-six-effects.png` — light 360: cream page, fitted render, no
+  overflow; 499 ms.
+- `light-360-h4-compare.png` — light 360 compare; boundary and knob crisp at
+  26%; no clipping.
+
+### Break-it list (5) and results
+
+`docs/evidence/h4/breakit-h4.txt` — **5/5 PASS**:
+
+1. **20 effect toggles** (sketch on/off, render each time): final warm render
+   hash equals a cold render. PASS.
+2. **Slider edit -> undo -> redo**: amount 60 -> 90, undo back to 60, redo to
+   90; the warm render after redo equals a cold render. PASS.
+3. **Source replacement**: 1080 -> 1280 fixture -> 1080; the returning render
+   equals a cold render and the stage slots stay <= 8 (6 used). PASS.
+4. **Two controls in one frame** (depth slider + sharpen amount): exactly 1
+   render, both final values applied, hash equals cold. PASS.
+5. **Pause/play 10x** on a video: 0 rAF while paused, 37 while playing, no
+   extra loop after the final pause (37 -> 37 over 800 ms). PASS.
+
+### Files changed and why
+
+```
+ app.js                   | 118 +++++++---
+ effects.js               |  99 +++++++-
+ engine.js                |   4 +-
+ tests/gate/load_check.py | new, 15 checks
+ tests/gate/run_gate.py   |  40 +++-
+```
+
+- `app.js`: scheduler (dirty flag, one rAF, state key, resize guard), true idle
+  (video events, hidden tab, URL revoke), stage-cache key only when the source
+  is still, cache clear on load.
+- `effects.js`: per-stage chain cache with one slot per index, random effects
+  excluded, released with `width=0`; neutral fast paths.
+- `engine.js`: `prepareBase(..., baseKey)` passes the chain key through.
+- `tests/gate/run_gate.py`: G12 runs the load harness (>= 15 checks, requires
+  `LOAD PASS`, 2400 s timeout).
+- `tests/gate/load_check.py`: permanent H4 baseline/acceptance harness.
+
+### Gate runs (3x consecutive)
+
+See the table appended after the runs.
+
+### Commit / tag
+
+`da8e572` scheduler, `81f6e00` idle, `6c3031e` stage cache, `9cdc711` neutral,
+`a6909ee` acceptance check; tag `H4-pass`.
+
+### Remaining flaws
+
+- The frame cache can serve the previous random pattern when a value is
+  revisited while `grain`, `glitch`, `vhs`, `pixelsort` or `matrix` is on. Those
+  effects animate with `Math.random()`; freezing one frame is preferred to
+  re-running them for a split drag, and the same trade exists in H3.
+- The stage cache holds at most 8 canvases at preview size (~7.7 MB each at
+  1600x1200), so the worst case is ~61 MB. Slots are reused in place, so the
+  measured heap after 100 changes stays +4.05%.
+- Video still pays the full pipeline per frame (the cache is bypassed because
+  the source changes every frame). A Worker is explicitly out of scope (P2-2).
+- The neutral skip assumes no effect mutates its input canvas in place. All 22
+  runners allocate a new canvas or clone today; a future in-place effect would
+  need to leave `NEUTRAL_COPY`.
+- During a continuous drag the total main-thread time is higher than baseline
+  because the preview now updates live (see "The drag numbers, honestly").
+- The 360 px compare shots are at 26% zoom, so glyph detail is not judgeable
+  there; the 1280 shots carry the detail check.

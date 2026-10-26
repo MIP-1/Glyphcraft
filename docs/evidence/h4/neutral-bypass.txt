@@ -1,0 +1,51 @@
+H4 item 4 — neutral-value bypass (measured 2026-10-26, same machine, headless Chromium)
+
+Setup: 4K fixture, the six-effect stack (posterize, edges, sketch, emboss, blur,
+sharpen), both caches disabled so only pipeline cost is measured. Every render
+is a real render of the full preview (1600x1200). Median of 6 measured renders
+after one warm-up.
+
+A. What a neutral value costs today, before the change
+   all five neutral (edges 0, sketch 0, emboss 0, sharpen 0, blur 0)
+   median 543.8 ms   runs [476.3, 502.0, 520.6, 543.8, 549.6, 562.4]
+
+   Per neutral stage (stack with that one stage removed, same neutral values):
+     edges   64.8 ms
+     sketch  67.9 ms
+     emboss 230.0 ms
+     sharpen 218.6 ms
+     blur    54.3 ms
+
+   The two convolution stages dominate: fxConvolve ran its full 9-tap loop over
+   every pixel even when amount = 0, where the result is a copy (the only other
+   work is its existing opaque-alpha policy).
+
+B. After the change
+   all five neutral, 4K pipeline: median 128.5 ms
+   runs [124.0, 124.4, 126.2, 128.5, 134.5, 149.1]
+   delta 415.3 ms, 76.4% lower.
+
+   Residual: with those five effects disabled entirely the same stack takes
+   109.2 ms, so the remaining cost of the neutral stages (canvas copies that
+   the alpha policy requires) is ~19 ms.
+
+C. Output identity vs the pre-H4 tree (c9140b8, which has neither the stage
+   cache nor the neutral fast paths). Same script, same fixture, same params;
+   the hash is FNV-1a over the preview canvas RGBA.
+
+   fixture (opaque 1920x1080 PNG), 6 neutral variants ....... 12/12 identical
+   in-memory 640x400 canvas with real transparency, same 6 variants ... 12/12
+   identical
+
+   Variants: all-neutral, emboss-0, sharpen-0, edges-0, sketch-0, blur-0.
+   The transparent source is the important case: fxConvolve forces alpha 255 at
+   any amount, and the fast path preserves that exactly instead of returning
+   the input canvas.
+
+   Byte-identical hashes:
+     fixture:all-neutral 1800138492   alpha:all-neutral 1152318776
+     fixture:emboss-0    3009683363   alpha:emboss-0    3944334744
+     fixture:sharpen-0   3220187908   alpha:sharpen-0   1080898161
+     fixture:edges-0     1527762117   alpha:edges-0     3910221890
+     fixture:sketch-0    2988015712   alpha:sketch-0    2438347174
+     fixture:blur-0      4251570360   alpha:blur-0      2464780079

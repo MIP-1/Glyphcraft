@@ -1,0 +1,10 @@
+H4 break-it checks (real Chromium, real pointer input)
+
+PASS 20 effect toggles, no stale stage - warm=1698034324 cold=1698034324
+PASS undo/redo then cached render - warm=1523282532 cold=1523282532 amount after undo=60 redo=90
+PASS source replacement invalidates stages - 1080=1698034324 1280=1969051554 back=1698034324 cold=1698034324 slots=6
+PASS two controls in one frame - renders=1 depth=120 amount=80 warm=1798094389 cold=1798094389
+PASS pause/play 10x leaves no loop - paused rAF=0, playing rAF=37, after pause=37, later=37
+
+5/5 passed
+BREAKIT PASS

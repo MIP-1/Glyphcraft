@@ -1,0 +1,134 @@
+{
+  "fixtures": {},
+  "idle": {
+    "1920x1080": {
+      "raf": 0,
+      "timeouts": 0,
+      "intervals": 0,
+      "frames": 0,
+      "longtasks": [],
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "task_ms": 1.6,
+      "script_ms": 0.0,
+      "label": "idle 1920x1080"
+    },
+    "4K": {
+      "raf": 0,
+      "timeouts": 0,
+      "intervals": 0,
+      "frames": 0,
+      "longtasks": [],
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "task_ms": 1.2,
+      "script_ms": 0.0,
+      "label": "idle 4K"
+    },
+    "hidden": {
+      "raf": 84,
+      "timeouts": 0,
+      "intervals": 0,
+      "frames": 84,
+      "longtasks": [],
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "task_ms": 2999.3,
+      "script_ms": 2819.0,
+      "label": "hidden"
+    }
+  },
+  "drags": {
+    "1920x1080": {
+      "renders": 1,
+      "avg_ms": 721.9,
+      "max_ms": 721.9,
+      "pipeline": 1,
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "task_ms": 1867.1,
+      "frames": 1
+    },
+    "4K": {
+      "renders": 1,
+      "avg_ms": 909.4,
+      "max_ms": 909.4,
+      "pipeline": 1,
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "task_ms": 1983.1,
+      "frames": 1
+    }
+  },
+  "stepper": {
+    "start": 80,
+    "end": 110,
+    "frames": 2,
+    "renders": 2,
+    "expected": 110
+  },
+  "memory": {
+    "heap0": 2638600,
+    "heap1": 2746632,
+    "pct": 4.09,
+    "canvas0": 1,
+    "canvas1": 1
+  },
+  "video": {
+    "raf": 301,
+    "timeouts": 0,
+    "intervals": 0,
+    "frames": 301,
+    "longtasks": [],
+    "longtask_ms": 0,
+    "longest_ms": 0,
+    "task_ms": 123.1,
+    "script_ms": 19.4,
+    "label": "video paused"
+  },
+  "stages": {
+    "last": {
+      "posterize": 1,
+      "edges": 1,
+      "sketch": 1,
+      "emboss": 1,
+      "blur": 1,
+      "sharpen": 1
+    },
+    "first": {
+      "posterize": 1,
+      "edges": 1,
+      "sketch": 1,
+      "emboss": 1,
+      "blur": 1,
+      "sharpen": 1
+    }
+  },
+  "identity": {
+    "mismatches": [],
+    "stacks": 20
+  },
+  "gain": {
+    "cold_render_ms": 814.1,
+    "cold_runs": [
+      814.1,
+      831,
+      811.8
+    ],
+    "warm_last_effect_ms": 837.4,
+    "warm_runs": [
+      837.4,
+      802.8,
+      1306.2
+    ],
+    "drag_avg_4k_ms": 909.4,
+    "warm_ratio": 1.029,
+    "drag_ratio": 1.117
+  },
+  "coalesce": {
+    "renders": 1,
+    "value": 109
+  },
+  "baseline": true,
+  "generated": "2026-10-26T16:39:00"
+}

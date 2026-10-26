@@ -1,6 +1,6 @@
 # Glyphcraft — Project Memory (handoff)
 
-Snapshot date: 2026-10-24. Put this file at `docs/PROJECT_MEMORY.md`. Read it at the start of every new session, then read `docs/GATE.md`.
+Snapshot date: 2026-10-26. Put this file at `docs/PROJECT_MEMORY.md`. Read it at the start of every new session, then read `docs/GATE.md`.
 English only. Do not add Arabic anywhere in the repo (gate check G6).
 
 ## 1. What Glyphcraft is
@@ -22,7 +22,7 @@ Web app (HTML/CSS/JS, built with opencode) that loads an image or video and appl
 | Part | File (in `docs/prompts/`) | Content | Status |
 |---|---|---|---|
 | 1 | `part1_gate_foundation.md` | P1-0 gate, P1-1 remove Arabic, P1-2 light theme, P1-3 top bar | P1-0 PASS (commit ae85c1c, tag P1-0-pass); P1-1 PASS (2446db4); P1-2 PASS (961ede5); P1-3 NOT done (inventory recorded, code unchanged). G8 still RED (16 violations), moved into Part 1B as H0 |
-| 1B | `part1b_hotfix.md` | H0 top bar; H1 stepper arrows; H2 white effects (Pencil Sketch first); H3 Compare freeze + grab; H4 reduce load | H0 PASS (7940130, tag H0-pass); H1 PASS (tag H1-pass); H2 PASS (tag H2-pass); H3 PASS (tag H3-pass); H4 NEXT |
+| 1B | `part1b_hotfix.md` | H0 top bar; H1 stepper arrows; H2 white effects (Pencil Sketch first); H3 Compare freeze + grab; H4 reduce load | H0 PASS (7940130, tag H0-pass); H1 PASS (tag H1-pass); H2 PASS (tag H2-pass); H3 PASS (tag H3-pass); H4 PASS (commits da8e572, 81f6e00, 6c3031e, 9cdc711, a6909ee; tag H4-pass) |
 | 2 | `part2_performance_core.md` | P2-1 before/after fps, P2-2 Worker + OffscreenCanvas, P2-3 fast preview, P2-4 undo/redo/history, P2-5 before/after finish, P2-6 presets | after the owner verifies Part 1B by hand |
 | 3 | `part3_remaining_features.md` | Command Palette, drag to add effects, advanced export, batch ZIP, final regression | last |
 
@@ -35,7 +35,7 @@ Order: Part 1B → Part 2 → Part 3. Do not start a later part before the owner
 1. ~~**Steppers:** fast repeated clicks add 1–3 steps then the value falls back to 0; holding an arrow is slower than before; also affects the arrows beside each effect box.~~ **Fixed in H1** (shared 44×44 stepper; rapid-press reset and 6px hit strip gone; hold 21/50/78 vs 17/37/57 at 1/2/3s).
 2. ~~**White output:** `Pencil Sketch / Crosshatch` — Amount 0 gives an all-white canvas (should be identity); Amount 70 / Hatch 40 on a dark galaxy image gives a white page with sparse dots (expected: tonal crosshatch, denser in dark areas). Other effects may have similar bugs.~~ **Fixed in H2** (tonal crosshatch with Amount-0 identity; Edge Detect neutral + opaque frame; Blur padded/opaque; all 22 effects swept, 1848 pairs, 115,553 fuzz renders green).
 3. ~~**Compare / before-after:** activating it freezes the machine; drag runs at about 3–6 fps; the split handle does not always grab with the mouse.~~ **Fixed in H3** (post-pipeline frame cache: 36-37 pipelines per drag → 0, p95 133-183 ms → 16.8 ms; 4 px handle that lost the gesture to canvas pan → 28/44 px hit area with pointer capture; 0/50 → 50/50 grabs at 100/200/400%). P2-1 re-verifies.
-4. **Load:** site too heavy on CPU/RAM; plan = render scheduler, true idle, per-stage cache, neutral bypass, memory hygiene (no Worker until P2-2). (H4)
+4. ~~**Load:** site too heavy on CPU/RAM.~~ **Fixed in H4** (dirty-flag scheduler with one rAF per frame and an unchanged-state skip; true idle — paused video 301 → 0 rAF/5 s, hidden tab 84 → 0 rAF and 2999 → 5 ms; per-stage chain cache so changing the last effect runs 1 stage instead of 6, warm render 843 → 291 ms; neutral bypass 543.8 → 128.5 ms at 4K, output byte-identical; +4.05% heap, constant canvas count. No Worker, no output change).
 5. **Top bar:** status text, theme icon, panel icon unboxed; panel icon sits high and is clipped. (H0)
 
 ## 5. Gate system (how work is verified)
@@ -73,6 +73,6 @@ Continue from the first task that is not PASS. Do not ask me which effect or val
 ```
 
 ## 10. Next actions
-1. Run Part 1B in one session: H0 → H1 → H2 → H3 → H4.
+1. Part 1B is done: H0 → H4 all PASS, each tagged `<task>-pass`.
 2. Owner verifies by hand: top bar boxed, steppers exact on rapid clicks and fast hold, Pencil Sketch Amount 0 = original and denser hatching in dark areas, Compare does not freeze and always grabs.
 3. Then Part 2, then Part 3.
