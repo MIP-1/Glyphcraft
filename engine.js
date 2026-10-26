@@ -288,14 +288,14 @@ function renderScript(sourceCanvas, destCtx, destW, destH, opts) {
   }
 }
 
-function prepareBase(source, destW, destH, opts) {
+function prepareBase(source, destW, destH, opts, baseKey) {
   const canvas = document.createElement("canvas");
   canvas.width = destW;
   canvas.height = destH;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   ctx.drawImage(source, 0, 0, destW, destH);
   if (opts.adj) applyAdjustments(ctx, destW, destH, opts.adj);
-  const processed = applyEffects(canvas, opts.effects || []);
+  const processed = applyEffects(canvas, opts.effects || [], baseKey);
   return processed;
 }
 

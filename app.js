@@ -143,6 +143,7 @@ const state = {
   renderDirty: false,
   lastRenderKey: "",
   renderCache: null,
+  cacheDisabled: false,
   sourceId: 0,
   sourceUrl: null,
   pan: { x: 0, y: 0 },
@@ -613,7 +614,7 @@ function render() {
   const pv = previewSize(full);
   const opts = renderOpts();
   const optsKey = JSON.stringify(opts);
-  const still = state.sourceType !== "video" && !state.videoExporting;
+  const still = state.sourceType !== "video" && !state.videoExporting && !state.cacheDisabled;
   const viewKey = optsKey + "|" + (state.compare ? state.compareFrac : "-") + "|" + (state.showOriginal ? "orig" : "");
   const stateKey = pv.w + "x" + pv.h + "|" + state.sourceId + "|" + viewKey;
   // A render that would produce the identical frame is skipped entirely. The
@@ -631,16 +632,20 @@ function render() {
   // Compare split drags and toggles only change how the finished frame is
   // composited. Cache the post-pipeline frame keyed by every input that can
   // change it, so moving the split never re-runs effects or the Script stage.
-  const canCache = still;
-  const key = canCache ? pv.w + "x" + pv.h + "|" + state.sourceId + "|" + optsKey : null;
+  const key = still ? pv.w + "x" + pv.h + "|" + state.sourceId + "|" + optsKey : null;
   const cached = state.renderCache;
-  if (canCache && cached && cached.key === key
+  if (still && cached && cached.key === key
       && cached.canvas.width === pv.w && cached.canvas.height === pv.h) {
     els.ctx.drawImage(cached.canvas, 0, 0);
   } else {
-    const base = prepareBase(state.source, pv.w, pv.h, opts);
+    // The stage cache key deliberately leaves the effects out: each stage is
+    // keyed by the chain before it, so changing effect k reuses 0..k-1.
+    const stageBaseKey = still
+      ? pv.w + "x" + pv.h + "|" + state.sourceId + "|" + JSON.stringify(opts.adj || {})
+      : null;
+    const base = prepareBase(state.source, pv.w, pv.h, opts, stageBaseKey);
     renderToContext(base, els.ctx, pv.w, pv.h, opts);
-    if (canCache) cacheRenderedFrame(key, pv);
+    if (still) cacheRenderedFrame(key, pv);
   }
 
   if (state.showOriginal) {
@@ -937,6 +942,7 @@ function loadFile(file) {
       state.sourceW = vid.videoWidth;
       state.sourceH = vid.videoHeight;
       state.sourceId++;
+      clearStageCache();
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       state.sourceUrl = url;
       els.canvasArea.classList.add("has-content");
@@ -961,6 +967,7 @@ function loadFile(file) {
       state.sourceW = img.naturalWidth;
       state.sourceH = img.naturalHeight;
       state.sourceId++;
+      clearStageCache();
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       state.sourceUrl = url;
       els.canvasArea.classList.add("has-content");

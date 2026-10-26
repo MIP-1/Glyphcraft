@@ -578,13 +578,70 @@ function makeEffect(id, enabled) {
   return { id, enabled: !!enabled, params: effectDefaults(id) };
 }
 
-function applyEffects(sourceCanvas, effects) {
+// ---------------------------------------------------------------------------
+// H4: per-stage pipeline cache.
+// Each stage's output depends only on its input pixels and its own params, so
+// a stage key is the chain prefix (base pixels + every stage before it). A
+// change to effect k therefore recomputes k..n and reuses 0..k-1.
+// The runners below use Math.random(), so their output is not a function of
+// the key: caching them would freeze an animation the effect is meant to draw.
+const STAGE_UNCACHEABLE = new Set(["glitch", "vhs", "pixelsort", "grain", "matrix"]);
+// One slot per stage index: bounded memory (at most 8 canvases) and exactly
+// the "changing k re-runs k..n" behaviour, with no history to evict.
+const STAGE_CACHE_MAX = 8;
+let stageSlots = [];
+
+function clearStageCache() {
+  for (const slot of stageSlots) {
+    if (slot && slot.canvas) { slot.canvas.width = 0; slot.canvas.height = 0; }
+  }
+  stageSlots = [];
+}
+
+function stageCacheAllowed() {
+  return typeof state === "undefined" || !state.cacheDisabled;
+}
+
+function stageKey(prevKey, fx) {
+  if (!prevKey || STAGE_UNCACHEABLE.has(fx.id)) return null;
+  const params = fx.params || {};
+  let s = prevKey + ">" + fx.id;
+  for (const k of Object.keys(params).sort()) s += "|" + k + "=" + params[k];
+  return s;
+}
+
+function stageCacheGet(index, key) {
+  const slot = stageSlots[index];
+  return slot && slot.key === key ? slot.canvas : null;
+}
+
+function stageCachePut(index, key, canvas) {
+  if (index >= STAGE_CACHE_MAX) return;
+  const old = stageSlots[index];
+  if (old && old.canvas !== canvas) { old.canvas.width = 0; old.canvas.height = 0; }
+  stageSlots[index] = { key, canvas };
+}
+
+function applyEffects(sourceCanvas, effects, baseKey) {
   let current = sourceCanvas;
+  const cacheable = !!baseKey && stageCacheAllowed();
+  let chainKey = cacheable ? baseKey : null;
+  let index = 0;
   for (const fx of effects || []) {
     if (!fx.enabled) continue;
     const run = EFFECT_RUNNERS[fx.id];
     if (!run) continue;
-    try { current = run(current, fx.params || effectDefaults(fx.id)); } catch (e) { console.warn("effect failed:", fx.id, e); }
+    const key = chainKey ? stageKey(chainKey, fx) : null;
+    if (key) {
+      const hit = stageCacheGet(index, key);
+      if (hit) { current = hit; chainKey = key; index++; continue; }
+    }
+    try {
+      current = run(current, fx.params || effectDefaults(fx.id));
+      if (key) { stageCachePut(index, key, current); chainKey = key; }
+      else chainKey = null;
+    } catch (e) { console.warn("effect failed:", fx.id, e); chainKey = null; }
+    index++;
   }
   return current;
 }
