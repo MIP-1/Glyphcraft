@@ -131,12 +131,22 @@ class Server:
 
 def settle(page, quiet_ms=220, timeout_ms=15000):
     """Wait until the render counter has been stable for quiet_ms."""
+    # `__settleStart` was never assigned, so the timeout clause was always true
+    # once the page was older than `timeout`: settle returned immediately and
+    # callers measured renders that were still in flight.
+    page.evaluate(
+        """() => {
+          window.__settleN = window.__perf ? window.__perf.renders : 0;
+          window.__settleAt = performance.now();
+          window.__settleStart = performance.now();
+        }"""
+    )
     page.wait_for_function(
         """([quiet, timeout]) => {
           const now = performance.now();
           const n = window.__perf ? window.__perf.renders : 0;
           if (window.__settleN !== n) { window.__settleN = n; window.__settleAt = now; return false; }
-          return now - (window.__settleAt || 0) >= quiet || now - (window.__settleStart || 0) > timeout;
+          return now - window.__settleAt >= quiet || now - window.__settleStart > timeout;
         }""",
         arg=[quiet_ms, timeout_ms],
         timeout=timeout_ms + 5000,

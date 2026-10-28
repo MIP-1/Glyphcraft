@@ -95,6 +95,11 @@
     <main class="workspace">
       <section class="canvas-area" id="canvas-area" tabindex="0" aria-label="Image preview">
         <canvas id="canvas" role="img" aria-label="Rendered preview"></canvas>
+        <button class="video-toggle" id="video-toggle" type="button" hidden
+                aria-label="Play video" title="Play video" data-playing="false">
+          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.4v13.2L19 12z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.8" y="5" width="3.6" height="14" rx="1"/><rect x="13.6" y="5" width="3.6" height="14" rx="1"/></svg>
+        </button>
         <div class="drop-zone" id="drop-zone" data-state="idle">
           <div class="drop-status" id="drop-status" aria-live="polite" aria-atomic="true">
             <p class="drop-hint">Drop an image or video here, paste it (Ctrl+V), or open a file.</p>

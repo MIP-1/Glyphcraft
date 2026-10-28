@@ -228,14 +228,40 @@ function scriptMetrics(destW, destH, depth) {
   return { cols, cellW, cellH, fontPx, rows: Math.ceil(destH / cellH) };
 }
 
+// 1C: one scratch canvas per pipeline role, reused across frames. Each is
+// filled and read inside a single synchronous call (prepareBase -> effects ->
+// renderScript), so sharing it across frames cannot leak state.
+const GC_SCRATCH = new Map();
+function gcScratch(key, w, h) {
+  let c = GC_SCRATCH.get(key);
+  if (!c) { c = document.createElement("canvas"); GC_SCRATCH.set(key, c); }
+  if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+  return c;
+}
+function gcScratchContext(key, w, h) {
+  const c = gcScratch(key, w, h);
+  const ctx = c.getContext("2d", { willReadFrequently: true });
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "source-over";
+  ctx.filter = "none";
+  ctx.clearRect(0, 0, w, h);
+  return { canvas: c, ctx };
+}
+
 function renderScript(sourceCanvas, destCtx, destW, destH, opts) {
   const { offset, ramp, transparentBg, bgColor, colorMode, palette } = opts;
   const { cols, cellW, cellH, fontPx, rows } = scriptMetrics(destW, destH, opts.depth);
 
-  const tmpCanvas = document.createElement("canvas");
+  const tmpCanvas = gcScratch("stage", destW, destH);
   tmpCanvas.width = destW;
   tmpCanvas.height = destH;
   const tmpCtx = tmpCanvas.getContext("2d", { willReadFrequently: true });
+  tmpCtx.setTransform(1, 0, 0, 1, 0, 0);
+  tmpCtx.globalAlpha = 1;
+  tmpCtx.globalCompositeOperation = "source-over";
+  tmpCtx.filter = "none";
+  tmpCtx.clearRect(0, 0, destW, destH);
   tmpCtx.drawImage(sourceCanvas, 0, 0, destW, destH);
   if (!opts.preApplied) applyAdjustments(tmpCtx, destW, destH, opts.adj);
   if (opts.autoLevels) autoLevels(tmpCanvas);
@@ -288,12 +314,18 @@ function renderScript(sourceCanvas, destCtx, destW, destH, opts) {
   }
 }
 
+/* Time spent copying the source frame into the pipeline. For a video this can
+   block until the decoder hands over the frame, and that wait does not shrink
+   when the playback scale shrinks, so the governor has to judge the pipeline
+   without it (otherwise a busy decoder blurs a cheap stack for no gain). */
+let gcSourceDrawMs = 0;
+function sourceDrawMs() { return gcSourceDrawMs; }
+
 function prepareBase(source, destW, destH, opts, baseKey) {
-  const canvas = document.createElement("canvas");
-  canvas.width = destW;
-  canvas.height = destH;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const { canvas, ctx } = gcScratchContext("base", destW, destH);
+  const drawStart = performance.now();
   ctx.drawImage(source, 0, 0, destW, destH);
+  gcSourceDrawMs = performance.now() - drawStart;
   if (opts.adj) applyAdjustments(ctx, destW, destH, opts.adj);
   const processed = applyEffects(canvas, opts.effects || [], baseKey);
   return processed;
@@ -573,10 +605,15 @@ const DITHER_KERNELS = {
 
 function renderDither(sourceCanvas, destCtx, destW, destH, opts) {
   const { ditherKernel, colorDepth, usePalette, transparentBg, bgColor, colorMode, palette } = opts;
-  const tmpCanvas = document.createElement("canvas");
+  const tmpCanvas = gcScratch("stage", destW, destH);
   tmpCanvas.width = destW;
   tmpCanvas.height = destH;
   const tmpCtx = tmpCanvas.getContext("2d", { willReadFrequently: true });
+  tmpCtx.setTransform(1, 0, 0, 1, 0, 0);
+  tmpCtx.globalAlpha = 1;
+  tmpCtx.globalCompositeOperation = "source-over";
+  tmpCtx.filter = "none";
+  tmpCtx.clearRect(0, 0, destW, destH);
   tmpCtx.drawImage(sourceCanvas, 0, 0, destW, destH);
   if (!opts.preApplied) applyAdjustments(tmpCtx, destW, destH, opts.adj);
   const imgData = tmpCtx.getImageData(0, 0, destW, destH);

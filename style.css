@@ -407,6 +407,36 @@ h1, h2, h3, h4, h5, h6, .section-title, .logo, .btn {
 .canvas-area.panning { cursor: grabbing; }
 #canvas { display: block; transform-origin: 0 0; }
 
+/* Video play/pause overlay (Part 1C). Lives in the canvas area, not the top
+   bar, so the G8 top-bar geometry contract is untouched. */
+.video-toggle {
+  position: absolute;
+  left: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 32;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow: var(--shadow-dropdown);
+  transition: background 0.15s, border-color 0.15s;
+}
+.video-toggle[hidden] { display: none; }
+.video-toggle:hover { background: var(--surface-hover); border-color: var(--text-muted); }
+.video-toggle:active { background: var(--surface-active); }
+.video-toggle:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.video-toggle svg { width: 20px; height: 20px; }
+.video-toggle .icon-pause { display: none; }
+.video-toggle[data-playing="true"] .icon-play { display: none; }
+.video-toggle[data-playing="true"] .icon-pause { display: block; }
+
 /* Drop zone / home screen */
 .drop-zone {
   position: absolute;

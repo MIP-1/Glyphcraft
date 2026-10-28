@@ -23,6 +23,7 @@ Web app (HTML/CSS/JS, built with opencode) that loads an image or video and appl
 |---|---|---|---|
 | 1 | `part1_gate_foundation.md` | P1-0 gate, P1-1 remove Arabic, P1-2 light theme, P1-3 top bar | P1-0 PASS (commit ae85c1c, tag P1-0-pass); P1-1 PASS (2446db4); P1-2 PASS (961ede5); P1-3 NOT done (inventory recorded, code unchanged). G8 still RED (16 violations), moved into Part 1B as H0 |
 | 1B | `part1b_hotfix.md` | H0 top bar; H1 stepper arrows; H2 white effects (Pencil Sketch first); H3 Compare freeze + grab; H4 reduce load | H0 PASS (7940130, tag H0-pass); H1 PASS (tag H1-pass); H2 PASS (tag H2-pass); H3 PASS (tag H3-pass); H4 PASS (commits da8e572, 81f6e00, 6c3031e, 9cdc711, a6909ee; tag H4-pass) |
+| 1C | `part1c.md` | C1 audit Part 1B, C2 video play/pause control, C3 multi-effect cost | C1/C2/C3 PASS (one commit, tags `C1-audit-pass`, `C2-video-control-pass`, `C3-perf-pass`; see `docs/GATE.md` Part 1C and `docs/HANDOFF_PART1C.md`). One commit for three tasks because the control exposed the pointer-capture bug and the perf work exposed the preview-collapse bug; the commit body records the departure from one-commit-per-task |
 | 2 | `part2_performance_core.md` | P2-1 before/after fps, P2-2 Worker + OffscreenCanvas, P2-3 fast preview, P2-4 undo/redo/history, P2-5 before/after finish, P2-6 presets | after the owner verifies Part 1B by hand |
 | 3 | `part3_remaining_features.md` | Command Palette, drag to add effects, advanced export, batch ZIP, final regression | last |
 

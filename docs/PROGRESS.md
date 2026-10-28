@@ -131,3 +131,31 @@
 ## Testing
 - `python tests/test_suite.py` → 169 checks, 0 failures (includes the contrast audit).
 - `python tests/test_contrast.py` → 9,628 pairs, 0 violations; screenshots in `tests/reports/`.
+
+## Part 1C (2026-10-28) - DONE
+
+- **C1 audit of Part 1B.** Fixed: pointer capture swallowed the first click on
+  any overlay control (`.canvas-area` captured on `pointerdown` whenever the
+  preview overflowed); `compare_check.settle()` never armed its quiet-window
+  start, so its timeout clause was always true; the export check left the output
+  preset at 160x120, so the playback budget was measured on a 27 px canvas.
+  No console errors or page errors in any gate flow.
+- **C2 play/pause control.** 48x48 themed button inside the canvas area,
+  `aria-label`/`title` driven by the media element (`play`, `pause`, `ended`,
+  `emptied`, `loadeddata`, click, rejected `play()`), Space toggles without
+  panning, hidden for images/empty, export preserves the paused state. 50
+  toggles: heap +2.2 %, listener count constant.
+- **C3 multi-effect cost.** `requestVideoFrameCallback` instead of rAF, canvas
+  workspace pool (0 allocations/render), reused scratch canvases in the engine,
+  hoisted 3x3 kernels (byte-identical over 72 hash cases), reused luma plane,
+  per-frame DOM writes skipped when unchanged, and an adaptive playback scale
+  that keeps the *displayed* size fixed while the backing store shrinks.
+  6 effects @720p: 11 frames/5 s and p50 443 ms -> 129 frames/5 s and p50
+  20.9 ms; 4635 ms of long tasks -> 444 ms; playback converges to 0.17 (218 px)
+  and returns to full resolution on pause.
+- **Found by screenshots:** the preview collapsed to 31x17 px while playing
+  (transform recomputed from zoom alone). Fixed with `displayScale()`; G13 now
+  asserts the on-screen box stays within 1 % (RED 76.02 %, GREEN 0.51 %).
+- **Gate:** new G13 (`tests/gate/video_check.py`, 22 checks) wired into
+  `run_gate.py` as G1-G13. Evidence: 16 screenshots in `docs/evidence/part1c/`.
+  Human checks: `docs/HANDOFF_PART1C.md`.

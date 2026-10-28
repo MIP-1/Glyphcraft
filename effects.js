@@ -52,11 +52,70 @@ const RETRO_PALETTES = {
   nes: ["#000000", "#fcfcfc", "#f8b800", "#f83800", "#0058f8", "#00a800"]
 };
 
+// --- 1C: canvas workspace pool ---------------------------------------------
+// Playback runs the whole chain again for every presented video frame. Before
+// the pool, one 720p frame allocated ~10 full-size canvases (one per effect
+// plus intermediates), i.e. tens of megabytes of short-lived GPU memory per
+// second. The pool is armed only for the non-cached path (video playback and
+// `state.cacheDisabled`), so a canvas stored in the stage cache is never
+// recycled underneath it.
+const FX_POOL_MAX_TOTAL = 10;
+const FX_POOL_MAX_PER_SIZE = 4;
+let fxPoolArmed = false;
+let fxPoolCount = 0;
+const fxPool = new Map();
+
+function fxPoolKey(w, h) { return w + "x" + h; }
+
+function fxPoolClear() {
+  for (const arr of fxPool.values()) {
+    for (const c of arr) { c.width = 0; c.height = 0; }
+  }
+  fxPool.clear();
+  fxPoolCount = 0;
+}
+
+function fxPrepareContext(c) {
+  const ctx = c.getContext("2d", { willReadFrequently: true });
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "source-over";
+  ctx.filter = "none";
+  return ctx;
+}
+
 function fxCanvas(w, h) {
+  const W = Math.max(1, Math.round(w));
+  const H = Math.max(1, Math.round(h));
+  if (fxPoolArmed) {
+    const arr = fxPool.get(fxPoolKey(W, H));
+    if (arr && arr.length) {
+      const c = arr.pop();
+      fxPoolCount--;
+      fxPrepareContext(c);
+      return c;
+    }
+  }
   const c = document.createElement("canvas");
-  c.width = Math.max(1, Math.round(w));
-  c.height = Math.max(1, Math.round(h));
+  c.width = W;
+  c.height = H;
   return c;
+}
+
+function fxRelease(c) {
+  if (!fxPoolArmed || !c) return;
+  const key = fxPoolKey(c.width, c.height);
+  let arr = fxPool.get(key);
+  if (!arr) { arr = []; fxPool.set(key, arr); }
+  if (arr.length >= FX_POOL_MAX_PER_SIZE || fxPoolCount >= FX_POOL_MAX_TOTAL) {
+    c.width = 0;
+    c.height = 0;
+    return;
+  }
+  const ctx = fxPrepareContext(c);
+  ctx.clearRect(0, 0, c.width, c.height);
+  arr.push(c);
+  fxPoolCount++;
 }
 function fxContext(canvas) {
   return canvas.getContext("2d", { willReadFrequently: true });
@@ -76,6 +135,17 @@ function fxNum(v, lo, hi, def) {
   return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : def;
 }
 function fxLuma(r, g, b) { return 0.2126 * r + 0.7152 * g + 0.0722 * b; }
+// Reused luma plane for the 3x3 kernels. Grown on demand and never shrunk, so a
+// playback loop allocates nothing per frame.
+let FX_LUMA = null;
+function fxLumaPlane(src, n) {
+  if (!FX_LUMA || FX_LUMA.length < n) FX_LUMA = new Float64Array(Math.max(n, 4096));
+  const lum = FX_LUMA;
+  for (let i = 0, j = 0; i < n; i++, j += 4) {
+    lum[i] = fxLuma(src[j], src[j + 1], src[j + 2]);
+  }
+  return lum;
+}
 function fxHex(hex) {
   const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || "#000");
   return m ? [+("0x" + m[1]), +("0x" + m[2]), +("0x" + m[3])] : [0, 0, 0];
@@ -194,6 +264,7 @@ function fxPixelate(c, p) {
   const ctx = fxContext(out);
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(small, 0, 0, out.width, out.height);
+  fxRelease(small);
   return out;
 }
 
@@ -242,6 +313,7 @@ function fxBloom(c, p) {
   ctx.filter = "none";
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = "source-over";
+  fxRelease(bright);
   return out;
 }
 
@@ -315,20 +387,21 @@ function fxEdges(c, p) {
     o[(y * w) * 4 + 3] = 255;
     o[(y * w + w - 1) * 4 + 3] = 255;
   }
-  const gx = [-1, 0, 1, -2, 0, 2, -1, 0, 1], gy = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
+  // Luma is computed once per pixel into a reused plane instead of nine times
+  // per pixel inside the kernel. fxLuma() is a pure function of the same three
+  // bytes, so the plane holds bit-identical values and the Sobel sum keeps its
+  // original order.
+  const lum = fxLumaPlane(src, w * h);
   for (let y = 1; y < h - 1; y++) {
-    for (let x = 1; x < w - 1; x++) {
-      let sx = 0, sy = 0;
-      for (let ky = -1; ky <= 1; ky++) {
-        for (let kx = -1; kx <= 1; kx++) {
-          const i = ((y + ky) * w + (x + kx)) * 4;
-          const l = fxLuma(src[i], src[i + 1], src[i + 2]);
-          const k = (ky + 1) * 3 + (kx + 1);
-          sx += l * gx[k]; sy += l * gy[k];
-        }
-      }
+    let i = y * w + 1, up = i - w, dn = i + w;
+    for (let x = 1; x < w - 1; x++, i++, up++, dn++) {
+      const ul = lum[up - 1], uc = lum[up], ur = lum[up + 1];
+      const lc = lum[i - 1], rc = lum[i + 1];
+      const dl = lum[dn - 1], dc = lum[dn], dr = lum[dn + 1];
+      const sx = -ul + 0 * uc + ur - 2 * lc + 0 * lum[i] + 2 * rc - dl + 0 * dc + dr;
+      const sy = -ul - 2 * uc - ur + 0 * lc + 0 * lum[i] + 0 * rc + dl + 2 * dc + dr;
       const m = fxClamp(Math.hypot(sx, sy) * amount);
-      const di = (y * w + x) * 4;
+      const di = i * 4;
       o[di] = o[di + 1] = o[di + 2] = m; o[di + 3] = 255;
     }
   }
@@ -438,18 +511,27 @@ function fxConvolve(c, kernel, amount) {
   const src = fxData(c).data;
   const out = fxCanvas(w, h), ctx = fxContext(out);
   const img = ctx.createImageData(w, h), o = img.data;
+  // Kernel taps and row offsets are hoisted out of the per-pixel loop: the
+  // nine `src[...]` index expressions used to be recomputed for every channel
+  // of every pixel. The sum order is unchanged, so the output is byte-for-byte
+  // identical (proved by the effect hash sweep).
+  const k0 = kernel[0], k1 = kernel[1], k2 = kernel[2];
+  const k3 = kernel[3], k4 = kernel[4], k5 = kernel[5];
+  const k6 = kernel[6], k7 = kernel[7], k8 = kernel[8];
+  const row = w * 4;
   for (let y = 0; y < h; y++) {
+    const rowStart = y * row;
     for (let x = 0; x < w; x++) {
-      const di = (y * w + x) * 4;
+      const di = rowStart + x * 4;
       if (x === 0 || y === 0 || x === w - 1 || y === h - 1) {
         o[di] = src[di]; o[di + 1] = src[di + 1]; o[di + 2] = src[di + 2]; o[di + 3] = 255;
         continue;
       }
+      const u = di - row, d = di + row;
       for (let ch = 0; ch < 3; ch++) {
-        let v = 0;
-        for (let ky = -1; ky <= 1; ky++)
-          for (let kx = -1; kx <= 1; kx++)
-            v += src[((y + ky) * w + (x + kx)) * 4 + ch] * kernel[(ky + 1) * 3 + (kx + 1)];
+        const v = src[u - 4 + ch] * k0 + src[u + ch] * k1 + src[u + 4 + ch] * k2
+                + src[di - 4 + ch] * k3 + src[di + ch] * k4 + src[di + 4 + ch] * k5
+                + src[d - 4 + ch] * k6 + src[d + ch] * k7 + src[d + 4 + ch] * k8;
         const orig = src[di + ch];
         o[di + ch] = fxClamp(orig + (v - orig) * amount);
       }
@@ -493,6 +575,8 @@ function fxBlur(c, p) {
   bctx.drawImage(padded, 0, 0);
   bctx.filter = "none";
   ctx.drawImage(blurred, pad, pad, w, h, 0, 0, w, h);
+  fxRelease(padded);
+  fxRelease(blurred);
   // Cropping at the padded edge leaves a sub-255 alpha ring from premultiplied
   // blending; the effect output must be fully opaque.
   const img = ctx.getImageData(0, 0, w, h), d = img.data;
@@ -653,10 +737,32 @@ function stageCachePut(index, key, canvas) {
   stageSlots[index] = { key, canvas };
 }
 
+let lastPooledOutput = null;
+let lastPooledSize = "";
+
 function applyEffects(sourceCanvas, effects, baseKey) {
   let current = sourceCanvas;
   const cacheable = !!baseKey && stageCacheAllowed();
+  fxPoolArmed = !cacheable;
+  if (fxPoolArmed) {
+    const size = fxPoolKey(sourceCanvas.width, sourceCanvas.height);
+    if (size !== lastPooledSize) {
+      // The playback scale changed: every pooled canvas is the wrong size.
+      if (lastPooledOutput) { lastPooledOutput = null; }
+      fxPoolClear();
+      lastPooledSize = size;
+    }
+    // The previous frame's output is no longer read by anyone: recycle it
+    // before this frame allocates anything, so steady-state playback allocates
+    // nothing at all.
+    if (lastPooledOutput) { fxRelease(lastPooledOutput); lastPooledOutput = null; }
+  }
   let chainKey = cacheable ? baseKey : null;
+  // The last canvas this call allocated from the pool. It is dead the instant
+  // the next stage has read it, so it is recycled immediately: holding every
+  // intermediate until the chain ends forced the pool past its per-size cap and
+  // still allocated ~2 canvases per frame.
+  let owned = null;
   let index = 0;
   for (const fx of effects || []) {
     if (!fx.enabled) continue;
@@ -665,7 +771,11 @@ function applyEffects(sourceCanvas, effects, baseKey) {
     const key = chainKey ? stageKey(chainKey, fx) : null;
     if (key) {
       const hit = stageCacheGet(index, key);
-      if (hit) { current = hit; chainKey = key; index++; continue; }
+      if (hit) {
+        if (owned) { fxRelease(owned); owned = null; }
+        current = hit;
+        chainKey = key; index++; continue;
+      }
     }
     const params = fx.params || effectDefaults(fx.id);
     if (isNeutralCopy(fx.id, params)) {
@@ -675,11 +785,22 @@ function applyEffects(sourceCanvas, effects, baseKey) {
       continue;
     }
     try {
-      current = run(current, params);
+      const next = run(current, params);
+      if (owned && owned !== next) { fxRelease(owned); owned = null; }
+      current = next;
+      if (fxPoolArmed && current !== sourceCanvas) owned = current;
       if (key) { stageCachePut(index, key, current); chainKey = key; }
       else chainKey = null;
     } catch (e) { console.warn("effect failed:", fx.id, e); chainKey = null; }
     index++;
+  }
+  if (fxPoolArmed) {
+    // The final output is handed to the Script/Dither stage and recycled at
+    // the start of the next frame.
+    lastPooledOutput = owned;
+  } else {
+    lastPooledOutput = null;
+    lastPooledSize = "";
   }
   return current;
 }
