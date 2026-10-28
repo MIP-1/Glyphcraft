@@ -156,6 +156,9 @@
 - **Found by screenshots:** the preview collapsed to 31x17 px while playing
   (transform recomputed from zoom alone). Fixed with `displayScale()`; G13 now
   asserts the on-screen box stays within 1 % (RED 76.02 %, GREEN 0.51 %).
-- **Gate:** new G13 (`tests/gate/video_check.py`, 22 checks) wired into
-  `run_gate.py` as G1-G13. Evidence: 16 screenshots in `docs/evidence/part1c/`.
+- **Gate:** new G13 (`tests/gate/video_check.py`, 25 checks) wired into
+  `run_gate.py` as G1-G13. Wall-clock bounds are paired with a zero-effect
+  control measured in the same session (the same desktop produces the same
+  50-130 ms tasks with no effects at all); CPU per frame stays absolute.
+  Evidence: 16 screenshots in `docs/evidence/part1c/`.
   Human checks: `docs/HANDOFF_PART1C.md`.

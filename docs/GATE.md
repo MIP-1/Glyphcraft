@@ -2156,6 +2156,21 @@ Pinned-scale curve (`debug_curve.py`, 6 effects, 5 s windows): 0.24 → p50 34 m
 respond to scale, so the governor stops at 0.17 rather than spending quality
 for nothing.
 
+Where the remaining 20 ms goes (`probe_stages.py`, stage timers around
+`prepareBase` and the glyph/dither stage, p50):
+
+| run | backing | source draw + effects | glyph stage |
+|---|---|---|---|
+| 6 effects, 0.17 | 218×122 | 13.8 ms (≈4 draw + 9 effects) | 5.8 ms |
+| no effects, 0.17 | 218×122 | 8.6 ms | 9.5 ms |
+| no effects, 1.0 | 1280×720 | 5.3 ms | 32.9 ms |
+
+The glyph stage is why zero-effect playback also converges to 0.17: its cost
+follows the number of cells (`cols = depth = 160`, `cellH = fontPx·1.1` with a
+7 px font floor), so below ~0.3 the cell count stops falling even as the
+backing store keeps shrinking. The effects are a real 9 ms of the 20 ms at
+0.17; the glyph grid is the rest.
+
 Rejected / deferred, with reasons:
 
 - **WebGL shaders for the 22 effects** — correct long-term answer, but it
@@ -2393,7 +2408,13 @@ so, and this section is the record of the departure from "one commit per task".
 - Six stacked effects on a 720p video converge to 0.17 (218 px) on this
   machine; playback is visibly soft until pause. This is the documented
   trade-off, not a silent quality drop: the paused frame is always full
-  resolution and the governor would sit at 0.2/0.24 for lighter stacks.
+  resolution.
+- On this machine *every* playback converges to 0.17, including a clip with no
+  effects, because the glyph stage dominates and stops getting cheaper below
+  ~0.3 (table in section 1). Lighter stacks therefore do not climb, and the
+  remembered scale is 0.17 for the whole session. On hardware where the glyph
+  stage is cheaper the governor has headroom to climb; the step-up rule needs a
+  p90 under 45 % of the budget, which the ~18 ms floor never reaches here.
 - The canvas is ~0.5 % taller than the paused one at 0.17 because the backing
   height is rounded to whole pixels while the transform compensates by width
   only. Invisible, but it is why the check allows 1 %.

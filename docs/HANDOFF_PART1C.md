@@ -42,9 +42,13 @@ PASS (one commit, tags `C1-audit-pass`, `C2-video-control-pass`,
    full resolution the moment you pause.
 4. Pause: the frame must become sharp again within one frame, and the status
    readout should return to the full-resolution value (tens of ms).
-5. If your machine is faster than mine, the governor will settle at a higher
-   scale (sharper); if it is slower, it goes no lower than 0.17. Tell me the
+5. On this machine every stack converges to 0.17, including a video with no
+   effects at all: the glyph stage costs ~9.5 ms even at 218 px, so below ~0.3
+   making the backing smaller stops buying time. If your machine is faster the
+   governor climbs (it needs a p90 under 45 % of the 26 ms budget); tell me the
    scale you see (`state.playback.scale` in the console) and the ms readout.
+   That the heavy stack measures the same as a zero-effect clip is the point:
+   the effects are no longer what sets the frame time here.
 
 ## 4. The preview must not shrink while playing (C2/C3)
 
