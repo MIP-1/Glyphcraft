@@ -25,7 +25,7 @@ at P2-1 and is **not** PASS yet. The full `npm run gate` is **not** green.
 | H3 compare freeze + grab | PASS | tag `H3-pass` |
 | H4 reduce load | PASS | tag `H4-pass` |
 | C1 / C2 / C3 audit, video control, multi-effect cost | PASS | one commit, tags `C1-audit-pass`, `C2-video-control-pass`, `C3-perf-pass` |
-| P2-1 before/after lag | IN PROGRESS | fix is written but uncommitted; `compare_check.py` 20/20 PASS |
+| P2-1 before/after lag | IN PROGRESS | fix committed as WIP `99a942d`, no tag; `compare_check.py` 20/20 PASS |
 | P2-2 Worker + OffscreenCanvas | NOT STARTED | no `Worker` or `OffscreenCanvas` in the repo |
 | P2-3 fast preview | NOT STARTED | preview is always downscaled |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
