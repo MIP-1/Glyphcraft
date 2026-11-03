@@ -2424,3 +2424,73 @@ so, and this section is the record of the departure from "one commit per task".
   reason; a real regression raises every window.
 - G4's pre-existing p95 variance (H2 note) is unchanged and still has no p95
   threshold.
+
+---
+
+## P1-3 — Top bar matches the purple reference — STATUS: PASS
+
+Implementation was H0 (above). This closes the task with fresh evidence and the
+geometry the gate now measures.
+
+### Target (from `docs/ref/r3-1-topbar.png`)
+
+Five red arrows: the three status tokens, the theme toggle, the panel toggle.
+Three purple arrows: the zoom group's left segment, inner value box, right
+segment. Read as one instruction: the status readout and the two icon buttons
+must be built from the same 48 px, 1 px-bordered, 6 px-radius box system as the
+zoom group, with internal 1 px separators in the status box.
+
+### Before → after (G8, same harness, `evaluate_geometry`)
+
+| Measure | Before (P1-2) | After |
+|---|---|---|
+| heights | status-bar 16.5, zoom 48, theme 44, panel 44 | all four 48.0 |
+| tops (1280) | status 15.8, zoom 0, theme 2, panel 2 | all four 0.0 |
+| radius | zoom 6, theme 4, panel 4 | all four 6.0 |
+| panel icon center | (1241, 11) vs item (1246, 24) | within 1 px of item center |
+| G8 violations | 16 (4 cells × 4 kinds) | 0 in dark 1280, dark 360, light 1280, light 360 |
+
+Fresh probe of the four cells after the close:
+
+```
+dark  1280: status 48/0/6 boxed, zoom 48/0/6 boxed, theme 48/0/6 boxed, panel 48/0/6 boxed
+dark  360:  status 48/96/6 boxed (own row), zoom/theme/panel 48/44/6 boxed
+light 1280: identical to dark 1280
+light 360:  identical to dark 360
+status segments: height 44, clientWidth == scrollWidth (100%: 44/44, 900x600: 65/65,
+                 time: 58/58), 1 px border between segments, none on the first
+```
+
+The 360 wrap is the rule G8 allows: two rows, the second containing the status
+group alone. No token is clipped at either width.
+
+### Screenshots (62, `docs/evidence/p1-3`, opened and described)
+
+| View | What it shows |
+|---|---|
+| `dark-1280-fullest-top.png` | One row: menu words left; right, four boxes of equal height — status `100% / 900×600 / 1554ms` with hairline separators, zoom group (`−`, value, `+`), moon, grid. Same radius and vertical alignment. |
+| `light-360-fullest-top.png` | Two rows: FILE VIEW EDIT + boxed zoom/theme/panel on row one; the status box alone under the zoom group. All icon centers inside their boxes. |
+| `*-fullest-effects.png` | Six effect cards in both themes; no dark-text-on-dark or black chips (the P1-0 bug stays fixed). |
+| `*-file/view/edit-menu`, `*-zoom-menu`, `*-size-picker` | Menus inverse to the page in both themes; every item legible. |
+| `*-focus-theme`, `*-hover-*`, `*-select-focus` | Focus ring, hover surface and select focus are visible in both themes. |
+| `*-real-clean-*`, `*-host-dark-*`, `*-host-os-light-*` | Real user flow with and without the host `userContent.css` fixture: no token regression in either. |
+
+The remaining files in the directory are the same twelve states for the other
+theme/width cells.
+
+### Gate runs
+
+G8 PASS/0 violations in the fresh `GATE_TASK=p1-3` run (G3 PASS, 62
+screenshots). That run's G2 had two transient icon-contrast readings at 360 and
+its G11/G13 measured the desktop at load ~6.5; both are handled separately in
+the P2-1 block below (harness settle + paired metrics).
+
+### HUMAN-CHECK
+
+- Native tooltip text on hover (`title`) cannot be captured headless; the hover
+  surface is captured and the title attribute is set.
+- The OS-rendered `<select>` popup cannot be captured headless; focus ring is.
+
+### Commit / tag
+
+`P1-3-pass` on the commit that adds this section and the fresh screenshots.
