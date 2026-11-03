@@ -355,14 +355,25 @@ function fxDuotone(c, p) {
   return out;
 }
 
+const POSTERIZE_LUTS = new Map();
+
 function fxPosterize(c, p) {
   const out = fxClone(c);
   const img = fxData(out), d = img.data;
   const levels = Math.round(fxNum(p.levels, 2, 16, 5)), step = 255 / (levels - 1);
+  // 256-entry quantisation table, cached per level count: the source is 8-bit,
+  // so the mapping is a pure function of the byte. Same arithmetic as the
+  // per-pixel division, so the output is byte-identical.
+  let lut = POSTERIZE_LUTS.get(levels);
+  if (!lut) {
+    lut = new Uint8ClampedArray(256);
+    for (let v = 0; v < 256; v++) lut[v] = Math.round(v / step) * step;
+    POSTERIZE_LUTS.set(levels, lut);
+  }
   for (let i = 0; i < d.length; i += 4) {
-    d[i] = Math.round(d[i] / step) * step;
-    d[i + 1] = Math.round(d[i + 1] / step) * step;
-    d[i + 2] = Math.round(d[i + 2] / step) * step;
+    d[i] = lut[d[i]];
+    d[i + 1] = lut[d[i + 1]];
+    d[i + 2] = lut[d[i + 2]];
   }
   fxContext(out).putImageData(img, 0, 0);
   return out;
@@ -400,7 +411,7 @@ function fxEdges(c, p) {
       const dl = lum[dn - 1], dc = lum[dn], dr = lum[dn + 1];
       const sx = -ul + 0 * uc + ur - 2 * lc + 0 * lum[i] + 2 * rc - dl + 0 * dc + dr;
       const sy = -ul - 2 * uc - ur + 0 * lc + 0 * lum[i] + 0 * rc + dl + 2 * dc + dr;
-      const m = fxClamp(Math.hypot(sx, sy) * amount);
+      const m = fxClamp(Math.sqrt(sx * sx + sy * sy) * amount);
       const di = i * 4;
       o[di] = o[di + 1] = o[di + 2] = m; o[di + 3] = 255;
     }
@@ -511,30 +522,48 @@ function fxConvolve(c, kernel, amount) {
   const src = fxData(c).data;
   const out = fxCanvas(w, h), ctx = fxContext(out);
   const img = ctx.createImageData(w, h), o = img.data;
-  // Kernel taps and row offsets are hoisted out of the per-pixel loop: the
-  // nine `src[...]` index expressions used to be recomputed for every channel
-  // of every pixel. The sum order is unchanged, so the output is byte-for-byte
-  // identical (proved by the effect hash sweep).
+  // Kernel taps and row offsets are hoisted out of the per-pixel loop, and the
+  // three channels are unrolled: the nine `src[...]` index expressions used to
+  // be recomputed for every channel. Every sum is still evaluated in the same
+  // left-to-right order, so the output is byte-for-byte identical (proved by
+  // the effect hash sweep).
   const k0 = kernel[0], k1 = kernel[1], k2 = kernel[2];
   const k3 = kernel[3], k4 = kernel[4], k5 = kernel[5];
   const k6 = kernel[6], k7 = kernel[7], k8 = kernel[8];
   const row = w * 4;
-  for (let y = 0; y < h; y++) {
+  // The 1px frame is a plain copy with opaque alpha.
+  for (let x = 0; x < w; x++) {
+    const t = x * 4, b = ((h - 1) * w + x) * 4;
+    o[t] = src[t]; o[t + 1] = src[t + 1]; o[t + 2] = src[t + 2]; o[t + 3] = 255;
+    o[b] = src[b]; o[b + 1] = src[b + 1]; o[b + 2] = src[b + 2]; o[b + 3] = 255;
+  }
+  for (let y = 1; y < h - 1; y++) {
     const rowStart = y * row;
-    for (let x = 0; x < w; x++) {
+    for (const x of [0, w - 1]) {
+      const e = rowStart + x * 4;
+      o[e] = src[e]; o[e + 1] = src[e + 1]; o[e + 2] = src[e + 2]; o[e + 3] = 255;
+    }
+    for (let x = 1; x < w - 1; x++) {
       const di = rowStart + x * 4;
-      if (x === 0 || y === 0 || x === w - 1 || y === h - 1) {
-        o[di] = src[di]; o[di + 1] = src[di + 1]; o[di + 2] = src[di + 2]; o[di + 3] = 255;
-        continue;
-      }
       const u = di - row, d = di + row;
-      for (let ch = 0; ch < 3; ch++) {
-        const v = src[u - 4 + ch] * k0 + src[u + ch] * k1 + src[u + 4 + ch] * k2
-                + src[di - 4 + ch] * k3 + src[di + ch] * k4 + src[di + 4 + ch] * k5
-                + src[d - 4 + ch] * k6 + src[d + ch] * k7 + src[d + 4 + ch] * k8;
-        const orig = src[di + ch];
-        o[di + ch] = fxClamp(orig + (v - orig) * amount);
-      }
+      const r00 = src[u - 4], g00 = src[u - 3], b00 = src[u - 2];
+      const r01 = src[u], g01 = src[u + 1], b01 = src[u + 2];
+      const r02 = src[u + 4], g02 = src[u + 5], b02 = src[u + 6];
+      const r10 = src[di - 4], g10 = src[di - 3], b10 = src[di - 2];
+      const r11 = src[di], g11 = src[di + 1], b11 = src[di + 2];
+      const r12 = src[di + 4], g12 = src[di + 5], b12 = src[di + 6];
+      const r20 = src[d - 4], g20 = src[d - 3], b20 = src[d - 2];
+      const r21 = src[d], g21 = src[d + 1], b21 = src[d + 2];
+      const r22 = src[d + 4], g22 = src[d + 5], b22 = src[d + 6];
+      const vr = r00 * k0 + r01 * k1 + r02 * k2 + r10 * k3 + r11 * k4 + r12 * k5 + r20 * k6 + r21 * k7 + r22 * k8;
+      const vg = g00 * k0 + g01 * k1 + g02 * k2 + g10 * k3 + g11 * k4 + g12 * k5 + g20 * k6 + g21 * k7 + g22 * k8;
+      const vb = b00 * k0 + b01 * k1 + b02 * k2 + b10 * k3 + b11 * k4 + b12 * k5 + b20 * k6 + b21 * k7 + b22 * k8;
+      const nr = r11 + (vr - r11) * amount;
+      const ng = g11 + (vg - g11) * amount;
+      const nb = b11 + (vb - b11) * amount;
+      o[di] = nr < 0 ? 0 : nr > 255 ? 255 : nr;
+      o[di + 1] = ng < 0 ? 0 : ng > 255 ? 255 : ng;
+      o[di + 2] = nb < 0 ? 0 : nb > 255 ? 255 : nb;
       o[di + 3] = 255;
     }
   }

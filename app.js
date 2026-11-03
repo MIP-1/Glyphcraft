@@ -149,6 +149,9 @@ const state = {
   renderDirty: false,
   lastRenderKey: "",
   renderCache: null,
+  // What els.canvas currently shows, so a split drag can repaint only the band
+  // whose side changed instead of both full frames.
+  composite: null,
   originalCache: null,
   cacheDisabled: false,
   sourceId: 0,
@@ -779,9 +782,11 @@ function render() {
 
   // Setting width/height to the same value still resets a canvas, so only
   // resize when the preview size actually changed.
+  let resized = false;
   if (els.canvas.width !== pv.w || els.canvas.height !== pv.h) {
     els.canvas.width = pv.w;
     els.canvas.height = pv.h;
+    resized = true;
   }
   state.scale = displayScale(state.zoom, pv.w);
   // Compare split drags and toggles only change how the finished frame is
@@ -789,10 +794,9 @@ function render() {
   // change it, so moving the split never re-runs effects or the Script stage.
   const key = still ? pv.w + "x" + pv.h + "|" + state.sourceId + "|" + optsKey : null;
   const cached = state.renderCache;
-  if (still && cached && cached.key === key
-      && cached.canvas.width === pv.w && cached.canvas.height === pv.h) {
-    els.ctx.drawImage(cached.canvas, 0, 0);
-  } else {
+  const haveFrame = still && cached && cached.key === key
+      && cached.canvas.width === pv.w && cached.canvas.height === pv.h;
+  if (!haveFrame) {
     // The stage cache key deliberately leaves the effects out: each stage is
     // keyed by the chain before it, so changing effect k reuses 0..k-1.
     const stageBaseKey = still
@@ -809,11 +813,39 @@ function render() {
     }
   }
 
-  if (state.showOriginal) {
-    drawOriginal(els.ctx, pv.w, pv.h, null);
-  } else if (state.compare) {
-    drawOriginal(els.ctx, pv.w, pv.h, Math.round(pv.w * state.compareFrac));
+  const wantOriginal = state.showOriginal;
+  const wantSplit = !wantOriginal && state.compare;
+  const wantX = wantSplit ? Math.round(pv.w * state.compareFrac) : 0;
+  // A drag inside the split only moves the boundary: both sides are already
+  // on the canvas, so repaint the band between the old and new edge instead of
+  // blitting two full frames per pointer move.
+  const prevComposite = resized ? null : state.composite;
+  const band = haveFrame && wantSplit && prevComposite
+    && prevComposite.mode === "split" && prevComposite.frameKey === key
+    && prevComposite.w === pv.w && prevComposite.h === pv.h;
+  if (band && prevComposite.x !== wantX) {
+    const edge = Math.min(prevComposite.x, wantX);
+    const width = Math.abs(wantX - prevComposite.x);
+    const ctx = els.ctx;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(edge, 0, width, pv.h);
+    ctx.clip();
+    if (wantX > prevComposite.x) drawOriginal(ctx, pv.w, pv.h, null);
+    else ctx.drawImage(cached.canvas, 0, 0);
+    ctx.restore();
+  } else if (!band) {
+    if (haveFrame) els.ctx.drawImage(cached.canvas, 0, 0);
+    if (wantOriginal) drawOriginal(els.ctx, pv.w, pv.h, null);
+    else if (wantSplit) drawOriginal(els.ctx, pv.w, pv.h, wantX);
   }
+  state.composite = {
+    mode: wantOriginal ? "original" : (wantSplit ? "split" : "frame"),
+    x: wantX,
+    frameKey: key,
+    w: pv.w,
+    h: pv.h,
+  };
 
   state.lastRender = performance.now() - start;
   if (still) state.lastRenderKey = stateKey;

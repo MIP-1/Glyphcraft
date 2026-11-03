@@ -1109,6 +1109,16 @@ def run_browser_checks() -> dict:
                         page.evaluate("() => { const p=document.querySelector('.panel-content'); if(p) p.scrollTop=0; }")
                         for n in range(1, 6):
                             page.click("#theme-toggle")
+                            # The scan must see a settled theme: a cell theme is
+                            # the starting point, and each click flips it.
+                            expect = theme if n % 2 == 0 else ("light" if theme == "dark" else "dark")
+                            page.wait_for_function(
+                                "(t) => document.documentElement.dataset.theme === t",
+                                arg=expect, timeout=5000,
+                            )
+                            page.evaluate(
+                                "() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"
+                            )
                             page.wait_for_timeout(300)
                             data = scan(page, theme, width, f"toggle-{n}")
                             _merge_scan(result["g2"], data, seen_g2)
