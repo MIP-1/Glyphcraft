@@ -1,5 +1,3 @@
-// Reusable pointer + keyboard reorder list.
-// Used by the effect stack; the same module can drive drag-to-add later.
 (function (global) {
   "use strict";
 
@@ -45,7 +43,6 @@
       var item = handle.closest(itemSelector);
       if (!item || item.classList.contains("reorder-source")) return;
 
-      // Only the handle starts a reorder, so scrolling the panel is safe.
       e.preventDefault();
       handle.focus({ preventScroll: true });
       pending = {
@@ -113,8 +110,6 @@
       }
       var item = pending.item;
       var rect = item.getBoundingClientRect();
-      // Freeze the slot centres at activation. Re-measuring live would let the
-      // list shift under the pointer and cascade past the intended slot.
       var scrollerTop = scroller.getBoundingClientRect().top;
       var slots = items().filter(function (el) { return el !== item; }).map(function (el) {
         var r = el.getBoundingClientRect();
@@ -168,8 +163,6 @@
       movePlaceholder(before);
     }
 
-    // FLIP: measure, move the placeholder, then animate neighbours from their
-    // old position to the new one so the stack slides instead of jumping.
     function movePlaceholder(before) {
       if (!drag || !drag.placeholder || !drag.placeholder.isConnected) return;
       var ph = drag.placeholder;

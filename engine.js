@@ -228,9 +228,6 @@ function scriptMetrics(destW, destH, depth) {
   return { cols, cellW, cellH, fontPx, rows: Math.ceil(destH / cellH) };
 }
 
-// 1C: one scratch canvas per pipeline role, reused across frames. Each is
-// filled and read inside a single synchronous call (prepareBase -> effects ->
-// renderScript), so sharing it across frames cannot leak state.
 const GC_SCRATCH = new Map();
 function gcScratch(key, w, h) {
   let c = GC_SCRATCH.get(key);
@@ -314,10 +311,6 @@ function renderScript(sourceCanvas, destCtx, destW, destH, opts) {
   }
 }
 
-/* Time spent copying the source frame into the pipeline. For a video this can
-   block until the decoder hands over the frame, and that wait does not shrink
-   when the playback scale shrinks, so the governor has to judge the pipeline
-   without it (otherwise a busy decoder blurs a cheap stack for no gain). */
 let gcSourceDrawMs = 0;
 function sourceDrawMs() { return gcSourceDrawMs; }
 
@@ -329,21 +322,6 @@ function prepareBase(source, destW, destH, opts, baseKey) {
   if (opts.adj) applyAdjustments(ctx, destW, destH, opts.adj);
   const processed = applyEffects(canvas, opts.effects || [], baseKey);
   return processed;
-}
-
-function renderToCanvas(source, opts, destW, destH) {
-  const base = prepareBase(source, destW, destH, opts);
-  const canvas = document.createElement("canvas");
-  canvas.width = destW; canvas.height = destH;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  if (opts.mode === "script") {
-    renderScript(base, ctx, destW, destH, { ...opts, preApplied: true });
-  } else if (opts.mode === "dither") {
-    renderDither(base, ctx, destW, destH, { ...opts, preApplied: true });
-  } else {
-    ctx.drawImage(base, 0, 0);
-  }
-  return canvas;
 }
 
 function canvasToBlob(canvas, type, quality) {
@@ -448,24 +426,20 @@ function canvasToTxt(canvas, opts) {
 }
 
 const SIZE_PRESETS = [
-  // Video
   { group: "Video", id: "720p", label: "720p 1280×720", w: 1280, h: 720 },
   { group: "Video", id: "1080p", label: "1080p 1920×1080", w: 1920, h: 1080 },
   { group: "Video", id: "2k", label: "2K 2560×1440", w: 2560, h: 1440 },
   { group: "Video", id: "4k", label: "4K 3840×2160", w: 3840, h: 2160 },
   { group: "Video", id: "8k", label: "8K 7680×4320", w: 7680, h: 4320 },
   { group: "Video", id: "vertical-1080", label: "Vertical 1080×1920", w: 1080, h: 1920 },
-  // Desktop wallpaper
   { group: "Desktop wallpaper", id: "hd", label: "1366×768", w: 1366, h: 768 },
   { group: "Desktop wallpaper", id: "wxga", label: "1920×1200", w: 1920, h: 1200 },
   { group: "Desktop wallpaper", id: "1440p", label: "2560×1600", w: 2560, h: 1600 },
   { group: "Desktop wallpaper", id: "ultrawide", label: "3440×1440", w: 3440, h: 1440 },
   { group: "Desktop wallpaper", id: "5k", label: "5120×1440", w: 5120, h: 1440 },
-  // Phone wallpaper — real models, newest first. `brand` lets the picker
-  // subgroup the list without changing the native optgroup label.
-  { group: "Phone wallpaper", brand: "iPhone", id: "iphone-18-pro-max", label: "iPhone 18 Pro Max 1320×2868", w: 1320, h: 2868, unverified: true }, // UNVERIFIED
-  { group: "Phone wallpaper", brand: "iPhone", id: "iphone-18-pro", label: "iPhone 18 Pro 1206×2622", w: 1206, h: 2622, unverified: true }, // UNVERIFIED
-  { group: "Phone wallpaper", brand: "iPhone", id: "iphone-18", label: "iPhone 18 1206×2622", w: 1206, h: 2622, unverified: true }, // UNVERIFIED
+  { group: "Phone wallpaper", brand: "iPhone", id: "iphone-18-pro-max", label: "iPhone 18 Pro Max 1320×2868", w: 1320, h: 2868, unverified: true },  
+  { group: "Phone wallpaper", brand: "iPhone", id: "iphone-18-pro", label: "iPhone 18 Pro 1206×2622", w: 1206, h: 2622, unverified: true },  
+  { group: "Phone wallpaper", brand: "iPhone", id: "iphone-18", label: "iPhone 18 1206×2622", w: 1206, h: 2622, unverified: true },  
   { group: "Phone wallpaper", brand: "iPhone", id: "iphone-17-pro-max", label: "iPhone 17 Pro Max 1320×2868", w: 1320, h: 2868 },
   { group: "Phone wallpaper", brand: "iPhone", id: "iphone-17-pro", label: "iPhone 17 Pro 1206×2622", w: 1206, h: 2622 },
   { group: "Phone wallpaper", brand: "iPhone", id: "iphone-17", label: "iPhone 17 1206×2622", w: 1206, h: 2622 },
@@ -489,9 +463,9 @@ const SIZE_PRESETS = [
   { group: "Phone wallpaper", brand: "iPhone", id: "iphone-12-pro", label: "iPhone 12 Pro 1170×2532", w: 1170, h: 2532 },
   { group: "Phone wallpaper", brand: "iPhone", id: "iphone-12", label: "iPhone 12 1170×2532", w: 1170, h: 2532 },
   { group: "Phone wallpaper", brand: "iPhone", id: "iphone-12-mini", label: "iPhone 12 mini 1080×2340", w: 1080, h: 2340 },
-  { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s26-ultra", label: "Galaxy S26 Ultra 1440×3120", w: 1440, h: 3120, unverified: true }, // UNVERIFIED
-  { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s26-plus", label: "Galaxy S26+ 1440×3120", w: 1440, h: 3120, unverified: true }, // UNVERIFIED
-  { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s26", label: "Galaxy S26 1080×2340", w: 1080, h: 2340, unverified: true }, // UNVERIFIED
+  { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s26-ultra", label: "Galaxy S26 Ultra 1440×3120", w: 1440, h: 3120, unverified: true },  
+  { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s26-plus", label: "Galaxy S26+ 1440×3120", w: 1440, h: 3120, unverified: true },  
+  { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s26", label: "Galaxy S26 1080×2340", w: 1080, h: 2340, unverified: true },  
   { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s25-ultra", label: "Galaxy S25 Ultra 1440×3120", w: 1440, h: 3120 },
   { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s25-plus", label: "Galaxy S25+ 1440×3120", w: 1440, h: 3120 },
   { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s25", label: "Galaxy S25 1080×2340", w: 1080, h: 2340 },
@@ -510,22 +484,17 @@ const SIZE_PRESETS = [
   { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s20-ultra", label: "Galaxy S20 Ultra 1440×3200", w: 1440, h: 3200 },
   { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s20-plus", label: "Galaxy S20+ 1440×3200", w: 1440, h: 3200 },
   { group: "Phone wallpaper", brand: "Galaxy", id: "galaxy-s20", label: "Galaxy S20 1440×3200", w: 1440, h: 3200 },
-  // Instagram
   { group: "Instagram", id: "ig-portrait", label: "Portrait 1080×1350", w: 1080, h: 1350 },
   { group: "Instagram", id: "ig-square", label: "Square 1080×1080", w: 1080, h: 1080 },
   { group: "Instagram", id: "ig-story", label: "Story/Reel 1080×1920", w: 1080, h: 1920 },
-  // YouTube
   { group: "YouTube", id: "yt-thumb", label: "Thumbnail 1280×720", w: 1280, h: 720 },
   { group: "YouTube", id: "yt-thumb-4k", label: "Thumbnail 4K 3840×2160", w: 3840, h: 2160 },
   { group: "YouTube", id: "yt-banner", label: "Banner 2048×1152", w: 2048, h: 1152 },
   { group: "YouTube", id: "yt-icon", label: "Icon 800×800", w: 800, h: 800 },
-  // Link preview
   { group: "Link preview", id: "og", label: "OG 1200×630", w: 1200, h: 630 },
   { group: "Link preview", id: "linkedin", label: "LinkedIn 1200×627", w: 1200, h: 627 },
-  // Avatar
   { group: "Avatar", id: "avatar-400", label: "400×400", w: 400, h: 400 },
   { group: "Avatar", id: "avatar-800", label: "800×800", w: 800, h: 800 },
-  // Logo / icon
   { group: "Logo / icon", id: "favicon-32", label: "Favicon 32", w: 32, h: 32 },
   { group: "Logo / icon", id: "favicon-64", label: "Favicon 64", w: 64, h: 64 },
   { group: "Logo / icon", id: "apple-touch", label: "Apple Touch 180", w: 180, h: 180 },
@@ -533,12 +502,9 @@ const SIZE_PRESETS = [
   { group: "Logo / icon", id: "pwa-512", label: "PWA 512", w: 512, h: 512 },
   { group: "Logo / icon", id: "app-icon", label: "App Icon 1024", w: 1024, h: 1024 },
   { group: "Logo / icon", id: "logo-1000", label: "Logo 1000×1000", w: 1000, h: 1000 },
-  // Print
   { group: "Print", id: "a4-150", label: "A4 @150dpi 1240×1754", w: 1240, h: 1754 },
   { group: "Print", id: "a4-300", label: "A4 @300dpi 2480×3508", w: 2480, h: 3508 },
-  // Original
   { group: "Original", id: "original", label: "Original", w: null, h: null },
-  // Custom
   { group: "Custom", id: "custom", label: "Custom…", w: null, h: null }
 ];
 
@@ -831,16 +797,4 @@ function randomDither(data, w, h, colorDepth, opts) {
     }
   }
   return result;
-}
-
-function renderToCanvasLegacy(source, opts, destW, destH) {
-  const canvas = document.createElement("canvas");
-  canvas.width = destW; canvas.height = destH;
-  const ctx = canvas.getContext("2d");
-  if (opts.mode === "script") {
-    renderScript(source, ctx, destW, destH, opts);
-  } else if (opts.mode === "dither") {
-    renderDither(source, ctx, destW, destH, opts);
-  }
-  return canvas;
 }

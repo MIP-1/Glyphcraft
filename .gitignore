@@ -9,3 +9,4 @@ Thumbs.db
 tests/reports/
 __pycache__/
 *.pyc
+dist/

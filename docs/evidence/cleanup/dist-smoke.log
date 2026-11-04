@@ -1,0 +1,8 @@
+load http://127.0.0.1:43643/index.html
+hash
+load http://127.0.0.1:43643/dist/index.html
+hash
+source: hash=651948841 canvas=900x600
+dist:   hash=651948841 canvas=900x600
+errors: []
+DIST SMOKE PASS

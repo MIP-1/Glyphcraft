@@ -24,10 +24,12 @@ Web app (HTML/CSS/JS, built with opencode) that loads an image or video and appl
 | 1 | `part1_gate_foundation.md` | P1-0 gate, P1-1 remove Arabic, P1-2 light theme, P1-3 top bar | P1-0 PASS (commit ae85c1c, tag P1-0-pass); P1-1 PASS (2446db4); P1-2 PASS (961ede5); P1-3 PASS (commit 855a5b4, tag `P1-3-pass`; fresh G8 evidence and 62 screenshots in `docs/evidence/p1-3/`) |
 | 1B | `part1b_hotfix.md` | H0 top bar; H1 stepper arrows; H2 white effects (Pencil Sketch first); H3 Compare freeze + grab; H4 reduce load | H0 PASS (7940130, tag H0-pass); H1 PASS (tag H1-pass); H2 PASS (tag H2-pass); H3 PASS (tag H3-pass); H4 PASS (commits da8e572, 81f6e00, 6c3031e, 9cdc711, a6909ee; tag H4-pass) |
 | 1C | `part1c.md` | C1 audit Part 1B, C2 video play/pause control, C3 multi-effect cost | C1/C2/C3 PASS (one commit, tags `C1-audit-pass`, `C2-video-control-pass`, `C3-perf-pass`; see `docs/GATE.md` Part 1C and `docs/HANDOFF_PART1C.md`). One commit for three tasks because the control exposed the pointer-capture bug and the perf work exposed the preview-collapse bug; the commit body records the departure from one-commit-per-task |
-| 2 | `part2_performance_core.md` | P2-1 before/after fps, P2-2 Worker + OffscreenCanvas, P2-3 fast preview, P2-4 undo/redo/history, P2-5 before/after finish, P2-6 presets | **P2-1 PASS (tag `P2-1-pass`, gate runs 5–7).** `originalBitmap` cache (drawOriginal 9.9 → 0.07 ms/frame; 4K render median 10.2 → 0.6 ms), band-only split repaint, paired G11/G13 budgets, 7/7 break-it cases, 62 screenshots. P2-2 … P2-6 NOT STARTED |
+| 2 | `part2_performance_core.md` | P2-1 before/after fps, P2-2 Worker + OffscreenCanvas, P2-3 fast preview, P2-4 undo/redo/history, P2-5 before/after finish, P2-6 presets | **P2-1 PASS (tag `P2-1-pass`, gate runs 5–7).** `originalBitmap` cache (drawOriginal 9.9 → 0.07 ms/frame; 4K render median 10.2 → 0.6 ms), band-only split repaint, paired G11/G13 budgets, 7/7 break-it cases, 62 screenshots. Post-PASS cleanup PASS (tag `P2-1-cleanup-pass`, gate runs 8–10). P2-2 … P2-6 NOT STARTED |
 | 3 | `part3_remaining_features.md` | Command Palette, drag to add effects, advanced export, batch ZIP, final regression | NOT STARTED |
 
 Order: Part 1B → Part 2 → Part 3. Do not start a later part before the owner confirms the earlier one.
+
+Post-PASS cleanup (2026-11-04, tag `P2-1-cleanup-pass`): explanatory comments and three dead functions removed; `npm run build` writes a minified `dist/` (gitignored) and `tools/dist_smoke.py` proves source and dist render the same canvas; Sepia/Thermal amount 0 now skip the per-pixel pass byte-identically (13.0/17.6 → 0.0 ms); a Retro rewrite measured 1.0× and was reverted. Gates 8–10 PASS.
 
 ### Already audited feature state (verify, do not trust)
 - Undo/redo exists (60-step cap, no History submenu, no disabled states). Compare exists under Edit (key `C`, hold-original on `O`; should move to View and use `B`). Presets: 7 built-ins + custom save/load, no rename/delete/import/export. Preview always downscaled (max 1600 px / 2.5 MP). No Worker. No command palette, no drag-to-add, no batch.
@@ -75,7 +77,7 @@ Continue from the first task that is not PASS. Do not ask me which effect or val
 ```
 
 ## 10. Next actions
-1. Part 1, Part 1B, Part 1C and P2-1 are PASS, each tagged `<task>-pass`; P2-1's three green gates are `docs/evidence/p2-1/gate-run-5/6/7.log`.
+1. Part 1, Part 1B, Part 1C and P2-1 are PASS, each tagged `<task>-pass`; P2-1's three green gates are `docs/evidence/p2-1/gate-run-5/6/7.log`. The post-PASS cleanup (tag `P2-1-cleanup-pass`) is verified by `docs/evidence/cleanup/gate-run-8/9/10.log`.
 2. **Next action: start P2-2** (Worker + OffscreenCanvas) from `docs/prompts/part2_performance_core.md`. Write its acceptance check first, see it RED, then implement.
 3. Then P2-3 fast preview, followed by P2-4 to P2-6 in order. Do not start P3 before the owner confirms Part 2.
 4. After each task: open every screenshot, list 5 ways it could break, run the full gate 3× in a row, record the block in `docs/GATE.md`, commit and tag `<task>-pass`.

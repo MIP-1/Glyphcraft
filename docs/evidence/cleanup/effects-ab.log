@@ -1,0 +1,3 @@
+retro      old=  24.60 ms new=  24.20 ms speedup=1.0x
+sepia0     old=  13.00 ms new=   0.00 ms speedup=1300.0x
+thermal0   old=  17.60 ms new=   0.00 ms speedup=1760.0x

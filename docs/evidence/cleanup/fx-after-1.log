@@ -1,0 +1,7 @@
+retro           21.80 ms  hash=3890575983
+thermal         17.00 ms  hash=753379245
+duotone         13.10 ms  hash=1801299764
+sepia           13.00 ms  hash=1625086130
+posterize        8.30 ms  hash=396521669
+invert           6.10 ms  hash=4217955402
+JSON {"duotone": {"hash": 1801299764, "ms": 13.099999999627471}, "invert": {"hash": 4217955402, "ms": 6.099999999627471}, "posterize": {"hash": 396521669, "ms": 8.299999998882413}, "retro": {"hash": 3890575983, "ms": 21.800000000745058}, "sepia": {"hash": 1625086130, "ms": 13}, "thermal": {"hash": 753379245, "ms": 17}}

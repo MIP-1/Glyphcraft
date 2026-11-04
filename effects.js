@@ -1,5 +1,3 @@
-// Glyphcraft effects library. Each effect is a pure canvas -> canvas pass.
-// Effects run before the Script/Dither stage (see prepareBase in engine.js).
 
 const EFFECTS = [
   { id: "halftone", name: "Halftone", params: [{ key: "size", label: "Dot", min: 2, max: 14, step: 1, def: 5 }] },
@@ -53,12 +51,6 @@ const RETRO_PALETTES = {
 };
 
 // --- 1C: canvas workspace pool ---------------------------------------------
-// Playback runs the whole chain again for every presented video frame. Before
-// the pool, one 720p frame allocated ~10 full-size canvases (one per effect
-// plus intermediates), i.e. tens of megabytes of short-lived GPU memory per
-// second. The pool is armed only for the non-cached path (video playback and
-// `state.cacheDisabled`), so a canvas stored in the stage cache is never
-// recycled underneath it.
 const FX_POOL_MAX_TOTAL = 10;
 const FX_POOL_MAX_PER_SIZE = 4;
 let fxPoolArmed = false;
@@ -126,17 +118,12 @@ function fxClone(src) {
   return c;
 }
 function fxClamp(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
-// One parameter reader for every effect: rejects empty/null/boolean/NaN input
-// and clamps to the range the UI exposes, so a value that never came through
-// the controls (pasted state, old preset, fuzz) cannot blow up a render.
 function fxNum(v, lo, hi, def) {
   if (v === null || v === undefined || v === "" || typeof v === "boolean") return def;
   const n = +v;
   return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : def;
 }
 function fxLuma(r, g, b) { return 0.2126 * r + 0.7152 * g + 0.0722 * b; }
-// Reused luma plane for the 3x3 kernels. Grown on demand and never shrunk, so a
-// playback loop allocates nothing per frame.
 let FX_LUMA = null;
 function fxLumaPlane(src, n) {
   if (!FX_LUMA || FX_LUMA.length < n) FX_LUMA = new Float64Array(Math.max(n, 4096));
@@ -361,9 +348,6 @@ function fxPosterize(c, p) {
   const out = fxClone(c);
   const img = fxData(out), d = img.data;
   const levels = Math.round(fxNum(p.levels, 2, 16, 5)), step = 255 / (levels - 1);
-  // 256-entry quantisation table, cached per level count: the source is 8-bit,
-  // so the mapping is a pure function of the byte. Same arithmetic as the
-  // per-pixel division, so the output is byte-identical.
   let lut = POSTERIZE_LUTS.get(levels);
   if (!lut) {
     lut = new Uint8ClampedArray(256);
@@ -382,14 +366,10 @@ function fxPosterize(c, p) {
 function fxEdges(c, p) {
   const w = c.width, h = c.height;
   const amount = fxNum(p.amount, 0, 100, 80) / 100;
-  // Amount 0 means "no edges to detect", which is the untouched image, not a
-  // black page.
   if (amount <= 0) return fxClone(c);
   const src = fxData(c).data;
   const out = fxCanvas(w, h), ctx = fxContext(out);
   const img = ctx.createImageData(w, h), o = img.data;
-  // The Sobel loop leaves the 1px frame untouched; give it opaque alpha so the
-  // effect never punches a transparent border into the exported PNG.
   for (let x = 0; x < w; x++) {
     o[(x) * 4 + 3] = 255;
     o[((h - 1) * w + x) * 4 + 3] = 255;
@@ -398,10 +378,6 @@ function fxEdges(c, p) {
     o[(y * w) * 4 + 3] = 255;
     o[(y * w + w - 1) * 4 + 3] = 255;
   }
-  // Luma is computed once per pixel into a reused plane instead of nine times
-  // per pixel inside the kernel. fxLuma() is a pure function of the same three
-  // bytes, so the plane holds bit-identical values and the Sobel sum keeps its
-  // original order.
   const lum = fxLumaPlane(src, w * h);
   for (let y = 1; y < h - 1; y++) {
     let i = y * w + 1, up = i - w, dn = i + w;
@@ -420,12 +396,6 @@ function fxEdges(c, p) {
   return out;
 }
 
-// Pencil Sketch / Crosshatch.
-// Tonal crosshatch: the paper stays light, and hatch layers are added by
-// darkness (L < .75 / .50 / .30 / .15), each at its own angle, so dark areas of
-// the source come out visibly denser than light ones. Hatch controls the line
-// spacing (higher = denser, never blank and never a solid fill). Amount mixes
-// the sketch over the source, and Amount 0 returns the source untouched.
 function fxSketch(c, p) {
   const w = c.width, h = c.height;
   const out = fxCanvas(w, h), ctx = fxContext(out);
@@ -434,21 +404,16 @@ function fxSketch(c, p) {
   if (amount <= 0) { ctx.putImageData(fxData(c), 0, 0); return out; }
   const src = fxData(c).data;
   const img = ctx.createImageData(w, h), o = img.data;
-  // Spacing per layer at hatch 0 .. 100. Each range is >2x so Hatch measurably
-  // changes stroke density, and neither end is below 4px (would read as fill).
   const sp45 = Math.round(14 - 8 * hatch);
   const sp135 = Math.round(15 - 9 * hatch);
   const spAxis = Math.round(16 - 9 * hatch);
   const spDense = Math.round(11 - 5 * hatch);
-  const lat = w + h + 1; // keeps (x - y) positive inside the diagonal modulo
-  const pencil = 0.72;   // one hatch layer over paper: graphite gray, not black
+  const lat = w + h + 1;  
+  const pencil = 0.72;    
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
       const L = fxLuma(src[i], src[i + 1], src[i + 2]) / 255;
-      // Graphite shading under the hatching: the paper stays white in the
-      // highlights and only the darker tones are shaded, so a dark source can
-      // never come out as a blank white page.
       let paper = 255 * (0.60 + 0.40 * L);
       if (L < 0.75 && (x + y) % sp45 === 0) paper *= pencil;
       if (L < 0.50 && (x - y + lat) % sp135 === 0) paper *= pencil;
@@ -502,9 +467,6 @@ function fxOil(c, p) {
 function fxConvolve(c, kernel, amount) {
   amount = Math.min(1, Math.max(0, Number.isFinite(amount) ? amount : 0));
   const w = c.width, h = c.height;
-  // Amount 0 leaves every colour untouched; the only remaining job is the
-  // filter's existing alpha policy (opaque output). Skip the 9-tap loop and
-  // copy instead - the output is byte-identical.
   if (amount <= 0) {
     const out = fxCanvas(w, h), outCtx = fxContext(out);
     outCtx.drawImage(c, 0, 0);
@@ -522,16 +484,10 @@ function fxConvolve(c, kernel, amount) {
   const src = fxData(c).data;
   const out = fxCanvas(w, h), ctx = fxContext(out);
   const img = ctx.createImageData(w, h), o = img.data;
-  // Kernel taps and row offsets are hoisted out of the per-pixel loop, and the
-  // three channels are unrolled: the nine `src[...]` index expressions used to
-  // be recomputed for every channel. Every sum is still evaluated in the same
-  // left-to-right order, so the output is byte-for-byte identical (proved by
-  // the effect hash sweep).
   const k0 = kernel[0], k1 = kernel[1], k2 = kernel[2];
   const k3 = kernel[3], k4 = kernel[4], k5 = kernel[5];
   const k6 = kernel[6], k7 = kernel[7], k8 = kernel[8];
   const row = w * 4;
-  // The 1px frame is a plain copy with opaque alpha.
   for (let x = 0; x < w; x++) {
     const t = x * 4, b = ((h - 1) * w + x) * 4;
     o[t] = src[t]; o[t + 1] = src[t + 1]; o[t + 2] = src[t + 2]; o[t + 3] = 255;
@@ -582,10 +538,6 @@ function fxBlur(c, p) {
   const r = fxNum(p.radius, 0, 20, 4);
   const out = fxCanvas(w, h), ctx = fxContext(out);
   if (r <= 0) { ctx.drawImage(c, 0, 0); return out; }
-  // A blurred image samples outside itself; without padding those samples are
-  // transparent and the output keeps semi-transparent, dark fringes at every
-  // edge (visible as a halo and as alpha < 255 in the exported PNG). Extend the
-  // edge pixels outwards first, then blur the padded copy and crop it back.
   const pad = Math.ceil(r * 2) + 1;
   const padded = fxCanvas(w + pad * 2, h + pad * 2);
   const pctx = fxContext(padded);
@@ -606,8 +558,6 @@ function fxBlur(c, p) {
   ctx.drawImage(blurred, pad, pad, w, h, 0, 0, w, h);
   fxRelease(padded);
   fxRelease(blurred);
-  // Cropping at the padded edge leaves a sub-255 alpha ring from premultiplied
-  // blending; the effect output must be fully opaque.
   const img = ctx.getImageData(0, 0, w, h), d = img.data;
   let fixed = false;
   for (let i = 3; i < d.length; i += 4) if (d[i] !== 255) { d[i] = 255; fixed = true; }
@@ -708,16 +658,8 @@ function makeEffect(id, enabled) {
   return { id, enabled: !!enabled, params: effectDefaults(id) };
 }
 
-// ---------------------------------------------------------------------------
-// H4: per-stage pipeline cache.
-// Each stage's output depends only on its input pixels and its own params, so
-// a stage key is the chain prefix (base pixels + every stage before it). A
-// change to effect k therefore recomputes k..n and reuses 0..k-1.
-// The runners below use Math.random(), so their output is not a function of
-// the key: caching them would freeze an animation the effect is meant to draw.
+// --- H4: per-stage pipeline cache -------------------------------------------
 const STAGE_UNCACHEABLE = new Set(["glitch", "vhs", "pixelsort", "grain", "matrix"]);
-// One slot per stage index: bounded memory (at most 8 canvases) and exactly
-// the "changing k re-runs k..n" behaviour, with no history to evict.
 const STAGE_CACHE_MAX = 8;
 let stageSlots = [];
 
@@ -740,13 +682,12 @@ function stageKey(prevKey, fx) {
   return s;
 }
 
-// Stages whose neutral value is a provable pixel-for-pixel copy of their
-// input (their own early-return path is a clone/blit). Skipping them saves a
-// full-canvas copy and cannot change a single byte of output.
 const NEUTRAL_COPY = {
   edges: p => fxNum(p.amount, 0, 100, 80) <= 0,
   sketch: p => fxNum(p.amount, 0, 100, 70) <= 0,
   blur: p => fxNum(p.radius, 0, 20, 4) <= 0,
+  sepia: p => fxNum(p.amount, 0, 100, 80) <= 0,
+  thermal: p => fxNum(p.amount, 0, 100, 80) <= 0,
 };
 
 function isNeutralCopy(id, params) {
@@ -776,21 +717,13 @@ function applyEffects(sourceCanvas, effects, baseKey) {
   if (fxPoolArmed) {
     const size = fxPoolKey(sourceCanvas.width, sourceCanvas.height);
     if (size !== lastPooledSize) {
-      // The playback scale changed: every pooled canvas is the wrong size.
       if (lastPooledOutput) { lastPooledOutput = null; }
       fxPoolClear();
       lastPooledSize = size;
     }
-    // The previous frame's output is no longer read by anyone: recycle it
-    // before this frame allocates anything, so steady-state playback allocates
-    // nothing at all.
     if (lastPooledOutput) { fxRelease(lastPooledOutput); lastPooledOutput = null; }
   }
   let chainKey = cacheable ? baseKey : null;
-  // The last canvas this call allocated from the pool. It is dead the instant
-  // the next stage has read it, so it is recycled immediately: holding every
-  // intermediate until the chain ends forced the pool past its per-size cap and
-  // still allocated ~2 canvases per frame.
   let owned = null;
   let index = 0;
   for (const fx of effects || []) {
@@ -808,7 +741,6 @@ function applyEffects(sourceCanvas, effects, baseKey) {
     }
     const params = fx.params || effectDefaults(fx.id);
     if (isNeutralCopy(fx.id, params)) {
-      // No runner call and no copy: the stage is a no-op for these params.
       chainKey = key;
       index++;
       continue;
@@ -824,8 +756,6 @@ function applyEffects(sourceCanvas, effects, baseKey) {
     index++;
   }
   if (fxPoolArmed) {
-    // The final output is handed to the Script/Dither stage and recycled at
-    // the start of the next frame.
     lastPooledOutput = owned;
   } else {
     lastPooledOutput = null;
@@ -834,7 +764,6 @@ function applyEffects(sourceCanvas, effects, baseKey) {
   return current;
 }
 
-// Auto-levels: stretch luminance between the 1st and 99th percentile.
 function autoLevels(canvas) {
   const ctx = fxContext(canvas);
   const w = canvas.width, h = canvas.height;
@@ -863,16 +792,3 @@ function autoLevels(canvas) {
   return canvas;
 }
 
-function autoEnhance(canvas) {
-  // Brightness/contrast lift so default output is not a dark blob.
-  const ctx = fxContext(canvas);
-  const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const d = img.data;
-  for (let i = 0; i < d.length; i += 4) {
-    d[i] = fxClamp(d[i] * 1.08 + 10);
-    d[i + 1] = fxClamp(d[i + 1] * 1.08 + 10);
-    d[i + 2] = fxClamp(d[i + 2] * 1.08 + 10);
-  }
-  ctx.putImageData(img, 0, 0);
-  return canvas;
-}

@@ -1,7 +1,5 @@
 const DEFAULT_ADJ = { brightness: 0, contrast: 0, saturation: 0, hue: 0, highlights: 0, shadows: 0, sharpen: 0, blur: 0, invert: false, sepia: false };
 
-// Snap a value to the control's own step grid so 0.1 + 0.2 never becomes
-// 0.30000000004, then clamp to the control's own range.
 function roundToStep(value, step, base) {
   if (!Number.isFinite(value)) return base;
   const size = step > 0 ? step : 1;
@@ -13,11 +11,6 @@ function clampToParam(value, param) {
   return Math.min(param.max, Math.max(param.min, roundToStep(value, param.step, param.min)));
 }
 
-// One stepper component for every numeric control. The whole control is a
-// single 44x44 button (the gate's minimum touch target): its top half steps up,
-// its bottom half steps down. A pointerdown applies one step synchronously;
-// holding repeats after a short delay. Rendering is never started while the
-// gesture is in progress, so a slow render can never delay or lose a change.
 const STEP_INITIAL_DELAY = 300;
 const STEP_REPEAT_MS = 35;
 
@@ -81,8 +74,6 @@ function attachStepper(container, controlId, label, onStep, onEnd) {
     if (onEnd) onEnd();
   });
   btn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); });
-  // The browser's own spinner is only hidden where this control replaces it,
-  // so numeric fields outside the shared component keep their arrows.
   const field = container.querySelector('input[type="number"]');
   if (field) field.classList.add("has-stepper");
   container.appendChild(btn);
@@ -149,8 +140,6 @@ const state = {
   renderDirty: false,
   lastRenderKey: "",
   renderCache: null,
-  // What els.canvas currently shows, so a split drag can repaint only the band
-  // whose side changed instead of both full frames.
   composite: null,
   originalCache: null,
   cacheDisabled: false,
@@ -180,10 +169,6 @@ const state = {
 
 const PREVIEW_MAX = 1600;
 const MAX_PREVIEW_PIXELS = 1600 * 1600;
-// 1C: playback budget. A 30 fps presenter gets ~33 ms per presented frame;
-// effects and the glyph stage must fit inside it. The governor below lowers
-// the internal render scale until a frame fits, and restores full preview
-// resolution the moment playback stops.
 const PLAYBACK_BUDGET_MS = 26;
 const PLAYBACK_SCALES = [1, 0.85, 0.7, 0.59, 0.5, 0.42, 0.35, 0.29, 0.24, 0.2, 0.17];
 const PLAYBACK_MIN_INTERVAL = 1000 / 40;
@@ -578,10 +563,6 @@ function previewSize(full, extraScale) {
   return { w: Math.max(1, Math.round(full.w * scale)), h: Math.max(1, Math.round(full.h * scale)), scale };
 }
 
-/* Playback quality governor: keeps a presented video frame inside the frame
-   budget by lowering the internal backing-store resolution, never the output
-   size the user sees. Full preview resolution returns as soon as playback
-   stops, and a faster machine climbs back to 1.0 on its own. */
 function videoIsPlaying() {
   const v = state.video;
   return !!(v && state.sourceType === "video" && !v.paused && !v.ended
@@ -595,18 +576,10 @@ function playbackEffectSig() {
 }
 
 function playbackGuessScale() {
-  // Must be a member of PLAYBACK_SCALES: adaptPlaybackScale snaps an unknown
-  // value to the first step, which silently defeated the initial guess.
-  // A stacked chain costs roughly 0.7 us per pixel in JS, so the first guess
-  // already starts near the scale that fits a 33 ms frame instead of paying a
-  // 460 ms first frame and a cascade of over-budget frames.
   const n = (state.opts.effects || []).filter(fx => fx.enabled && typeof EFFECT_RUNNERS !== "undefined" && EFFECT_RUNNERS[fx.id]).length;
   return n >= 6 ? 0.24 : n >= 4 ? 0.35 : n >= 2 ? 0.59 : 1;
 }
 
-/* The converged scale is remembered per effect signature, so replaying the
-   same stack starts at the scale that last fit the budget instead of climbing
-   down through half a dozen expensive frames every time. */
 let playbackRemember = { sig: "", scale: 1 };
 
 function resetPlaybackScale() {
@@ -618,15 +591,6 @@ function resetPlaybackScale() {
   state.uiSig = "";
 }
 
-/* Playback governor.
-   The pipeline cost is per pixel, so the scale that fits a frame budget is the
-   current scale times sqrt(budget / cost). The governor works on a rolling p90
-   (last 20 frames) rather than single frames: one slow frame is a GC or a
-   transition and must not move the scale, but a tail that stays high must.
-   Landing target is 80% of the budget so an ambient hiccup does not push the
-   measured p95 over it, and step-up is only allowed when the next scale is
-   *predicted* to fit and was never measured as too expensive, so the scale
-   cannot oscillate. The first frame at a new scale is measured but ignored. */
 function adaptPlaybackScale(cost) {
   const p = state.playback;
   let idx = PLAYBACK_SCALES.indexOf(p.scale);
@@ -647,7 +611,6 @@ function adaptPlaybackScale(cost) {
       if (PLAYBACK_SCALES[i] <= want) { next = i; break; }
     }
     if (next < 0) return;
-    // This scale has now been measured as too expensive for this stack.
     p.bad[p.scale] = true;
     p.scale = PLAYBACK_SCALES[next];
     p.lastDown = now;
@@ -670,9 +633,6 @@ function adaptPlaybackScale(cost) {
   }
 }
 
-/* Everything applyTransform/applyZoomUI/updateCompareUI write is a pure
-   function of these values, so while playing a frame whose signature is
-   unchanged skips the writes entirely. */
 function uiSignature() {
   return [
     state.pan.x.toFixed(2), state.pan.y.toFixed(2),
@@ -684,9 +644,6 @@ function uiSignature() {
 }
 
 function scheduleRender(delay) {
-  // Mark dirty, then coalesce: many changes before the next frame produce one
-  // render of the latest state. Only callers that explicitly debounce (slider
-  // input that would otherwise render every pointer event) wait on a timer.
   state.renderDirty = true;
   if (delay) {
     clearTimeout(state.renderTimer);
@@ -715,11 +672,6 @@ function renderToContext(base, ctx, w, h, opts) {
   else ctx.drawImage(base, 0, 0, w, h);
 }
 
-/* The original side of the compare split is a still image, so downscale it
-   once per preview size instead of drawing a 4K source into a clipped context
-   on every pointer move. Measured on a 4000x3000 image: drawing the source
-   directly cost 9.9 ms/frame in software raster; the cached bitmap costs
-   0.07 ms. Video frames change, so they are never cached. */
 function originalBitmap(w, h) {
   if (!state.source || state.sourceType !== "image") return null;
   const key = w + "x" + h + "|" + state.sourceId;
@@ -762,9 +714,6 @@ function render() {
   state.renderDirty = false;
   const start = performance.now();
   const playing = videoIsPlaying();
-  // A stack that changed while playing has a different cost: re-seed the
-  // governor instead of spending the next frames climbing down from the old
-  // scale.
   if (playing && state.playback.sig !== playbackEffectSig()) resetPlaybackScale();
   const full = computeOutputSize(state.sourceW, state.sourceH, state.opts.outputPreset, state.opts.outputWidth, state.opts.outputHeight, state.opts.outputFit);
   const pv = playing && state.playback.scale < 1
@@ -775,13 +724,8 @@ function render() {
   const still = state.sourceType !== "video" && !state.videoExporting && !state.cacheDisabled;
   const viewKey = optsKey + "|" + (state.compare ? state.compareFrac : "-") + "|" + (state.showOriginal ? "orig" : "");
   const stateKey = pv.w + "x" + pv.h + "|" + state.sourceId + "|" + viewKey;
-  // A render that would produce the identical frame is skipped entirely. The
-  // key covers every input that changes pixels or compositing; pan/zoom are
-  // CSS transforms and are not part of it.
   if (still && stateKey === state.lastRenderKey) return;
 
-  // Setting width/height to the same value still resets a canvas, so only
-  // resize when the preview size actually changed.
   let resized = false;
   if (els.canvas.width !== pv.w || els.canvas.height !== pv.h) {
     els.canvas.width = pv.w;
@@ -789,16 +733,11 @@ function render() {
     resized = true;
   }
   state.scale = displayScale(state.zoom, pv.w);
-  // Compare split drags and toggles only change how the finished frame is
-  // composited. Cache the post-pipeline frame keyed by every input that can
-  // change it, so moving the split never re-runs effects or the Script stage.
   const key = still ? pv.w + "x" + pv.h + "|" + state.sourceId + "|" + optsKey : null;
   const cached = state.renderCache;
   const haveFrame = still && cached && cached.key === key
       && cached.canvas.width === pv.w && cached.canvas.height === pv.h;
   if (!haveFrame) {
-    // The stage cache key deliberately leaves the effects out: each stage is
-    // keyed by the chain before it, so changing effect k reuses 0..k-1.
     const stageBaseKey = still
       ? pv.w + "x" + pv.h + "|" + state.sourceId + "|" + JSON.stringify(opts.adj || {})
       : null;
@@ -806,9 +745,6 @@ function render() {
     renderToContext(base, els.ctx, pv.w, pv.h, opts);
     if (still) {
       cacheRenderedFrame(key, pv);
-      // Build the compare split's original bitmap with the rest of the load
-      // work, so the first compare toggle does not pay a 40-120 ms cache build
-      // on the interaction. Keyed by source + size, so effect edits reuse it.
       originalBitmap(pv.w, pv.h);
     }
   }
@@ -816,9 +752,6 @@ function render() {
   const wantOriginal = state.showOriginal;
   const wantSplit = !wantOriginal && state.compare;
   const wantX = wantSplit ? Math.round(pv.w * state.compareFrac) : 0;
-  // A drag inside the split only moves the boundary: both sides are already
-  // on the canvas, so repaint the band between the old and new edge instead of
-  // blitting two full frames per pointer move.
   const prevComposite = resized ? null : state.composite;
   const band = haveFrame && wantSplit && prevComposite
     && prevComposite.mode === "split" && prevComposite.frameKey === key
@@ -851,11 +784,6 @@ function render() {
   if (still) state.lastRenderKey = stateKey;
 
   if (playing) {
-    // Per-frame DOM writes are the other half of the playback cost: the status
-    // readout, zoom label and transform only change on user input. Update them
-    // when their inputs changed, and throttle the ms readout to 4 Hz.
-    // Judge the scale-proportional part only: a video frame copy can wait for
-    // the decoder, and that wait is the same at every scale.
     adaptPlaybackScale(state.lastRender - (typeof sourceDrawMs === "function" ? sourceDrawMs() : 0));
     const sig = uiSignature();
     if (sig !== state.uiSig) {
@@ -899,7 +827,6 @@ function outputMeta() {
   return { full, pv };
 }
 
-/* Zoom is stored relative to the output image's real pixels (1 = 100%). */
 function zoomForScale(scale) {
   const { full, pv } = outputMeta();
   if (!full.w || !pv.w) return scale;
@@ -912,11 +839,6 @@ function scaleForZoom(zoom) {
   return zoom * (pv.w / full.w);
 }
 
-/* The CSS transform maps *backing* pixels to screen pixels, so it has to
-   compensate when the governor shrinks the backing store: without this the
-   preview collapses to a postage stamp while the video plays (measured before
-   this fix: 1072x603 CSS px at rest -> 31x17 px at scale 0.17). Displayed size
-   is zoom x full output size at every playback scale. */
 function displayScale(zoom, backingW) {
   const { pv } = outputMeta();
   const rest = scaleForZoom(zoom);
@@ -933,9 +855,6 @@ function applyZoomUI() {
   if (els.zoomIn) els.zoomIn.disabled = !state.source || z >= 8 - 0.001;
   if (els.zoomOut) els.zoomOut.disabled = !state.source || z <= 0.1 + 0.001;
   if (els.zoomLevel) els.zoomLevel.disabled = !state.source;
-  // Judge crispness by the zoom the user asked for, not by the transform: while
-  // playing the transform grows to compensate for the smaller backing store, and
-  // "pixelated" would turn that upscale into visible blocks.
   if (els.canvas) els.canvas.style.imageRendering = state.zoom > 1.001 ? "pixelated" : "auto";
   if (els.zoomMenu) {
     els.zoomMenu.querySelectorAll("[data-zoom]").forEach(item => {
@@ -1010,9 +929,6 @@ function zoomBy(factor) { setZoom(state.zoom * factor); }
 
 function fitScaleValue() {
   const area = els.canvasArea.getBoundingClientRect();
-  // Fit the *rest* preview size, not the current backing store: during
-  // playback the backing is deliberately smaller, and fitting that would make
-  // the window shrink every time the governor steps down.
   const { pv } = outputMeta();
   const w = pv.w || els.canvas.width || 1;
   const h = pv.h || els.canvas.height || 1;
@@ -1068,10 +984,6 @@ function canvasFitsView() {
   return w <= area.width + 1 && h <= area.height + 1;
 }
 
-// Controls that live inside the canvas area own their gestures. Starting a pan
-// on them captures the pointer, and a captured pointerup retargets the click
-// to `.canvas-area`, so the control would silently never receive the click
-// whenever the preview overflows the view (the common case at 100% zoom).
 const CANVAS_GESTURE_OWNERS = "#compare-slider, .video-toggle, button, a[href], input, select, textarea, [role=button]";
 
 function handlePointerDown(e) {
@@ -1173,9 +1085,6 @@ function loadFile(file) {
     vid.addEventListener("pause", () => {
       syncVideoControl();
       stopVideoLoop();
-      // Leaving playback: draw the paused frame at full preview resolution.
-      // A stale element (replaced source) must not schedule a render for the
-      // new source, and an export pauses deliberately.
       if (vid === state.video && !state.videoExporting) scheduleRender(0);
     });
     vid.addEventListener("ended", () => { syncVideoControl(); stopVideoLoop(); });
@@ -1249,9 +1158,6 @@ function extractAutoPalette(source) {
   if (state.opts.palette === "__auto__") updatePaletteSwatches();
 }
 
-/* Play/Pause control. The element is the single source of truth: the label is
-   always read from `video.paused`, never from a shadow flag, so a rejected
-   play(), an ended video, an export or the tab lifecycle cannot desync it. */
 function syncVideoControl() {
   const b = els.videoToggle;
   if (!b) return;
@@ -1284,10 +1190,6 @@ function toggleVideoPlayback() {
   syncVideoControl();
 }
 
-/* One loop per playing video. requestVideoFrameCallback fires once per
-   presented source frame, so a 24/30 fps video is no longer re-processed on
-   every 60 Hz refresh; rAF is the fallback. The token makes a stale callback
-   from a replaced video a no-op. */
 function videoLoopAlive(v, token) {
   return token === state.videoLoopToken && v === state.video && !v.paused && !v.ended
     && !state.videoExporting && !document.hidden;
@@ -1325,13 +1227,11 @@ function stopVideoLoop() {
   if (state.rafId) cancelAnimationFrame(state.rafId);
   state.rafId = null;
   if (state.vfcId != null && state.video && typeof state.video.cancelVideoFrameCallback === "function") {
-    try { state.video.cancelVideoFrameCallback(state.vfcId); } catch (e) { /* already presented */ }
+    try { state.video.cancelVideoFrameCallback(state.vfcId); } catch (e) {   }
   }
   state.vfcId = null;
 }
 
-/* A hidden tab must not keep rendering, and a tab that becomes visible again
-   must resume: the old loop simply died on `document.hidden`. */
 function handleVisibilityChange() {
   if (document.hidden) {
     stopVideoLoop();
@@ -1462,8 +1362,6 @@ async function exportVideo(full, opts) {
   state.videoExportFrames = 0;
   state.exportProgress.total = total;
 
-  // Pausing for the frame-by-frame seek must not change what the user asked
-  // for: a paused video stays paused after the export, and the control follows.
   const resumeAfterExport = !!video && !video.paused && !video.ended;
   if (video) { video.pause(); video.currentTime = 0; }
 
@@ -1756,7 +1654,6 @@ function renderEffectsList() {
           });
           input.value = fx.params[p.key];
         } else {
-          // Create wrapper for slider + number input
           const inputWrap = document.createElement("div");
           inputWrap.className = "control-input-wrap";
           inputWrap.style.display = "flex";
@@ -1775,9 +1672,6 @@ function renderEffectsList() {
           numInput.min = p.min; numInput.max = p.max; numInput.step = p.step;
           numInput.value = fx.params[p.key];
 
-          // Commit a finished value: clamp, snap to the step grid, rewrite both
-          // controls, and re-render. Typing uses a separate path so a partial
-          // entry ("" or "1" on the way to "12") is never rewritten mid-typing.
           const commit = (value, history, notify = true) => {
             const next = clampToParam(Number.isFinite(value) ? value : p.def, p);
             fx.params[p.key] = next;
@@ -1813,7 +1707,6 @@ function renderEffectsList() {
               numInput.setAttribute("aria-invalid", "true");
               return;
             }
-            // Live preview while typing, but leave the text exactly as typed.
             fx.params[p.key] = raw;
             input.value = raw;
             numInput.removeAttribute("aria-invalid");
@@ -1881,7 +1774,6 @@ function escHtml(value) {
   }[ch]));
 }
 
-// Draw the true aspect ratio, scaled into a 16x16 box.
 function presetSwatch(w, h) {
   if (!w || !h) {
     return '<svg viewBox="0 0 16 16" focusable="false" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 2"/></svg>';
@@ -2371,10 +2263,6 @@ function setupEventListeners() {
     }
     if ((e.ctrlKey || e.metaKey) && e.code === "KeyY" && !textEntry) { e.preventDefault(); redo(); return; }
 
-    // A focused control owns its keys. Without this, Space on the play button
-    // was also a pan, and a letter shortcut could fire from underneath a button
-    // the user was about to activate. Escape and the Ctrl/Cmd shortcuts above
-    // stay live; text entry is handled by `typing` below.
     const onControl = target && target.closest
       && target.closest("button, a[href], [role=button], [role=menuitem]");
     if (onControl && e.code !== "Escape" && !e.ctrlKey && !e.metaKey && !e.altKey) return;
@@ -2408,9 +2296,6 @@ function setupEventListeners() {
     if (e.key === "+" || e.key === "=") { e.preventDefault(); zoomBy(1.25); return; }
     if (e.key === "-" || e.key === "_") { e.preventDefault(); zoomBy(1 / 1.25); return; }
     if (e.code === "Space") {
-      // A focused button owns Space: let the browser activate it instead of
-      // starting a pan. This is what makes the play/pause control keyboard
-      // operable.
       if (target && target.closest && target.closest("button, a, [role=button], [role=menuitem]")) return;
       e.preventDefault();
       state.spaceDown = true;
@@ -2449,14 +2334,11 @@ function setupEventListeners() {
   });
   textBind(els.customCharset, "customCharset", () => { rebuildRamp(); pushHistory("customCharset"); scheduleRender(); });
 
-  // Helper to sync slider and number input
   function syncSliderNumber(slider, numInput, optPath, onChange) {
     const min = +slider.min, max = +slider.max, step = +slider.step;
     let lastValid = slider.value;
     function clamp(v) { return Math.max(min, Math.min(max, v)); }
     function setVal(v, notify = true) {
-      // Snap to the control's step grid in the same place every other numeric
-      // control does, so repeated stepping cannot accumulate float noise.
       const clamped = clamp(roundToStep(v, step, min));
       slider.value = clamped;
       numInput.value = clamped;
@@ -2488,8 +2370,6 @@ function setupEventListeners() {
       if (e.key === "PageUp") { e.preventDefault(); setVal(getCurrentVal() + step * 10); }
       if (e.key === "PageDown") { e.preventDefault(); setVal(getCurrentVal() - step * 10); }
     });
-    // The wheel is a first-class step input on every numeric control, and it
-    // must never scroll the panel while stepping.
     numInput.addEventListener("wheel", (e) => {
       e.preventDefault();
       setVal(getCurrentVal() + (e.deltaY < 0 ? step : -step));
@@ -2667,8 +2547,6 @@ function setupEventListeners() {
     if (e.button > 0) return;
     e.preventDefault();
     e.stopPropagation();
-    // Snapshot the geometry once per gesture: reading it on every move forces
-    // a layout flush and lets pan/zoom changes mid-drag skew the split.
     const area = els.canvasArea.getBoundingClientRect();
     const canvasW = els.canvas.width * state.scale;
     const move = ev => {
@@ -2697,7 +2575,6 @@ function setupEventListeners() {
     applyZoomUI();
   });
 
-  // A hidden tab must be truly idle: no pending render, no video rAF loop.
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       if (state.renderTimer) { clearTimeout(state.renderTimer); state.renderTimer = null; }

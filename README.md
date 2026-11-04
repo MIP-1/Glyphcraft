@@ -4,15 +4,18 @@ Glyphcraft turns images and videos into glyph art in the browser. Drop in a
 photo or a clip, tune the ramp, dithering, palette and effects, then export a
 still (PNG / JPG / WebP / SVG / TXT) or a WebM clip.
 
-Everything runs locally. There is no build step, no npm install and no server
-side: plain HTML, CSS and four classic scripts loaded in order
-(`engine.js` → `effects.js` → `reorder.js` → `app.js`).
+Everything runs locally. There is no install and no server side: plain HTML,
+CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
+`reorder.js` → `app.js`). Git keeps the readable sources; `npm run build`
+writes an optional minified `dist/` for publishing.
 
 ## Status — 2026-11-04
 
-**Current status:** Part 1, Part 1B, Part 1C and P2-1 are PASS. P2-2 is next and
-not started. `npm run gate` is green three times in a row on the P2-1 tree
-(`docs/evidence/p2-1/gate-run-5/6/7.log`), with paired performance budgets.
+**Current status:** PASS — Part 1, Part 1B, Part 1C, P2-1 and its post-PASS
+cleanup are complete. P2-2 is next and not started. Tag `P2-1-pass` marks the
+P2-1 closeout; tag `P2-1-cleanup-pass` marks the cleanup commit. `npm run gate`
+is green three times in a row on the cleaned tree
+(`docs/evidence/cleanup/gate-run-8/9/10.log`), with paired performance budgets.
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -27,6 +30,7 @@ not started. `npm run gate` is green three times in a row on the P2-1 tree
 | H4 reduce load | PASS | tag `H4-pass` |
 | C1 / C2 / C3 audit, video control, multi-effect cost | PASS | one commit, tags `C1-audit-pass`, `C2-video-control-pass`, `C3-perf-pass` |
 | P2-1 before/after lag | PASS | tag `P2-1-pass`, gate runs 5–7, `docs/GATE.md` P2-1 |
+| P2-1 post-PASS cleanup + publish build | PASS | tag `P2-1-cleanup-pass`, gate runs 8–10, `docs/GATE.md` cleanup |
 | P2-2 Worker + OffscreenCanvas | NOT STARTED | no `Worker` or `OffscreenCanvas` in the repo |
 | P2-3 fast preview | NOT STARTED | preview is always downscaled |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
@@ -47,6 +51,14 @@ not started. `npm run gate` is green three times in a row on the P2-1 tree
 - 62 screenshots opened and described, 7/7 break-it cases (4K, zoom+pan,
   resize mid-drag, undo/redo mid-drag, theme mid-drag, 360 px), 169 existing
   tests, G1–G13 green in runs 5, 6 and 7.
+- Post-PASS cleanup: removed the explanatory comments and three dead functions;
+  added `npm run build` (`dist/` JS 176,581 → 161,200 bytes) and
+  `tools/dist_smoke.py`, which loads source and dist in fresh contexts and gets
+  the same canvas hash (`651948841`). Measured neutral skips: Sepia amount 0
+  went 13.0 → 0.0 ms and Thermal amount 0 17.6 → 0.0 ms, byte-identical; a
+  Retro rewrite measured 1.0× and was reverted. All 62 cleanup screenshots
+  were re-opened against the P2-1 states with no visual change. Full gates 8,
+  9 and 10 are **PASS** on the cleaned tree.
 
 **Next steps**
 
@@ -127,6 +139,7 @@ borders in both themes at 360 px and 1280 px.
 ```bash
 python tests/test_suite.py     # 169 checks, headless Chromium via Playwright
 python tests/test_contrast.py  # WCAG contrast audit, both themes, 2 widths
+python tools/dist_smoke.py     # publish build renders the same canvas
 ```
 
 Reports and screenshots land in `tests/reports/` (gitignored). Tests use

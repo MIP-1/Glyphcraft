@@ -1,0 +1,18 @@
+Neutral-skip byte identity, 900x600, fixture from tests/gate/run_gate.py.
+
+Probe: applyEffects(base, [{id, params: {amount: 0}}], null), then FNV-1a
+over every byte of the output canvas.
+
+Before the skip (raw logs, same page as the effect sweep):
+  sepia     20.90 ms  hash=3805865678
+  thermal   19.90 ms  hash=3805865678
+
+After the skip (NEUTRAL_COPY entry, no runner call, no copy):
+  sepia      0.00 ms  hash=3805865678
+  thermal    0.00 ms  hash=3805865678
+
+Paired same-page A/B (docs/evidence/cleanup/effects-ab.log, 17 rounds):
+  sepia amount 0    13.00 ms -> 0.00 ms
+  thermal amount 0  17.60 ms -> 0.00 ms
+
+The hash is identical, so amount 0 still returns the untouched input pixels.

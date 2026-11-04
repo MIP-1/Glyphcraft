@@ -2571,7 +2571,8 @@ renders=12 median=861.6ms min=822.0 max=2526.9
 ```
 
 A handful of those 0.86 s renders inside a 0.45 s drag window are the p95:
-833–967 ms in runs 1–4 and 950–1583 ms in runs 5–7 as the machine load rose.
+833–967 ms in runs 1–4, 950–1583 ms in runs 5–7 and up to 3283 ms in the
+cleanup runs as the machine load rose.
 All the other rAF ticks are one refresh, so the median stays 16.7 ms in every
 run. This is the effect chain's cost, not the compare drag: the compare
 drag spends 0.3–0.9 ms per render (G11) and repaints a band. The full-stack
@@ -2661,3 +2662,78 @@ checks, G13 25 checks.
 
 `P2-1-pass` on the commit that adds this section, the fresh evidence, the
 break-it harness and the rule-audit logs.
+
+---
+
+## Code cleanup and publish build (after P2-1) — STATUS: PASS
+
+Commit/tag: `P2-1-cleanup-pass`.
+
+Behaviour does not change: 169 tests, G10's 239 effect checks, the screenshot
+set and three consecutive full gates (8–10) are green after the cleanup.
+
+### Comments and dead code
+
+`python tools/build.py --strip app.js effects.js engine.js reorder.js` removed
+the explanatory comments from the four app sources and left only the short
+section markers. It preserves code, indentation and literals and runs
+`node --check` on each result. 272 lines were deleted and 12 added (the
+neutral-skip entries and section markers): the four sources are 194,064 →
+177,402 bytes.
+
+Three unreferenced functions were deleted: `autoEnhance` (`effects.js`),
+`renderToCanvas` and `renderToCanvasLegacy` (`engine.js`). `grep` over the app,
+tests and HTML finds no call site.
+
+### Publish build
+
+`npm run build` runs `tools/build.py`, which writes `dist/` with comments
+removed and whitespace collapsed, preserving literals and ASI-significant
+newlines. It rewrites `index.html` to the `.min` names, copies `assets/`, and
+`node --check`s every script. JS 176,581 → 161,200 bytes (8.7%). `dist/` is
+gitignored; the readable sources stay in git.
+
+`python tools/dist_smoke.py` opens `index.html` and `dist/index.html` in two
+fresh contexts, waits for `document.fonts.ready`, loads the same fixture and
+enables the same four deterministic effects. Both canvases hash to
+`651948841` at 900×600 with zero page/console errors. (A first version compared
+two pages in one context and disagreed; the cause was the web font loading
+between the first and second page, not the minifier. Fresh contexts and a font
+wait make the comparison valid.)
+
+### Measured effect cost
+
+Paired same-page A/B, 900×600, 17 rounds, median (`effects-ab.log`):
+
+| Change | Before | After | Decision |
+|---|---|---|---|
+| Sepia amount 0 neutral skip | 13.00 ms | 0.00 ms | keep |
+| Thermal amount 0 neutral skip | 17.60 ms | 0.00 ms | keep |
+| Retro typed-array palette | 24.60 ms | 24.20 ms | 1.0×, reverted |
+
+The neutral skip is the existing `NEUTRAL_COPY` path: amount 0 returns the
+untouched input with no runner call and no copy. The output hash before and
+after is `3805865678` for both effects, so the pixels are unchanged
+(`neutral-hash.log`). The Retro rewrite kept the same hash but did not make the
+pass faster in a paired test, so it is not in the tree.
+
+### Files changed
+
+- `app.js`, `effects.js`, `engine.js`, `reorder.js`: comments stripped, dead
+  functions deleted, Sepia/Thermal neutral entries added.
+- `tools/build.py`: comment stripper + minifier.
+- `tools/dist_smoke.py`: source-vs-dist canvas check.
+- `package.json`: `npm run build`.
+- `.gitignore`: `dist/`.
+- `README.md`, `docs/PROJECT_MEMORY.md`: status and build notes.
+
+### Gate runs
+
+- `docs/evidence/cleanup/gate-run-8.log`: **GATE PASS**.
+- `docs/evidence/cleanup/gate-run-9.log`: **GATE PASS**.
+- `docs/evidence/cleanup/gate-run-10.log`: **GATE PASS** (G1–G13; G5 169/169,
+  G10 239/239, G11 21/21, G12 15/15, G13 25/25).
+
+Three consecutive green runs on the cleaned tree; G11/G13 still use the
+paired/best-window rules from P2-1. The 62 cleanup screenshots are in
+`docs/evidence/cleanup/`; the P2-1 set stays untouched at tag `P2-1-pass`.
