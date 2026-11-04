@@ -1,0 +1,10 @@
+4K heavy drag                      1600x1200 frames=122 render p90=0.7ms pipeline=0 left=734.0 expected=734.0  PASS
+zoom+pan drag                      zoom=2 pan=[-10, 35.5] left=1270.0 expected=1270.0  PASS
+resize mid-drag                    viewport=1100x800 w=1600 left=1090.0 expected=1090.0  PASS
+undo mid-drag                      optsChanged=True left=1090.0 expected=1090.0  PASS
+redo after drag                    optsRestored=True left=1090.0 expected=1090.0  PASS
+theme switch mid-drag              light->dark left=1090.0 expected=1090.0  PASS
+360px drag                         w=1600 left=340.0 expected=340.0 overflow=0px  PASS
+
+7 cases, 0 failure(s)
+BREAKIT PASS

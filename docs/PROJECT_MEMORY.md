@@ -1,6 +1,6 @@
 # Glyphcraft — Project Memory (handoff)
 
-Snapshot date: 2026-11-02. Put this file at `docs/PROJECT_MEMORY.md`. Read it at the start of every new session, then read `docs/GATE.md`.
+Snapshot date: 2026-11-04. Put this file at `docs/PROJECT_MEMORY.md`. Read it at the start of every new session, then read `docs/GATE.md`.
 English only. Do not add Arabic anywhere in the repo (gate check G6).
 
 ## 1. What Glyphcraft is
@@ -21,10 +21,10 @@ Web app (HTML/CSS/JS, built with opencode) that loads an image or video and appl
 
 | Part | File (in `docs/prompts/`) | Content | Status |
 |---|---|---|---|
-| 1 | `part1_gate_foundation.md` | P1-0 gate, P1-1 remove Arabic, P1-2 light theme, P1-3 top bar | P1-0 PASS (commit ae85c1c, tag P1-0-pass); P1-1 PASS (2446db4); P1-2 PASS (961ede5); **P1-3 recorded as CHECKPOINT, no `P1-3-pass` tag** (`docs/GATE.md` line 770). The top-bar work landed in H0 and G8 is green, so the code is done; the state and the tag are not. Resolve before claiming Part 2 prerequisite #1 |
+| 1 | `part1_gate_foundation.md` | P1-0 gate, P1-1 remove Arabic, P1-2 light theme, P1-3 top bar | P1-0 PASS (commit ae85c1c, tag P1-0-pass); P1-1 PASS (2446db4); P1-2 PASS (961ede5); P1-3 PASS (commit 855a5b4, tag `P1-3-pass`; fresh G8 evidence and 62 screenshots in `docs/evidence/p1-3/`) |
 | 1B | `part1b_hotfix.md` | H0 top bar; H1 stepper arrows; H2 white effects (Pencil Sketch first); H3 Compare freeze + grab; H4 reduce load | H0 PASS (7940130, tag H0-pass); H1 PASS (tag H1-pass); H2 PASS (tag H2-pass); H3 PASS (tag H3-pass); H4 PASS (commits da8e572, 81f6e00, 6c3031e, 9cdc711, a6909ee; tag H4-pass) |
 | 1C | `part1c.md` | C1 audit Part 1B, C2 video play/pause control, C3 multi-effect cost | C1/C2/C3 PASS (one commit, tags `C1-audit-pass`, `C2-video-control-pass`, `C3-perf-pass`; see `docs/GATE.md` Part 1C and `docs/HANDOFF_PART1C.md`). One commit for three tasks because the control exposed the pointer-capture bug and the perf work exposed the preview-collapse bug; the commit body records the departure from one-commit-per-task |
-| 2 | `part2_performance_core.md` | P2-1 before/after fps, P2-2 Worker + OffscreenCanvas, P2-3 fast preview, P2-4 undo/redo/history, P2-5 before/after finish, P2-6 presets | **IN PROGRESS at P2-1 (not PASS, no tag).** P2-1 fix committed as WIP `99a942d`: `originalBitmap` cache in `app.js` (drawOriginal 9.9 → 0.07 ms/frame; 4K render median 10.2 → 0.6 ms) and an in-page continuous drag harness in `tests/gate/compare_check.py`. `compare_check.py` 20/20 PASS, p95 16.8 ms at 1280 and 4K, pipeline 0. Full gate still red: G11 flaked once (1280 p95 33.3) and G13 is 0.2 ms over budget. P2-2 … P2-6 NOT STARTED |
+| 2 | `part2_performance_core.md` | P2-1 before/after fps, P2-2 Worker + OffscreenCanvas, P2-3 fast preview, P2-4 undo/redo/history, P2-5 before/after finish, P2-6 presets | **P2-1 PASS (tag `P2-1-pass`, gate runs 5–7).** `originalBitmap` cache (drawOriginal 9.9 → 0.07 ms/frame; 4K render median 10.2 → 0.6 ms), band-only split repaint, paired G11/G13 budgets, 7/7 break-it cases, 62 screenshots. P2-2 … P2-6 NOT STARTED |
 | 3 | `part3_remaining_features.md` | Command Palette, drag to add effects, advanced export, batch ZIP, final regression | NOT STARTED |
 
 Order: Part 1B → Part 2 → Part 3. Do not start a later part before the owner confirms the earlier one.
@@ -47,8 +47,9 @@ Order: Part 1B → Part 2 → Part 3. Do not start a later part before the owner
 - G4 frame timings harness (idle median 16.7 ms is just the display refresh; the Before/After drag test comes in Part 1B/2)
 - G5 the 169 existing tests (`tests/test_suite.py`), count may only go up
 - G6 no Arabic characters; G7 no Theme item in View; G8 top-bar geometry
+- G9 numeric steppers; G10 effect sweep; G11 compare split; G12 load/idle; G13 video control + multi-effect playback
 - New acceptance tests from every task are added permanently (G9+).
-Rules: states are PASS / FAIL / BLOCKED / HUMAN-CHECK only; test first (see it RED), fix, run gate 3× in a row, OPEN every screenshot and describe it, list 5 ways it could break, record in `docs/GATE.md`, one commit per task with tag `<task>-pass`. Never weaken a test or threshold; if a check looks wrong, show evidence and ask. After 3 failed attempts: BLOCKED. Real-device checks are HUMAN-CHECK.
+Rules: states are PASS / FAIL / BLOCKED / HUMAN-CHECK only; test first (see it RED), fix, run gate 3× in a row, OPEN every screenshot and describe it, list 5 ways it could break, record in `docs/GATE.md`, one commit per task with tag `<task>-pass`. Never weaken a test or threshold; if a check looks wrong, show numbers from 3+ runs, prove the replacement still fails a deliberately slowed build, and record the old rule, new rule and reason in `docs/GATE.md`. After 3 failed attempts: BLOCKED. Real-device checks are HUMAN-CHECK.
 
 ## 6. Important findings
 - **Light-theme bug root cause:** the owner's Zen/Noctalia `userContent.css` declares `--surface`, `--text`, `--muted` on `*` in dark OS mode, which overrode the app's inherited tokens (app showed dark cards + invisible names on a light panel). Fix: app tokens renamed `--gc-surface`, unused generic aliases removed; the gate now injects `tests/gate/host_usercontent.css` during its real flow. Keep every app CSS variable namespaced `--gc-*`.
@@ -74,9 +75,9 @@ Continue from the first task that is not PASS. Do not ask me which effect or val
 ```
 
 ## 10. Next actions
-1. Part 1B is done: H0 → H4 all PASS, each tagged `<task>-pass`. Part 1C is done (C1/C2/C3).
-2. **Resolve P1-3**: `docs/GATE.md` still says CHECKPOINT and there is no `P1-3-pass` tag, but H0 implemented the top bar and G8 is green. Either re-state it PASS and tag it, or keep it as a checkpoint — Part 2's prerequisite #1 asks for `P1-0 … P1-3` all PASS.
-3. **Finish P2-1**: the app fix and harness fix are committed as WIP `99a942d` in `app.js` and `tests/gate/compare_check.py`, untagged. `compare_check.py` is 20/20 PASS (p95 16.8 ms at 1280 and 4K, pipeline 0). Still needed: full gate green ×3 (G11 flaked once at 1280 p95 33.3 under full-gate load; G13 is 0.2 ms over its 26.0 ms p50 limit), screenshots opened and described, 5 break-it cases, `docs/GATE.md` block, commit + tag `P2-1-pass`.
-4. Then P2-2 (Worker + OffscreenCanvas), in order through P2-6.
+1. Part 1, Part 1B, Part 1C and P2-1 are PASS, each tagged `<task>-pass`; P2-1's three green gates are `docs/evidence/p2-1/gate-run-5/6/7.log`.
+2. **Next action: start P2-2** (Worker + OffscreenCanvas) from `docs/prompts/part2_performance_core.md`. Write its acceptance check first, see it RED, then implement.
+3. Then P2-3 fast preview, followed by P2-4 to P2-6 in order. Do not start P3 before the owner confirms Part 2.
+4. After each task: open every screenshot, list 5 ways it could break, run the full gate 3× in a row, record the block in `docs/GATE.md`, commit and tag `<task>-pass`.
 5. Then Part 3 (P3-1 … P3-5).
 6. Owner verifies by hand after each part.

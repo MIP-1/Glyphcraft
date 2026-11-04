@@ -8,24 +8,25 @@ Everything runs locally. There is no build step, no npm install and no server
 side: plain HTML, CSS and four classic scripts loaded in order
 (`engine.js` → `effects.js` → `reorder.js` → `app.js`).
 
-## Status — 2026-11-02
+## Status — 2026-11-04
 
-**Current status:** Part 1, Part 1B and Part 1C are PASS. Part 2 is in progress
-at P2-1 and is **not** PASS yet. The full `npm run gate` is **not** green.
+**Current status:** Part 1, Part 1B, Part 1C and P2-1 are PASS. P2-2 is next and
+not started. `npm run gate` is green three times in a row on the P2-1 tree
+(`docs/evidence/p2-1/gate-run-5/6/7.log`), with paired performance budgets.
 
 | Work | State | Evidence |
 | --- | --- | --- |
 | P1-0 gate foundation | PASS | commit `ae85c1c`, tag `P1-0-pass` |
 | P1-1 remove localisation / RTL | PASS | commit `2446db4`, tag `P1-1-pass` |
 | P1-2 light theme parity | PASS | commit `961ede5`, tag `P1-2-pass` |
-| P1-3 top bar | CHECKPOINT, no tag | `docs/GATE.md` line 770. The work landed in H0 and G8 is green, but the id was never re-stated as PASS |
+| P1-3 top bar | PASS | commit `855a5b4`, tag `P1-3-pass` |
 | H0 top bar | PASS | `7940130`, tag `H0-pass` |
 | H1 steppers | PASS | tag `H1-pass` |
 | H2 white effects | PASS | tag `H2-pass` |
 | H3 compare freeze + grab | PASS | tag `H3-pass` |
 | H4 reduce load | PASS | tag `H4-pass` |
 | C1 / C2 / C3 audit, video control, multi-effect cost | PASS | one commit, tags `C1-audit-pass`, `C2-video-control-pass`, `C3-perf-pass` |
-| P2-1 before/after lag | IN PROGRESS | fix committed as WIP `99a942d`, no tag; `compare_check.py` 20/20 PASS |
+| P2-1 before/after lag | PASS | tag `P2-1-pass`, gate runs 5–7, `docs/GATE.md` P2-1 |
 | P2-2 Worker + OffscreenCanvas | NOT STARTED | no `Worker` or `OffscreenCanvas` in the repo |
 | P2-3 fast preview | NOT STARTED | preview is always downscaled |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
@@ -35,37 +36,32 @@ at P2-1 and is **not** PASS yet. The full `npm run gate` is **not** green.
 
 **Done in this step**
 
-- P2-1 root cause found and fixed: `drawOriginal` redrew the 4K source into a
-  clipped context on every pointer move (9.9 ms/frame in software raster). The
-  original is now downscaled once per preview size into `originalBitmap`
-  (0.07 ms/frame); 4K `render()` median fell 10.2 ms → 0.6 ms.
-- The compare drag harness now drives one continuous in-page pointer gesture
-  from a rAF loop with a discarded 60-frame warm-up and a forced GC + 150 ms
-  settle before measuring. Thresholds and check count are unchanged.
-- `python tests/gate/compare_check.py`: **20/20 PASS**, drag p95 16.8 ms at both
-  1280×720 and 4K, pipeline invoked 0 times, 50/50 handle grabs at 100/200/400%.
-- `python tests/gate/video_check.py`: 25 checks, **1 FAIL** — 6-effect playback
-  p50 26.2 ms against a 26.0 ms limit, while the zero-effect control measured in
-  the same session is p50 19.5 ms. The miss is 0.2 ms.
+- P2-1 closed as PASS. `drawOriginal` redrew the 4K source into a clipped
+  context on every pointer move (9.9 ms/frame in software raster). It is now
+  downscaled once per preview size into `originalBitmap` (0.07 ms/frame); the
+  4K `render()` median fell 10.2 ms → 0.6 ms. The split drag repaints only the
+  changed band and G11 proves it pixel-identical to the full composite.
+- Gate rules audited: G11 drag and G13 playback now compare paired windows,
+  G13 gates the best of five windows, and both still fail a deliberately
+  slowed build (logs in `docs/evidence/rule-red/`).
+- 62 screenshots opened and described, 7/7 break-it cases (4K, zoom+pan,
+  resize mid-drag, undo/redo mid-drag, theme mid-drag, 360 px), 169 existing
+  tests, G1–G13 green in runs 5, 6 and 7.
 
 **Next steps**
 
-1. Settle P1-3: either record it as PASS with a `P1-3-pass` tag (the H0 work
-   satisfies it and G8 is green) or keep the checkpoint and say so. Part 2's
-   prerequisite list asks for `P1-0 … P1-3` PASS.
-2. Get `npm run gate` green three times in a row for P2-1. G11 flaked once
-   under full-gate load (1280 p95 33.3 ms) and G13 is 0.2 ms over budget.
-3. Open and describe every P2-1 screenshot, run the five break-it cases, write
-   the `docs/GATE.md` block, then commit and tag `P2-1-pass`.
-4. Only then start P2-2 (Worker + OffscreenCanvas).
+1. Start P2-2: move the effect pipeline to a Worker with OffscreenCanvas, add
+   its acceptance check first, and keep G11/G13 green.
+2. Then P2-3 fast preview, followed by P2-4 to P2-6 in order.
+3. Re-run the full gate three times after each task and open every screenshot.
 
 **HUMAN-CHECK**
 
-- Drag the split on a 4K image in a real browser; the split must stay under the
+- Drag the split on a 4K image in a real browser: it must stay under the
   pointer and stay correct after zoom, pan, resize, a value change, undo/redo
   and a theme switch.
-- G13 playback is measured in headless software raster. Confirm six-effect
-  video playback on the real GPU before treating that 0.2 ms as a product bug.
+- Confirm six-effect video playback on the real GPU; G13 runs in headless
+  software raster with a paired zero-effect control.
 
 ## Run it
 

@@ -1,0 +1,80 @@
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 76684 element/state checks, 10 cells, 88 scans
+G3 PASS screenshots: 62 captured in docs/evidence/p2-1/
+  docs/evidence/p2-1/dark-1280-fullest-top.png
+  docs/evidence/p2-1/dark-1280-fullest-effects.png
+  docs/evidence/p2-1/dark-1280-file-menu.png
+  docs/evidence/p2-1/dark-1280-view-menu.png
+  docs/evidence/p2-1/dark-1280-edit-menu.png
+  docs/evidence/p2-1/dark-1280-zoom-menu.png
+  docs/evidence/p2-1/dark-1280-size-picker.png
+  docs/evidence/p2-1/dark-1280-select-focus.png
+  docs/evidence/p2-1/dark-1280-focus-theme.png
+  docs/evidence/p2-1/dark-1280-hover-theme-tooltip.png
+  docs/evidence/p2-1/dark-1280-hover-preset.png
+  docs/evidence/p2-1/dark-1280-hover-primary.png
+  docs/evidence/p2-1/dark-360-fullest-top.png
+  docs/evidence/p2-1/dark-360-fullest-effects.png
+  docs/evidence/p2-1/dark-360-file-menu.png
+  docs/evidence/p2-1/dark-360-view-menu.png
+  docs/evidence/p2-1/dark-360-edit-menu.png
+  docs/evidence/p2-1/dark-360-zoom-menu.png
+  docs/evidence/p2-1/dark-360-size-picker.png
+  docs/evidence/p2-1/dark-360-select-focus.png
+  docs/evidence/p2-1/dark-360-focus-theme.png
+  docs/evidence/p2-1/dark-360-hover-theme-tooltip.png
+  docs/evidence/p2-1/dark-360-hover-preset.png
+  docs/evidence/p2-1/dark-360-hover-primary.png
+  docs/evidence/p2-1/light-1280-fullest-top.png
+  docs/evidence/p2-1/light-1280-fullest-effects.png
+  docs/evidence/p2-1/light-1280-file-menu.png
+  docs/evidence/p2-1/light-1280-view-menu.png
+  docs/evidence/p2-1/light-1280-edit-menu.png
+  docs/evidence/p2-1/light-1280-zoom-menu.png
+  docs/evidence/p2-1/light-1280-size-picker.png
+  docs/evidence/p2-1/light-1280-select-focus.png
+  docs/evidence/p2-1/light-1280-focus-theme.png
+  docs/evidence/p2-1/light-1280-hover-theme-tooltip.png
+  docs/evidence/p2-1/light-1280-hover-preset.png
+  docs/evidence/p2-1/light-1280-hover-primary.png
+  docs/evidence/p2-1/light-360-fullest-top.png
+  docs/evidence/p2-1/light-360-fullest-effects.png
+  docs/evidence/p2-1/light-360-file-menu.png
+  docs/evidence/p2-1/light-360-view-menu.png
+  docs/evidence/p2-1/light-360-edit-menu.png
+  docs/evidence/p2-1/light-360-zoom-menu.png
+  docs/evidence/p2-1/light-360-size-picker.png
+  docs/evidence/p2-1/light-360-select-focus.png
+  docs/evidence/p2-1/light-360-focus-theme.png
+  docs/evidence/p2-1/light-360-hover-theme-tooltip.png
+  docs/evidence/p2-1/light-360-hover-preset.png
+  docs/evidence/p2-1/light-360-hover-primary.png
+  docs/evidence/p2-1/light-1280-real-clean-icon.png
+  docs/evidence/p2-1/light-1280-real-clean-T-light.png
+  docs/evidence/p2-1/light-1280-real-clean-reload-light.png
+  docs/evidence/p2-1/light-1280-host-dark-icon.png
+  docs/evidence/p2-1/light-1280-host-dark-T-light.png
+  docs/evidence/p2-1/light-1280-host-dark-reload-light.png
+  docs/evidence/p2-1/light-1280-host-os-light-os-light.png
+  docs/evidence/p2-1/light-360-real-clean-icon.png
+  docs/evidence/p2-1/light-360-real-clean-T-light.png
+  docs/evidence/p2-1/light-360-real-clean-reload-light.png
+  docs/evidence/p2-1/light-360-host-dark-icon.png
+  docs/evidence/p2-1/light-360-host-dark-T-light.png
+  docs/evidence/p2-1/light-360-host-dark-reload-light.png
+  docs/evidence/p2-1/light-360-host-os-light-os-light.png
+G4 PASS frame timings: dark 1280: median=16.700000000000728ms p95=983.3000000000029ms frames=115, dark 360: median=16.700000000000728ms p95=916.5ms frames=122, light 1280: median=16.700000000000728ms p95=900ms frames=118, light 360: median=16.700000000000728ms p95=949.9000000000015ms frames=119
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (196.7s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 PASS top-bar geometry: 0 violation(s)
+G9 PASS numeric steppers: 65 measurements, 15 hold-rate rows
+G10 PASS effects: 239 checks, 0 failure(s) (37.8s)
+G11 PASS compare split: 21 checks, 0 failure(s) (124.7s)
+G12 PASS load: 15 checks, 0 failure(s) (133.6s)
+G13 FAIL video: 25 checks, 1 failure(s) (86.7s)
+  tests/gate/video_check.py exited 1
+  FAIL playback 6 effects stays under budget - renders=198 p50=19.4ms(reported, budget 26.0) delta_p50=-0.8ms(limit 8.0) p95(median)=61.6ms delta_p95=20.1ms(limit 15.0) windows=[29.5, 31.6, 61.6, 87.7, 114.9] windowP50=[20.1, 32.9, 18.6, 17.6, 19.4] paired_p95=[(31.6, 37.7), (114.9, 68.2), (61.6, 41.5), (87.7, 21.9), (29.5, 29.3)] late=22/198 (11.1%, ctrl 10.1%, delta 0.4%) max=121.2ms longtask(median)=283ms(limit 400.0) delta_longtask=67ms(limit 250.0) windows=[90, 614, 300, 283, 0] total=1287ms script/frame=25.21ms longest(median)=111ms any=130ms(limit any 250.0) delta_any=24ms(limit 150.0) windows=[90, 129, 130, 111, 0] task=5794.7ms videoTime=16.7 scale=0.17 backing=218 scales={'0.17': 40} | control: p50=19.9 p95=37.7 longtask=119 longest=93/119 script/frame=23.59 backing=755
+  video check did not report PASS
+
+GATE FAIL G13

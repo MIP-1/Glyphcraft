@@ -1,0 +1,14 @@
+setup: {"effects": 22, "source": "900x600", "canvas": "900x600", "depth": 91}
+renders=12 median=861.6ms min=822.0 max=2526.9
+  depth= 20 render=1348.3 ms
+  depth= 40 render=2526.9 ms
+  depth= 60 render=866.0 ms
+  depth= 80 render=851.4 ms
+  depth=100 render=865.0 ms
+  depth=120 render=822.0 ms
+  depth=140 render=963.1 ms
+  depth=160 render=835.1 ms
+  depth=180 render=831.0 ms
+  depth=200 render=858.1 ms
+  depth=220 render=858.2 ms
+  depth=240 render=932.7 ms
