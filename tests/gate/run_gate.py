@@ -750,6 +750,8 @@ def evaluate_geometry(data: dict, tolerance: float = 1.0) -> list[dict]:
             rows.append([item])
     if data["width"] > 768 and len(rows) > 1:
         out.append({"cell": cell, "kind": "rows", "detail": f"{len(rows)} rows at desktop width: " + " | ".join(", ".join(i["name"] for i in row) for row in rows)})
+    if data["width"] <= 700 and len(rows) != 1:
+        out.append({"cell": cell, "kind": "rows", "detail": f"{len(rows)} rows at mobile width, expected a single row: " + " | ".join(", ".join(i["name"] for i in row) for row in rows)})
     if len(rows) > 2:
         out.append({"cell": cell, "kind": "rows", "detail": f"{len(rows)} rows: " + " | ".join(", ".join(i["name"] for i in row) for row in rows)})
     if len(rows) == 2:
@@ -1019,17 +1021,29 @@ def run_browser_checks() -> dict:
                         result["g3"]["screenshots"].append(str(sh.relative_to(ROOT)))
 
                         # Menus.
-                        for menu in ("file", "view", "edit"):
-                            page.evaluate("() => document.querySelectorAll('.menu-dropdown.open').forEach(d => d.classList.remove('open'))")
+                        if width <= 700:
+                            page.evaluate("() => closeAllMenus()")
                             page.evaluate("() => { const p=document.querySelector('.panel-content'); if(p) p.scrollTop=0; }")
-                            page.click(f"#menu-{menu}")
+                            page.click("#mobile-menu-btn")
                             page.wait_for_timeout(220)
-                            sh = screenshot(page, theme, width, f"{menu}-menu")
+                            sh = screenshot(page, theme, width, "mobile-menu")
                             result["g3"]["screenshots"].append(str(sh.relative_to(ROOT)))
-                            data = scan(page, theme, width, f"{menu}-menu")
+                            data = scan(page, theme, width, "mobile-menu")
                             _merge_scan(result["g2"], data, seen_g2)
-                            page.keyboard.press("Escape")
+                            page.evaluate("() => closeAllMenus()")
                             page.wait_for_timeout(120)
+                        else:
+                            for menu in ("file", "view", "edit"):
+                                page.evaluate("() => closeAllMenus()")
+                                page.evaluate("() => { const p=document.querySelector('.panel-content'); if(p) p.scrollTop=0; }")
+                                page.click(f"#menu-{menu}")
+                                page.wait_for_timeout(220)
+                                sh = screenshot(page, theme, width, f"{menu}-menu")
+                                result["g3"]["screenshots"].append(str(sh.relative_to(ROOT)))
+                                data = scan(page, theme, width, f"{menu}-menu")
+                                _merge_scan(result["g2"], data, seen_g2)
+                                page.evaluate("() => closeAllMenus()")
+                                page.wait_for_timeout(120)
 
                         page.click("#zoom-level")
                         page.wait_for_timeout(220)
@@ -1037,12 +1051,18 @@ def run_browser_checks() -> dict:
                         result["g3"]["screenshots"].append(str(sh.relative_to(ROOT)))
                         data = scan(page, theme, width, "zoom-menu")
                         _merge_scan(result["g2"], data, seen_g2)
-                        page.keyboard.press("Escape")
+                        page.evaluate("() => closeAllMenus()")
                         page.wait_for_timeout(120)
 
                         # Size picker, with every group expanded.
-                        trigger = page.locator("#output-preset-trigger")
-                        trigger.scroll_into_view_if_needed()
+                        page.evaluate("""() => {
+                          const el = document.getElementById('output-preset-trigger');
+                          const c = document.querySelector('.panel-content');
+                          const bar = document.getElementById('panel-actionbar');
+                          const top = el.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop;
+                          c.scrollTop = Math.max(0, top - bar.getBoundingClientRect().height - 8);
+                        }""")
+                        page.wait_for_timeout(200)
                         page.click("#output-preset-trigger")
                         page.wait_for_timeout(250)
                         more = page.locator("[data-preset-more]")
@@ -1054,7 +1074,10 @@ def run_browser_checks() -> dict:
                         result["g3"]["screenshots"].append(str(sh.relative_to(ROOT)))
                         data = scan(page, theme, width, "size-picker")
                         _merge_scan(result["g2"], data, seen_g2)
-                        page.keyboard.press("Escape")
+                        if width <= 700:
+                            page.evaluate("() => closePresetPicker(false)")
+                        else:
+                            page.keyboard.press("Escape")
                         page.wait_for_timeout(120)
 
                         # Native select focus (its OS popup cannot be screenshot in headless Chromium).
@@ -1084,7 +1107,13 @@ def run_browser_checks() -> dict:
                         data = scan(page, theme, width, "hover-theme-tooltip")
                         _merge_scan(result["g2"], data, seen_g2)
 
-                        page.locator("#section-effects").scroll_into_view_if_needed()
+                        page.evaluate("""() => {
+                          const el = document.getElementById('section-effects');
+                          const c = document.querySelector('.panel-content');
+                          const bar = document.getElementById('panel-actionbar');
+                          const top = el.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop;
+                          c.scrollTop = Math.max(0, top - bar.getBoundingClientRect().height - 8);
+                        }""")
                         page.wait_for_timeout(150)
                         page.hover(".preset-btn")
                         page.wait_for_timeout(150)
@@ -1139,8 +1168,9 @@ def run_browser_checks() -> dict:
         if run.get("error") or not run.get("frames") or run["frames"] < 10:
             result["g4"]["pass"] = False
 
-    required_states = 12
-    expected_shots = 2 * 2 * required_states
+    # Desktop captures 12 states per theme/width; mobile replaces the three
+    # separate menu states with one mobile-menu state.
+    expected_shots = 2 * (12 + 10)
     if len(result["g3"]["screenshots"]) < expected_shots:
         result["g3"]["pass"] = False
     for shot in result["g3"]["screenshots"]:
@@ -1833,6 +1863,737 @@ def g13_video() -> tuple[bool, list[str], str]:
     return not problems, problems[:40], detail
 
 
+# ---------------------------------------------------------------------------
+# G14-G17 - mobile sheet, gestures, touch targets, desktop guard
+# ---------------------------------------------------------------------------
+
+MOBILE_SHEET_JS = r"""
+() => {
+  const panel = document.getElementById('panel');
+  const area = document.getElementById('canvas-area');
+  const canvas = document.getElementById('canvas');
+  const handle = document.getElementById('sheet-handle');
+  const status = document.getElementById('status-bar');
+  const vv = window.visualViewport;
+  const pr = panel.getBoundingClientRect();
+  const ar = area.getBoundingClientRect();
+  const cr = canvas.getBoundingClientRect();
+  const hr = handle ? handle.getBoundingClientRect() : null;
+  const cx = cr.left + cr.width / 2;
+  const cy = cr.top + cr.height / 2;
+  const hit = document.elementFromPoint(cx, cy);
+  const segs = status ? Array.from(status.querySelectorAll('.status-seg')) : [];
+  const visibleSegs = segs.filter(seg => !seg.hidden && getComputedStyle(seg).display !== 'none');
+  const bar = document.querySelector('.menubar');
+  const barRect = bar.getBoundingClientRect();
+  const rows = [];
+  for (const el of bar.querySelectorAll('.menubar-left, .menubar-right > *')) {
+    const r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) continue;
+    const center = r.top + r.height / 2;
+    if (!rows.some(row => Math.abs(row - center) < 12)) rows.push(center);
+  }
+  return {
+    viewport: {w: innerWidth, h: innerHeight, vvW: vv ? vv.width : innerWidth, vvH: vv ? vv.height : innerHeight},
+    topbar: {height: barRect.height, rows: rows.length, width: barRect.width},
+    sheet: {x: pr.x, top: pr.top, bottom: pr.bottom, width: pr.width, height: pr.height,
+            snap: panel.dataset.snap || '', bottomGap: innerHeight - pr.bottom},
+    preview: {x: ar.x, top: ar.top, bottom: ar.bottom, width: ar.width, height: ar.height, left: ar.left, right: ar.right},
+    canvas: {left: cr.left, top: cr.top, right: cr.right, bottom: cr.bottom, width: cr.width, height: cr.height},
+    centerHit: hit ? {id: hit.id || '', tag: hit.tagName.toLowerCase(), canvas: hit === canvas || hit.closest && hit.closest('#canvas') !== null} : null,
+    handle: hr ? {top: hr.top, bottom: hr.bottom, width: hr.width, height: hr.height,
+                  role: handle.getAttribute('role'), valuenow: handle.getAttribute('aria-valuenow'),
+                  valuemin: handle.getAttribute('aria-valuemin'), valuemax: handle.getAttribute('aria-valuemax'),
+                  tabindex: handle.getAttribute('tabindex')} : null,
+    status: {inSheet: !!(status && panel.contains(status)), inHandle: !!(status && handle && handle.contains(status)),
+             segs: segs.length, visible: visibleSegs.length, text: (status ? status.textContent : '').trim()},
+    overflowX: document.documentElement.scrollWidth - innerWidth,
+    docScroll: (document.scrollingElement || document.documentElement).scrollTop,
+    bodyScroll: document.body.scrollTop,
+    contentScroll: (document.querySelector('.panel-content') || {}).scrollTop || 0
+  };
+}
+"""
+
+MOBILE_INSTRUMENT_JS = r"""
+() => {
+  if (window.__mp) return;
+  const P = window.__mp = {renders: 0, base: 0};
+  const r = window.render;
+  window.render = function () { P.renders += 1; return r.apply(this, arguments); };
+  const b = window.prepareBase;
+  if (typeof b === 'function') {
+    window.prepareBase = function () { P.base += 1; return b.apply(this, arguments); };
+  }
+}
+"""
+
+
+def mobile_context(browser, width: int, height: int, theme: str, reduce: bool = True):
+    return browser.new_context(
+        viewport={"width": width, "height": height},
+        color_scheme=theme,
+        locale="en-US",
+        reduced_motion="reduce" if reduce else "no-preference",
+        is_mobile=True,
+        has_touch=True,
+        device_scale_factor=2,
+    )
+
+
+def mobile_open(browser, width: int, height: int, theme: str, image: bool = True,
+                effects: int = 0, reduce: bool = True):
+    ctx = mobile_context(browser, width, height, theme, reduce)
+    ctx.add_init_script("try{localStorage.setItem('glyphcraft-theme','%s')}catch(e){}" % theme)
+    page = ctx.new_page()
+    errors: list[str] = []
+    page.on("pageerror", lambda exc: errors.append(str(exc)))
+    page.goto(BASE_URL + "/index.html", wait_until="load", timeout=30000)
+    page.wait_for_timeout(450)
+    if image:
+        before = page.evaluate("() => state.sourceId")
+        page.set_input_files("#file-input", str(FIXTURE))
+        page.wait_for_selector(".canvas-area.has-content", timeout=30000)
+        page.wait_for_function("(id) => state.sourceId > id", arg=before, timeout=30000)
+        page.wait_for_timeout(700)
+    if effects:
+        page.evaluate(
+            """(n) => {
+              state.opts.effects = EFFECTS.slice(0, n).map(effect => ({
+                id: effect.id, enabled: true, params: effectDefaults(effect.id)
+              }));
+              renderEffectsList();
+              scheduleRender(0);
+            }""", effects)
+        page.wait_for_timeout(1200)
+    page.wait_for_timeout(350)
+    return ctx, page, errors
+
+
+def cdp_touch_start(client, x: float, y: float) -> None:
+    client.send("Input.dispatchTouchEvent", {
+        "type": "touchStart",
+        "touchPoints": [{"x": x, "y": y, "id": 1, "radiusX": 2, "radiusY": 2}],
+    })
+
+
+def cdp_touch_move(client, x: float, y: float) -> None:
+    client.send("Input.dispatchTouchEvent", {
+        "type": "touchMove",
+        "touchPoints": [{"x": x, "y": y, "id": 1, "radiusX": 2, "radiusY": 2}],
+    })
+
+
+def cdp_touch_end(client) -> None:
+    client.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []})
+
+
+def touch_swipe(client, page, x: float, y1: float, y2: float, steps: int = 12,
+                step_ms: int = 16) -> None:
+    cdp_touch_start(client, x, y1)
+    page.wait_for_timeout(step_ms)
+    for i in range(1, steps + 1):
+        cdp_touch_move(client, x, y1 + (y2 - y1) * i / steps)
+        page.wait_for_timeout(step_ms)
+    cdp_touch_end(client)
+    page.wait_for_timeout(520)
+
+
+def touch_tap(client, page, x: float, y: float) -> None:
+    cdp_touch_start(client, x, y)
+    page.wait_for_timeout(40)
+    cdp_touch_end(client)
+    page.wait_for_timeout(500)
+
+
+def mobile_snap(page) -> str:
+    return page.evaluate("() => document.getElementById('panel').dataset.snap || ''")
+
+
+def mobile_measure(page) -> dict:
+    return page.evaluate(MOBILE_SHEET_JS)
+
+
+def set_mobile_snap(page, snap: str) -> None:
+    page.evaluate("(snap) => { if (window.__gcSetSnap) window.__gcSetSnap(snap, false); }", snap)
+    page.wait_for_timeout(420)
+
+
+def g14_mobile_layout() -> tuple[bool, list[str], list[str]]:
+    problems: list[str] = []
+    detail: list[str] = []
+    shots: list[str] = []
+    cells = [
+        (360, 680, "dark", True, 22),
+        (390, 750, "light", True, 22),
+        (412, 800, "dark", False, 0),
+        (320, 568, "light", True, 0),
+        (640, 360, "dark", True, 0),
+        (740, 360, "light", True, 0),
+    ]
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        try:
+            for width, height, theme, image, effects in cells:
+                ctx, page, errors = mobile_open(browser, width, height, theme, image, effects)
+                try:
+                    cell = f"{theme} {width}x{height}"
+                    if errors:
+                        problems.extend(f"{cell} page error: {e}" for e in errors)
+                    data = mobile_measure(page)
+                    mobile = width <= 700
+                    if data["overflowX"] > 1:
+                        problems.append(f"{cell}: horizontal overflow {data['overflowX']}px")
+                    if data["docScroll"] != 0 or data["bodyScroll"] != 0:
+                        problems.append(f"{cell}: page scroll {data['docScroll']}/{data['bodyScroll']}")
+                    if mobile:
+                        if not data["status"]["inSheet"]:
+                            problems.append(f"{cell}: status box is not inside the sheet")
+                        if not data["status"]["inHandle"]:
+                            problems.append(f"{cell}: status box is not inside the sheet handle")
+                        if image and data["status"]["visible"] != 3:
+                            problems.append(f"{cell}: expected 3 visible status segments, got {data['status']['visible']}")
+                        if not data["handle"]:
+                            problems.append(f"{cell}: sheet handle missing")
+                        else:
+                            h = data["handle"]
+                            if h["role"] != "separator":
+                                problems.append(f"{cell}: handle role={h['role']!r}")
+                            if h["valuenow"] is None or h["valuemin"] is None or h["valuemax"] is None:
+                                problems.append(f"{cell}: handle aria-valuenow/min/max missing {h}")
+                            if h["tabindex"] != "0":
+                                problems.append(f"{cell}: handle is not keyboard focusable")
+                        if data["sheet"]["bottomGap"] > 1:
+                            problems.append(f"{cell}: sheet bottom gap {data['sheet']['bottomGap']:.1f}px")
+                        if data["preview"]["bottom"] > data["sheet"]["top"] + 1:
+                            problems.append(f"{cell}: sheet overlaps preview by {data['preview']['bottom'] - data['sheet']['top']:.1f}px")
+                        if data["preview"]["height"] < 1:
+                            problems.append(f"{cell}: preview region has no height")
+                        cr, ar = data["canvas"], data["preview"]
+                        if image and ar["height"] > 1 and (cr["left"] < ar["left"] - 1 or cr["right"] > ar["right"] + 1
+                                                           or cr["top"] < ar["top"] - 1 or cr["bottom"] > ar["bottom"] + 1):
+                            problems.append(f"{cell}: canvas {cr} is not inside preview {ar}")
+                        if image and ar["height"] > 1 and not (data["centerHit"] or {}).get("canvas"):
+                            problems.append(f"{cell}: canvas center hit {data['centerHit']}")
+                        if image and data["sheet"]["snap"] != "peek":
+                            problems.append(f"{cell}: image load default snap is {data['sheet']['snap']!r}, expected peek")
+                        if not image and data["sheet"]["snap"] != "half":
+                            problems.append(f"{cell}: empty state snap is {data['sheet']['snap']!r}, expected half")
+                        if height < 500 and data["preview"]["height"] < 120:
+                            problems.append(f"{cell}: landscape peek preview {data['preview']['height']:.1f}px < 120px")
+                        single_row = page.evaluate("() => !!document.getElementById('mobile-menu-btn')")
+                        if single_row:
+                            if data["topbar"]["height"] > 57:
+                                problems.append(f"{cell}: mobile top bar {data['topbar']['height']:.1f}px > 56px")
+                            if data["topbar"]["rows"] != 1:
+                                problems.append(f"{cell}: mobile top bar has {data['topbar']['rows']} rows")
+                            if height >= 500 and image and data["sheet"]["snap"] == "peek":
+                                frac = data["preview"]["height"] / max(1, data["viewport"]["vvH"])
+                                if frac < 0.70:
+                                    problems.append(f"{cell}: peek preview fraction {frac:.3f} < 0.70")
+                    path = EVIDENCE / f"m1-g14-{theme}-{width}x{height}-{data['sheet']['snap'] or 'none'}.png"
+                    EVIDENCE.mkdir(parents=True, exist_ok=True)
+                    page.screenshot(path=str(path))
+                    shots.append(str(path.relative_to(ROOT)))
+                    # Half snap: sheet grows, preview shrinks, still no overlap.
+                    if width <= 700:
+                        base = data
+                        if not image:
+                            set_mobile_snap(page, "peek")
+                            base = mobile_measure(page)
+                        set_mobile_snap(page, "half")
+                        half = mobile_measure(page)
+                        if half["sheet"]["height"] <= base["sheet"]["height"] + 1:
+                            problems.append(f"{cell}: half sheet did not grow ({base['sheet']['height']:.1f} -> {half['sheet']['height']:.1f})")
+                        if half["preview"]["height"] >= base["preview"]["height"]:
+                            problems.append(f"{cell}: preview did not shrink when the sheet grew")
+                        if half["preview"]["bottom"] > half["sheet"]["top"] + 1:
+                            problems.append(f"{cell}: half sheet overlaps preview")
+                        if half["overflowX"] > 1:
+                            problems.append(f"{cell}: half snap horizontal overflow {half['overflowX']}px")
+                        if page.evaluate("() => !!document.getElementById('mobile-menu-btn')") and height >= 500:
+                            frac = half["preview"]["height"] / max(1, half["viewport"]["vvH"])
+                            if frac < 0.40:
+                                problems.append(f"{cell}: half preview fraction {frac:.3f} < 0.40")
+                        path = EVIDENCE / f"m1-g14-{theme}-{width}x{height}-half.png"
+                        EVIDENCE.mkdir(parents=True, exist_ok=True)
+                        page.screenshot(path=str(path))
+                        shots.append(str(path.relative_to(ROOT)))
+                    elif width > 700:
+                        if data["sheet"]["x"] < width - 1:
+                            problems.append(f"{cell}: desktop-branch panel should stay in its column/overlay, got x={data['sheet']['x']:.1f}")
+                    detail.append(f"{cell}: snap={data['sheet']['snap']} sheet={data['sheet']['height']:.0f}px "
+                                  f"preview={data['preview']['height']:.0f}px topbar={data['topbar']['height']:.0f}px/{data['topbar']['rows']}row")
+                finally:
+                    ctx.close()
+        finally:
+            browser.close()
+    return not problems, problems, detail + shots
+
+
+def g15_mobile_gestures() -> tuple[bool, list[str], str]:
+    problems: list[str] = []
+    detail: list[str] = []
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        ctx, page, errors = mobile_open(browser, 360, 680, "dark", True, 0)
+        client = ctx.new_cdp_session(page)
+        try:
+            page.evaluate(MOBILE_INSTRUMENT_JS)
+            if errors:
+                problems.extend(f"page error: {e}" for e in errors)
+            if mobile_snap(page) != "peek":
+                problems.append(f"start snap {mobile_snap(page)!r}, expected peek")
+            handle = page.locator("#sheet-handle").bounding_box()
+            if not handle:
+                return False, ["sheet handle has no box"], "no handle"
+
+            def handle_center():
+                box = page.locator("#sheet-handle").bounding_box()
+                return box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
+
+            hx, hy = handle_center()
+            touch_swipe(client, page, hx, hy, hy - 190, 14, 16)
+            s1 = mobile_snap(page)
+            if s1 != "half":
+                problems.append(f"swipe up from peek landed on {s1!r}")
+            hx, hy = handle_center()
+            touch_swipe(client, page, hx, hy, hy + 190, 14, 16)
+            s2 = mobile_snap(page)
+            if s2 != "peek":
+                problems.append(f"swipe down from half landed on {s2!r}")
+            hx, hy = handle_center()
+            touch_swipe(client, page, hx, hy, hy - 90, 4, 10)
+            s3 = mobile_snap(page)
+            if s3 == "peek":
+                problems.append("fast flick up did not leave peek")
+            detail.append(f"swipes peek->{s1}->{s2}, flick->{s3}")
+
+            set_mobile_snap(page, "peek")
+            cycle = []
+            for _ in range(3):
+                grip = page.locator("#sheet-grip").bounding_box() or page.locator("#sheet-handle").bounding_box()
+                gx = grip["x"] + grip["width"] / 2
+                gy = grip["y"] + grip["height"] / 2
+                touch_tap(client, page, gx, gy)
+                cycle.append(mobile_snap(page))
+            if cycle != ["half", "full", "peek"]:
+                problems.append(f"grabber tap cycle {cycle}, expected ['half','full','peek']")
+            detail.append("tap cycle " + ",".join(cycle))
+
+            # List scroll must not move the sheet and must not leak to the page.
+            set_mobile_snap(page, "full")
+            content = page.locator(".panel-content").bounding_box()
+            sheet_before = mobile_measure(page)["sheet"]["height"]
+            scroll_before = page.evaluate("() => document.querySelector('.panel-content').scrollTop")
+            cx = content["x"] + content["width"] / 2
+            cy = content["y"] + content["height"] * 0.72
+            touch_swipe(client, page, cx, cy, cy - 150, 12, 16)
+            sheet_after = mobile_measure(page)["sheet"]["height"]
+            scroll_after = page.evaluate("() => document.querySelector('.panel-content').scrollTop")
+            if abs(sheet_after - sheet_before) > 1:
+                problems.append(f"list scroll moved the sheet {sheet_before:.1f}->{sheet_after:.1f}")
+            if scroll_after <= scroll_before:
+                problems.append(f"list did not scroll inside the sheet ({scroll_before}->{scroll_after})")
+            if mobile_measure(page)["docScroll"] != 0:
+                problems.append("page scrolled during list scroll")
+
+            # Handle drag must move the sheet and leave the list scroll alone.
+            page.evaluate("() => { document.querySelector('.panel-content').scrollTop = 220; }")
+            page.wait_for_timeout(120)
+            list_before = page.evaluate("() => document.querySelector('.panel-content').scrollTop")
+            hx, hy = handle_center()
+            touch_swipe(client, page, hx, hy, hy + 60, 10, 16)
+            list_after = page.evaluate("() => document.querySelector('.panel-content').scrollTop")
+            if abs(list_after - list_before) > 1:
+                problems.append(f"handle drag scrolled the list {list_before}->{list_after}")
+
+            # Pipeline: zero during drag, at most one render/base after settle.
+            set_mobile_snap(page, "peek")
+            page.evaluate("() => { window.__mp.renders = 0; window.__mp.base = 0; }")
+            hx, hy = handle_center()
+            cdp_touch_start(client, hx, hy + 10)
+            page.wait_for_timeout(30)
+            for i in range(1, 13):
+                cdp_touch_move(client, hx, hy + 10 - i * 14)
+                page.wait_for_timeout(16)
+            during = page.evaluate("() => ({r: window.__mp.renders, b: window.__mp.base})")
+            cdp_touch_end(client)
+            page.wait_for_timeout(900)
+            after = page.evaluate("() => ({r: window.__mp.renders, b: window.__mp.base})")
+            if during["r"] or during["b"]:
+                problems.append(f"pipeline ran during drag: render={during['r']} base={during['b']}")
+            if after["r"] - during["r"] > 1 or after["b"] - during["b"] > 1:
+                problems.append(f"pipeline after settle: render+{after['r'] - during['r']} base+{after['b'] - during['b']}")
+            detail.append(f"pipeline during={during} after={after}")
+
+            # Soft keyboard: shrink the visual viewport and keep the focused field visible.
+            set_mobile_snap(page, "full")
+            page.focus("#depth-num")
+            page.wait_for_timeout(250)
+            client.send("Emulation.setDeviceMetricsOverride", {
+                "width": 360, "height": 400, "deviceScaleFactor": 2,
+                "mobile": True, "screenWidth": 360, "screenHeight": 680,
+            })
+            page.wait_for_timeout(650)
+            kb = page.evaluate("""() => {
+              const el = document.getElementById('depth-num');
+              const r = el.getBoundingClientRect();
+              const vv = window.visualViewport;
+              const pc = document.querySelector('.panel-content').getBoundingClientRect();
+              return {top:r.top, bottom:r.bottom, left:r.left, right:r.right,
+                      vvH: vv ? vv.height : innerHeight, vvW: vv ? vv.width : innerWidth,
+                      pcTop: pc.top, pcBottom: pc.bottom, active: document.activeElement === el};
+            }""")
+            if not kb["active"]:
+                problems.append("focused input lost focus when the keyboard opened")
+            if kb["bottom"] > kb["vvH"] + 1 or kb["top"] < -1:
+                problems.append(f"focused input not visible above the keyboard: {kb}")
+            if kb["bottom"] > kb["pcBottom"] + 1:
+                problems.append(f"focused input outside the sheet list viewport: {kb}")
+            client.send("Emulation.clearDeviceMetricsOverride")
+            page.wait_for_timeout(500)
+            detail.append(f"keyboard vvH={kb['vvH']:.0f} input={kb['top']:.0f}..{kb['bottom']:.0f}")
+
+            # Compare split handle by touch, 20/20 at three zooms.
+            set_mobile_snap(page, "peek")
+            page.evaluate("() => { if (document.activeElement) document.activeElement.blur(); }")
+            page.keyboard.press("c")
+            page.wait_for_timeout(500)
+            if not page.evaluate("() => state.compare"):
+                problems.append("compare did not turn on before the touch test")
+            compare_runs = []
+            for zoom in (1, 2, 4):
+                page.evaluate("(z) => setZoom(z)", zoom)
+                page.wait_for_timeout(500)
+                grabbed = 0
+                for n in range(20):
+                    geom = page.evaluate("""() => {
+                      const s = document.getElementById('compare-slider').getBoundingClientRect();
+                      const a = document.getElementById('canvas-area').getBoundingClientRect();
+                      return {sl: s.left, sr: s.right, st: s.top, sb: s.bottom, sw: s.width,
+                              at: a.top, ab: a.bottom, al: a.left, ar: a.right};
+                    }""")
+                    lo = max(geom["st"], geom["at"]) + 4
+                    hi = min(geom["sb"], geom["ab"]) - 4
+                    sx = (geom["sl"] + geom["sr"]) / 2
+                    if hi <= lo or sx < geom["al"] or sx > geom["ar"]:
+                        break
+                    sy = lo + (hi - lo) * (0.25 + 0.5 * ((n % 5) / 4))
+                    before = page.evaluate("() => state.compareFrac")
+                    dx = 26 if n % 2 == 0 else -26
+                    cdp_touch_start(client, sx, sy)
+                    page.wait_for_timeout(30)
+                    cdp_touch_move(client, sx + dx * 0.5, sy)
+                    page.wait_for_timeout(20)
+                    cdp_touch_move(client, sx + dx, sy)
+                    page.wait_for_timeout(20)
+                    cdp_touch_end(client)
+                    page.wait_for_timeout(120)
+                    after = page.evaluate("() => state.compareFrac")
+                    if abs(after - before) > 0.0005:
+                        grabbed += 1
+                compare_runs.append((zoom, grabbed))
+                if grabbed != 20:
+                    problems.append(f"touch compare grab {zoom * 100}%: {grabbed}/20")
+            page.evaluate("() => { if (state.compare) { state.compare = false; scheduleRender(0); } }")
+            detail.append("compare " + ", ".join(f"{z*100}%={g}/20" for z, g in compare_runs))
+        finally:
+            ctx.close()
+            browser.close()
+    return not problems, problems, " | ".join(detail)
+
+
+def g16_touch_targets() -> tuple[bool, list[str], str]:
+    problems: list[str] = []
+    detail: list[str] = []
+    collect_js = r"""
+    () => {
+      const sel = 'button, select, input:not([type="hidden"]), textarea, a[href], [role="separator"], [role="button"], [role="menuitem"], [data-step], .palette-swatch';
+      const seen = new Set();
+      const out = [];
+      for (const el of document.querySelectorAll(sel)) {
+        if (!el.closest('.menubar, #panel')) continue;
+        if (seen.has(el)) continue;
+        seen.add(el);
+        if (el.disabled) continue;
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden' || el.hidden) continue;
+        if (cs.pointerEvents === 'none' || parseFloat(cs.opacity) === 0) continue;
+        if (el.getAttribute('aria-hidden') === 'true') continue;
+        if (el.classList.contains('preset-native')) continue;
+        if (el.closest('[hidden]')) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width < 0.5 || r.height < 0.5) continue;
+        if (el.offsetParent === null) continue;
+        out.push({
+          name: el.id || el.className || el.tagName.toLowerCase(),
+          tag: el.tagName.toLowerCase(),
+          text: (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 40),
+          w: +r.width.toFixed(1), h: +r.height.toFixed(1),
+          scope: el.closest('.menubar') ? 'topbar' : 'sheet'
+        });
+      }
+      return out;
+    }
+    """
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        ctx, page, errors = mobile_open(browser, 360, 680, "dark", True, 0)
+        try:
+            page.evaluate(EXPAND_SECTIONS_JS)
+            page.wait_for_timeout(400)
+            if errors:
+                problems.extend(f"page error: {e}" for e in errors)
+            seen: dict[tuple, dict] = {}
+            for snap in ("peek", "half", "full"):
+                set_mobile_snap(page, snap)
+                items = page.evaluate(collect_js)
+                detail.append(f"{snap}:{len(items)}")
+                for item in items:
+                    key = (item["name"], item["text"], item["tag"])
+                    seen.setdefault(key, item)
+                    if item["w"] < 44 - 0.5 or item["h"] < 44 - 0.5:
+                        problems.append(f"{snap} {item['scope']} {item['tag']} {item['name']!r} {item['text']!r} is {item['w']}x{item['h']}, needs >=44x44")
+            detail.append(f"unique={len(seen)}")
+            # Once more with every section expanded and the effects list populated.
+            page.evaluate(SETUP_EFFECTS_JS)
+            page.evaluate(EXPAND_SECTIONS_JS)
+            page.wait_for_timeout(900)
+            set_mobile_snap(page, "full")
+            items = page.evaluate(collect_js)
+            for item in items:
+                key = (item["name"], item["text"], item["tag"])
+                seen.setdefault(key, item)
+                if item["w"] < 44 - 0.5 or item["h"] < 44 - 0.5:
+                    problems.append(f"full+effects {item['scope']} {item['tag']} {item['name']!r} {item['text']!r} is {item['w']}x{item['h']}, needs >=44x44")
+            detail.append(f"unique+effects={len(seen)}")
+        finally:
+            ctx.close()
+            browser.close()
+    return not problems, problems, " ".join(detail)
+
+
+def g17_desktop_unchanged() -> tuple[bool, list[str], str]:
+    baseline_path = Path(__file__).with_name("desktop_baseline.json")
+    if not baseline_path.exists():
+        return False, [f"missing {baseline_path}"], "no baseline"
+    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    sels = {"menubar": ".menubar", "panel": "#panel", "preview": "#canvas-area",
+            "status": "#status-bar", "zoom": ".zoom-controls"}
+    fix = """() => {
+      document.getElementById('status-zoom').textContent = '100%';
+      document.getElementById('status-size').textContent = '320×240';
+      document.getElementById('status-time').textContent = '100ms';
+    }"""
+    rects_js = """(sels) => {
+      const out = {};
+      for (const [k, sel] of Object.entries(sels)) {
+        const el = document.querySelector(sel);
+        if (!el) { out[k] = null; continue; }
+        const r = el.getBoundingClientRect();
+        out[k] = {x:+r.x.toFixed(2), y:+r.y.toFixed(2), w:+r.width.toFixed(2), h:+r.height.toFixed(2)};
+      }
+      return out;
+    }"""
+    problems: list[str] = []
+    checked = 0
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        try:
+            for size in ("1280x720", "701x800"):
+                width, height = (int(v) for v in size.split("x"))
+                ctx = browser.new_context(viewport={"width": width, "height": height},
+                                          color_scheme="dark", locale="en-US", reduced_motion="reduce")
+                ctx.add_init_script("try{localStorage.setItem('glyphcraft-theme','dark')}catch(e){}")
+                page = ctx.new_page()
+                try:
+                    page.goto(BASE_URL + "/index.html", wait_until="load", timeout=30000)
+                    page.wait_for_timeout(400)
+                    page.set_input_files("#file-input", str(FIXTURE))
+                    page.wait_for_selector(".canvas-area.has-content", timeout=30000)
+                    page.wait_for_timeout(700)
+                    states = [("closed", None)]
+                    if width == 701:
+                        states.append(("open", "#panel-toggle-btn"))
+                    for state, click in states:
+                        if click:
+                            page.click(click)
+                            page.wait_for_timeout(400)
+                        page.evaluate(fix)
+                        page.wait_for_timeout(60)
+                        got = page.evaluate(rects_js, sels)
+                        want = baseline[size][state]
+                        for key in sels:
+                            checked += 1
+                            a, b = got.get(key), want.get(key)
+                            if a is None or b is None:
+                                problems.append(f"{size} {state} {key}: missing rect {a} vs {b}")
+                                continue
+                            if any(abs(a[k] - b[k]) > 1.0 for k in ("x", "y", "w", "h")):
+                                problems.append(f"{size} {state} {key}: {a} != {b}")
+                finally:
+                    ctx.close()
+        finally:
+            browser.close()
+    return not problems, problems, f"{checked} rect(s)"
+
+
+G18_CONTRAST_JS = r"""
+() => {
+  function parse(str) {
+    const m = String(str || '').match(/rgba?\(([^)]+)\)/);
+    if (!m) return null;
+    const p = m[1].split(',').map(Number);
+    return {r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1};
+  }
+  function blend(fg, bg) {
+    if (!fg) return null;
+    if (!bg || fg.a >= 1) return fg;
+    return {r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a), a: 1};
+  }
+  function lum(c) {
+    if (!c) return 0;
+    const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+  }
+  function ratio(a, b) {
+    const l1 = lum(a), l2 = lum(b);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
+  function bgOf(el) {
+    let node = el;
+    let acc = null;
+    while (node && node.nodeType === 1) {
+      const c = parse(getComputedStyle(node).backgroundColor);
+      if (c && c.a > 0.01) {
+        acc = acc ? blend(acc, c) : c;
+        if (c.a >= 0.99) return acc;
+      }
+      node = node.parentElement;
+    }
+    return acc || {r: 255, g: 255, b: 255, a: 1};
+  }
+  function pair(fgEl, bgEl, prop) {
+    const fg = parse(getComputedStyle(fgEl)[prop || 'color']);
+    const bg = bgOf(bgEl || fgEl);
+    return +ratio(blend(fg, bg), bg).toFixed(2);
+  }
+  const menu = document.getElementById('dropdown-mobile');
+  const item = menu ? menu.querySelector('.menu-item') : null;
+  const handle = document.getElementById('sheet-handle');
+  const grip = document.getElementById('sheet-grip');
+  const status = document.getElementById('status-bar');
+  const seg = status ? status.querySelector('.status-seg') : null;
+  const btn = document.getElementById('mobile-menu-btn');
+  return {
+    menuText: item ? pair(item) : null,
+    menuBorder: menu ? pair(menu, menu, 'borderTopColor') : null,
+    handleGrip: handle && grip ? pair(grip, handle) : null,
+    handleBorder: handle ? pair(handle, handle, 'borderBottomColor') : null,
+    statusText: seg ? pair(seg, status) : null,
+    menuButton: btn ? pair(btn, btn) : null
+  };
+}
+"""
+
+
+def g18_menu_reachability() -> tuple[bool, list[str], str]:
+    problems: list[str] = []
+    detail: list[str] = []
+    menu_js = """(ids) => {
+      const out = [];
+      ids.forEach(id => {
+        const root = document.getElementById(id);
+        if (!root) return;
+        root.querySelectorAll('.menu-item[data-action]').forEach(el => {
+          const group = el.dataset.group
+            || (id === 'dropdown-file' ? 'File' : id === 'dropdown-view' ? 'View' : 'Edit');
+          const span = el.querySelector('span');
+          const key = el.querySelector('.menu-key');
+          out.push({group, action: el.dataset.action || '', text: (span || el).textContent.trim(),
+                    key: key ? key.textContent.trim() : ''});
+        });
+      });
+      return out;
+    }"""
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        try:
+            ctx = browser.new_context(viewport={"width": 1280, "height": 720}, color_scheme="dark",
+                                      locale="en-US", reduced_motion="reduce")
+            page = ctx.new_page()
+            page.goto(BASE_URL + "/index.html", wait_until="load", timeout=30000)
+            page.wait_for_timeout(500)
+            desktop = page.evaluate(menu_js, ["dropdown-file", "dropdown-view", "dropdown-edit"])
+            ctx.close()
+
+            theme_ratios = {}
+            for theme in ("dark", "light"):
+                ctx, page, errors = mobile_open(browser, 360, 680, theme, True, 0)
+                try:
+                    if errors:
+                        problems.extend(f"{theme} page error: {e}" for e in errors)
+                    if page.locator("#mobile-menu-btn").count() == 0:
+                        problems.append(f"{theme} 360: mobile menu button missing")
+                        continue
+                    page.click("#mobile-menu-btn")
+                    page.wait_for_timeout(350)
+                    visible = page.evaluate("""() => {
+                      const dd = document.getElementById('dropdown-mobile');
+                      if (!dd) return null;
+                      const r = dd.getBoundingClientRect();
+                      const items = [];
+                      for (const el of dd.querySelectorAll('.menu-item[data-action]')) {
+                        el.scrollIntoView({block: 'nearest'});
+                        const ir = el.getBoundingClientRect();
+                        items.push({action: el.dataset.action, w: ir.width, h: ir.height,
+                                    inView: ir.left >= -1 && ir.right <= innerWidth + 1 && ir.top >= -1 && ir.bottom <= innerHeight + 1});
+                      }
+                      dd.scrollTop = 0;
+                      return {left:r.left, right:r.right, top:r.top, bottom:r.bottom,
+                              open: dd.classList.contains('open'), items};
+                    }""")
+                    if not visible or not visible["open"]:
+                        problems.append(f"{theme} 360: mobile menu did not open")
+                        continue
+                    if visible["left"] < -1 or visible["right"] > 361:
+                        problems.append(f"{theme} 360: mobile menu outside viewport {visible}")
+                    bad = [i for i in visible["items"] if i["h"] < 44 or not i["inView"]]
+                    if bad:
+                        problems.append(f"{theme} 360: mobile menu items clipped/small {bad[:5]}")
+                    mobile = page.evaluate(menu_js, ["dropdown-mobile"])
+                    if mobile != desktop:
+                        problems.append(f"{theme} 360: reachable menu list differs from desktop: {len(mobile)} vs {len(desktop)}")
+                        only_desktop = [d for d in desktop if d not in mobile]
+                        only_mobile = [m for m in mobile if m not in desktop]
+                        if only_desktop:
+                            problems.append(f"  missing on mobile: {only_desktop}")
+                        if only_mobile:
+                            problems.append(f"  extra on mobile: {only_mobile}")
+                    body = page.evaluate(G18_CONTRAST_JS)
+                    theme_ratios[theme] = body
+                    if body["menuText"] is None or body["menuText"] < 4.5:
+                        problems.append(f"{theme} 360: mobile menu text contrast {body['menuText']}")
+                    if body["menuBorder"] is None or body["menuBorder"] < 3:
+                        problems.append(f"{theme} 360: mobile menu border contrast {body['menuBorder']}")
+                    if body["statusText"] is None or body["statusText"] < 4.5:
+                        problems.append(f"{theme} 360: status text contrast {body['statusText']}")
+                    if body["handleGrip"] is None or body["handleGrip"] < 3:
+                        problems.append(f"{theme} 360: sheet grip contrast {body['handleGrip']}")
+                    if body["menuButton"] is None or body["menuButton"] < 3:
+                        problems.append(f"{theme} 360: menu button icon contrast {body['menuButton']}")
+                    page.keyboard.press("Escape")
+                    page.wait_for_timeout(150)
+                finally:
+                    ctx.close()
+            detail.append(f"desktop items={len(desktop)}")
+            detail.append("contrast " + json.dumps(theme_ratios))
+        finally:
+            browser.close()
+    return not problems, problems, " | ".join(detail)
+
+
 def main() -> int:
     global BASE_URL
     ensure_fixtures()
@@ -1925,11 +2686,41 @@ def main() -> int:
         for problem in g13_problems:
             print("  " + problem)
         results["G13"] = {"pass": g13_ok, "problems": g13_problems}
+
+        g14_ok, g14_problems, g14_detail = g14_mobile_layout()
+        print(("G14 PASS" if g14_ok else "G14 FAIL") + " mobile layout: " + " | ".join(g14_detail[:12]))
+        for problem in g14_problems[:60]:
+            print("  " + problem)
+        results["G14"] = {"pass": g14_ok, "problems": g14_problems}
+
+        g15_ok, g15_problems, g15_detail = g15_mobile_gestures()
+        print(("G15 PASS" if g15_ok else "G15 FAIL") + " mobile gestures: " + g15_detail)
+        for problem in g15_problems[:40]:
+            print("  " + problem)
+        results["G15"] = {"pass": g15_ok, "problems": g15_problems}
+
+        g16_ok, g16_problems, g16_detail = g16_touch_targets()
+        print(("G16 PASS" if g16_ok else "G16 FAIL") + " touch targets: " + g16_detail)
+        for problem in g16_problems[:60]:
+            print("  " + problem)
+        results["G16"] = {"pass": g16_ok, "problems": g16_problems}
+
+        g17_ok, g17_problems, g17_detail = g17_desktop_unchanged()
+        print(("G17 PASS" if g17_ok else "G17 FAIL") + " desktop unchanged: " + g17_detail)
+        for problem in g17_problems[:40]:
+            print("  " + problem)
+        results["G17"] = {"pass": g17_ok, "problems": g17_problems}
+
+        g18_ok, g18_problems, g18_detail = g18_menu_reachability()
+        print(("G18 PASS" if g18_ok else "G18 FAIL") + " menu reachability: " + g18_detail)
+        for problem in g18_problems[:40]:
+            print("  " + problem)
+        results["G18"] = {"pass": g18_ok, "problems": g18_problems}
     finally:
         httpd.shutdown()
         httpd.server_close()
 
-    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13") if not results.get(name, {}).get("pass")]
+    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14", "G15", "G16", "G17", "G18") if not results.get(name, {}).get("pass")]
     print("")
     print("GATE " + ("PASS" if not failed else "FAIL") + " " + ", ".join(failed))
     return 0 if not failed else 1

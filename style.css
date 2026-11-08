@@ -41,7 +41,7 @@
   --accent-hover: #b5473c;
   --accent-text: #e08b7f;
   --gradient-primary: linear-gradient(180deg, var(--accent-hover) 0%, var(--accent) 100%);
-  --gradient-primary-hover: linear-gradient(180deg, #c2564b 0%, #9b3030 100%);
+  --gradient-primary-hover: linear-gradient(180deg, #b8473f 0%, #9b3030 100%);
 
   /* Menus are the inverse of the page: dark page -> light menu. */
   --menu-bg: #f4efe2;
@@ -499,6 +499,11 @@ h1, h2, h3, h4, h5, h6, .section-title, .logo, .btn {
 }
 
 /* ---------------- Panel ---------------- */
+.sheet-handle { display: none; }
+.sheet-grip { display: none; }
+.mobile-menu { display: none; }
+.mobile-menu-btn svg { width: 20px; height: 20px; display: block; }
+.sheet-status-slot { min-width: 0; flex: 1; display: flex; }
 .panel {
   position: relative;
   min-height: 0;
@@ -1256,7 +1261,7 @@ body.reorder-active * { cursor: grabbing !important; }
   .status-seg { padding: 0 var(--space-1); }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 701px) and (max-width: 768px) {
   .workspace { grid-template-columns: 1fr; }
   .panel {
     position: absolute;
@@ -1278,6 +1283,161 @@ body.reorder-active * { cursor: grabbing !important; }
   .menubar-right { flex: 1 1 100%; justify-content: flex-end; flex-wrap: wrap; row-gap: 4px; }
   .menubar { row-gap: 0; }
   .menu-dropdown { min-width: 210px; }
+}
+
+/* Mobile layout: top bar, preview, bottom sheet in one column. */
+@media (max-width: 700px) {
+  :root {
+    --gc-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --gc-sheet-height: 45dvh;
+  }
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  .menubar {
+    flex-wrap: nowrap;
+    gap: var(--space-1);
+    height: calc(56px + env(safe-area-inset-top, 0px));
+    min-height: 56px;
+    padding: 0 var(--space-2);
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .menubar-left { gap: var(--space-1); min-width: 0; }
+  .menubar-left > .menu:not(.mobile-menu) { display: none; }
+  .menubar-right { gap: var(--space-1); }
+  .mobile-menu { display: block; }
+  .mobile-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0;
+    background: var(--surface-panel);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .mobile-menu-btn:hover { background: var(--surface-hover); border-color: var(--text-muted); }
+  .mobile-menu-btn:active { background: var(--surface-active); }
+  .mobile-menu-btn[aria-expanded="true"] { background: var(--surface-active); }
+  .mobile-menu-btn:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+  .mobile-dropdown {
+    position: fixed;
+    top: calc(56px + env(safe-area-inset-top, 0px) - 2px);
+    left: var(--space-2);
+    right: var(--space-2);
+    min-width: 0;
+    max-width: none;
+    max-height: calc(var(--gc-vvh, 100dvh) - 70px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .menubar-right > .icon-btn {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+  }
+  .zoom-controls .icon-btn { min-width: 44px; width: 44px; min-height: 44px; height: 44px; }
+  .zoom-level { min-width: 64px; min-height: 44px; }
+  .app {
+    height: 100vh;
+    height: var(--gc-vvh, 100dvh);
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .workspace {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .canvas-area { flex: 1 1 auto; min-height: 0; }
+  .panel {
+    position: relative;
+    inset: auto;
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    height: var(--gc-sheet-height);
+    min-height: 0;
+    overflow: hidden;
+    border-inline-start: none;
+    border-top: 1px solid var(--border-subtle);
+    box-shadow: none;
+    padding-bottom: var(--gc-safe-bottom);
+    transition: height 0.2s ease;
+    z-index: 40;
+  }
+  .panel.open { transform: none; }
+  .panel.collapsed { width: 100%; }
+  .sheet-handle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    min-height: 44px;
+    height: 44px;
+    padding: 0 var(--space-3);
+    background: var(--surface-panel);
+    border-bottom: 1px solid var(--border-subtle);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+  }
+  .sheet-handle.dragging { cursor: grabbing; }
+  .sheet-grip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    color: var(--text-secondary);
+    background-image: radial-gradient(circle, currentColor 1.6px, transparent 1.7px);
+    background-size: 6px 6px;
+    background-position: center;
+    background-repeat: repeat;
+  }
+  .sheet-status-slot .status-group { height: 44px; width: 100%; font-size: 11px; }
+  .sheet-status-slot .status-seg { padding: 0 var(--space-2); }
+  .panel-content {
+    padding: 0 var(--space-3) var(--space-4);
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .panel-actionbar {
+    margin: 0 calc(var(--space-3) * -1) var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    min-height: 60px;
+  }
+  .panel-actionbar .btn { min-height: 44px; }
+  .section-header { min-height: 44px; cursor: pointer; }
+  .section-title { font-size: 16px; color: var(--text-primary); padding: var(--space-2) 0; }
+  .section-title::before { color: var(--text-secondary); }
+  .section-reset { font-size: 14px; color: var(--text-primary); }
+  .panel input, .panel select, .panel textarea,
+  .panel-search, .preset-search { font-size: 16px; }
+  .effect-item .param input[type="number"] { width: 64px; font-size: 16px; }
+  .effect-item .param select { font-size: 16px; }
+  .step-btn { flex: 0 0 44px; min-height: 44px; }
+  .stepper { width: 46px; height: 90px; }
+  .checkbox { min-height: 44px; }
+  .preset-btn, .btn-small { min-height: 44px; }
+  .presets-bar, .presets-actions { gap: var(--space-1); }
+  .menu-item { min-height: 44px; }
+}
+
+@media (max-width: 380px) {
+  .menubar { padding-inline: var(--space-1); gap: 2px; }
+  .menubar-left { gap: 2px; }
+  .menubar-right { gap: 2px; }
+  .zoom-level { min-width: 56px; }
 }
 
 @media (max-width: 420px) {

@@ -1,0 +1,24 @@
+M1-1 isolated checks (before M1-2 top bar), GATE_TASK=m1-1:
+
+G14 PASS (20.6s)
+  dark 360x680:  snap=peek sheet=105px preview=478px topbar=97px/2row
+  light 390x750: snap=peek sheet=105px preview=548px topbar=97px/2row
+  dark 412x800:  snap=half sheet=360px preview=343px topbar=97px/2row
+  light 320x568: snap=peek sheet=105px preview=366px topbar=97px/2row
+  dark 640x360:  snap=peek sheet=105px preview=206px topbar=49px/2row
+  light 740x360: desktop branch (panel offscreen), 2 rows
+G15 PASS (32.4s)
+  swipes peek->half->peek; flick->half; tap cycle half,full,peek
+  pipeline during={r:0,b:0} after={r:0,b:0}
+  keyboard vvH=400 input=348..392 visible
+  compare 100%=20/20, 200%=20/20, 400%=20/20
+G16 PASS (7.8s)
+  peek:263 half:263 full:263 unique=202 unique+effects=202
+G17 PASS (5.2s)
+  15 desktop rects identical to tests/gate/desktop_baseline.json
+
+RED before M1-1 (docs/evidence/m1-1/red.txt):
+  G14 failed: no handle, status outside sheet, sheet overlaps preview 535/605px
+  G16 failed: step buttons 42x21
+  G15 crashed on the missing #sheet-handle
+  G17 passed before and after (desktop guard)

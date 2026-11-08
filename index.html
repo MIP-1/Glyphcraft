@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="color-scheme" content="dark light">
   <title>Glyphcraft</title>
   <script>
@@ -25,6 +25,12 @@
   <div class="app">
     <header class="menubar">
       <div class="menubar-left">
+        <div class="menu mobile-menu" id="mobile-menu-wrap">
+          <button class="menu-btn mobile-menu-btn" id="mobile-menu-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="dropdown-mobile" aria-label="Menu" title="Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+          <div class="menu-dropdown mobile-dropdown" id="dropdown-mobile" role="menu" aria-label="Menu"></div>
+        </div>
         <div class="menu">
           <button class="menu-btn" id="menu-file" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="dropdown-file">File</button>
           <div class="menu-dropdown" id="dropdown-file" role="menu" aria-label="File">
@@ -116,7 +122,13 @@
         </div>
       </section>
 
-      <aside class="panel" id="panel">
+      <aside class="panel" id="panel" data-snap="half">
+        <div class="sheet-handle" id="sheet-handle" role="separator" aria-orientation="horizontal"
+             aria-label="Controls sheet position" aria-valuemin="0" aria-valuemax="2" aria-valuenow="1"
+             aria-valuetext="half" tabindex="0">
+          <span class="sheet-grip" id="sheet-grip" aria-hidden="true"></span>
+          <span class="sheet-status-slot" id="sheet-status-slot"></span>
+        </div>
         <div class="panel-content">
           <header class="panel-header">
             <h1 class="logo">Glyphcraft</h1>

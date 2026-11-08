@@ -9,13 +9,17 @@ CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
 `reorder.js` → `app.js`). Git keeps the readable sources; `npm run build`
 writes an optional minified `dist/` for publishing.
 
-## Status — 2026-11-04
+## Status — 2026-11-08
 
 **Current status:** PASS — Part 1, Part 1B, Part 1C, P2-1 and its post-PASS
-cleanup are complete. P2-2 is next and not started. Tag `P2-1-pass` marks the
-P2-1 closeout; tag `P2-1-cleanup-pass` marks the cleanup commit. `npm run gate`
-is green three times in a row on the cleaned tree
-(`docs/evidence/cleanup/gate-run-8/9/10.log`), with paired performance budgets.
+cleanup, and Part M are complete. P2-2 is next and not started. Tag `P2-1-pass`
+marks the P2-1 closeout; tag `P2-1-cleanup-pass` marks the cleanup commit;
+tags `M1-1-pass` and `M1-2-pass` mark the single Part M commit on `main`
+(both tasks share one commit because M1-2 reuses the M1-1 mobile branch;
+`docs/GATE.md` records the combined evidence honestly; the tag resolves to the
+exact commit with `git rev-parse M1-2-pass`).
+`npm run gate` is green three times in a row on the final tree
+(`docs/evidence/m1-2/gate-run-1/2/3.log`).
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -31,6 +35,8 @@ is green three times in a row on the cleaned tree
 | C1 / C2 / C3 audit, video control, multi-effect cost | PASS | one commit, tags `C1-audit-pass`, `C2-video-control-pass`, `C3-perf-pass` |
 | P2-1 before/after lag | PASS | tag `P2-1-pass`, gate runs 5–7, `docs/GATE.md` P2-1 |
 | P2-1 post-PASS cleanup + publish build | PASS | tag `P2-1-cleanup-pass`, gate runs 8–10, `docs/GATE.md` cleanup |
+| M1-1 mobile bottom sheet | PASS | Part M commit, tag `M1-1-pass` |
+| M1-2 single-row mobile top bar | PASS | same commit, tag `M1-2-pass` |
 | P2-2 Worker + OffscreenCanvas | NOT STARTED | no `Worker` or `OffscreenCanvas` in the repo |
 | P2-3 fast preview | NOT STARTED | preview is always downscaled |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
@@ -40,40 +46,57 @@ is green three times in a row on the cleaned tree
 
 **Done in this step**
 
-- P2-1 closed as PASS. `drawOriginal` redrew the 4K source into a clipped
-  context on every pointer move (9.9 ms/frame in software raster). It is now
-  downscaled once per preview size into `originalBitmap` (0.07 ms/frame); the
-  4K `render()` median fell 10.2 ms → 0.6 ms. The split drag repaints only the
-  changed band and G11 proves it pixel-identical to the full composite.
-- Gate rules audited: G11 drag and G13 playback now compare paired windows,
-  G13 gates the best of five windows, and both still fail a deliberately
-  slowed build (logs in `docs/evidence/rule-red/`).
-- 62 screenshots opened and described, 7/7 break-it cases (4K, zoom+pan,
-  resize mid-drag, undo/redo mid-drag, theme mid-drag, 360 px), 169 existing
-  tests, G1–G13 green in runs 5, 6 and 7.
-- Post-PASS cleanup: removed the explanatory comments and three dead functions;
-  added `npm run build` (`dist/` JS 176,581 → 161,200 bytes) and
-  `tools/dist_smoke.py`, which loads source and dist in fresh contexts and gets
-  the same canvas hash (`651948841`). Measured neutral skips: Sepia amount 0
-  went 13.0 → 0.0 ms and Thermal amount 0 17.6 → 0.0 ms, byte-identical; a
-  Retro rewrite measured 1.0× and was reverted. All 62 cleanup screenshots
-  were re-opened against the P2-1 states with no visual change. Full gates 8,
-  9 and 10 are **PASS** on the cleaned tree.
+- Mobile now means viewport width ≤700 px in any orientation. The layout is
+  one column: one-row top bar, preview, bottom sheet. The panel keeps its DOM,
+  controls and logic, and never covers the preview: the preview shrinks as the
+  sheet grows. Snaps come from `window.visualViewport.height` (peek = handle +
+  sticky action bar + safe area, measured 105 px at 360; half = 45%; full =
+  88%). Dragging the handle uses Pointer Events with capture and
+  position/velocity snapping; the grabber tap cycles peek → half → full. The
+  handle is an ARIA separator with ArrowUp/Down and Enter/Space. The status box
+  moved into the handle row as the same three-segment component.
+- Soft keyboard handling uses `visualViewport` resize/scroll, `viewport-fit=cover`
+  and safe-area padding, and scrolls the focused field into view. Mobile touch
+  targets are ≥44×44, inputs are ≥16 px, numeric fields get
+  `inputmode="decimal"`, and effect reordering is long-press only.
+- The top bar is a single 56 px row (plus safe-area top): menu, zoom group,
+  theme button and sheet toggle. File/View/Edit live in the mobile menu with
+  the inverse palette, all 14 commands and shortcut labels, and unchanged
+  keyboard shortcuts. At 320 px the padding and gaps shrink first; nothing
+  wraps, clips or disappears. Widths 701+ keep the previous layout, including
+  the 701–768 overlay branch.
+- New permanent checks G14–G18: mobile layout, gestures (CDP touch), touch
+  targets, desktop-unchanged guard and menu reachability/contrast. G8's mobile
+  rule changed deliberately from "two rows allowed if status-only" to "exactly
+  one row at ≤700 px", with a RED proof on a broken build.
+- 169 existing tests, G1–G13, contrast (9068 pairs, 0 violations), the publish
+  build and `tools/dist_smoke.py` (same canvas hash `651948841`) are green.
+  Baseline evidence is in `docs/evidence/m1-0/`; RED/green logs, screenshots
+  and 14/14 break-it cases are in `docs/evidence/m1-1/` and `m1-2/`.
 
 **Next steps**
 
 1. Start P2-2: move the effect pipeline to a Worker with OffscreenCanvas, add
    its acceptance check first, and keep G11/G13 green.
 2. Then P2-3 fast preview, followed by P2-4 to P2-6 in order.
-3. Re-run the full gate three times after each task and open every screenshot.
+3. Mobile landscape refinement (height <500 px): the sheet and all controls
+   work today (640×360 peek preview is 199 px), but add a landscape-specific
+   snap once real-device testing is available.
+4. Re-run the full gate three times after each task and open every screenshot.
 
 **HUMAN-CHECK**
 
+- Real Android Firefox/Chrome and iOS Safari: sheet drag feel, grabber tap
+  cycle, soft keyboard and URL-bar collapse, and real-device frame rate are not
+  claimed by the headless Chromium gate.
+- Real touch hardware: Compare split grab at 100/200/400% and the sheet handle
+  gesture. Headless CDP touch reports 20/20 grabs and 0 pipeline calls during a
+  drag.
+- Desktop: confirm 701–768 px still shows the old overlay and 1280 px is
+  unchanged (G17 compares 15 rects, tolerance 1 px).
 - Drag the split on a 4K image in a real browser: it must stay under the
   pointer and stay correct after zoom, pan, resize, a value change, undo/redo
   and a theme switch.
-- Confirm six-effect video playback on the real GPU; G13 runs in headless
-  software raster with a paired zero-effect control.
 
 ## Run it
 

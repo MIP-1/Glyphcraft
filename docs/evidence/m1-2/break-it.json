@@ -1,0 +1,319 @@
+[
+  {
+    "case": "text zoom 200%",
+    "pass": true,
+    "detail": {
+      "w": 360,
+      "h": 680,
+      "vvH": 680,
+      "barH": 56,
+      "rows": 1,
+      "snap": "peek",
+      "sheetH": 105,
+      "sheetTop": 575,
+      "previewH": 519,
+      "previewBottom": 575,
+      "overflowX": 0,
+      "docScroll": 0,
+      "theme": "dark",
+      "statusVisible": 3
+    }
+  },
+  {
+    "case": "keyboard open while editing value",
+    "pass": true,
+    "detail": {
+      "active": true,
+      "top": 348,
+      "bottom": 392,
+      "vvH": 400,
+      "docScroll": 0
+    }
+  },
+  {
+    "case": "rotate mid-drag",
+    "pass": true,
+    "detail": {
+      "rot": {
+        "w": 680,
+        "h": 360
+      },
+      "m": {
+        "w": 680,
+        "h": 360,
+        "vvH": 360,
+        "barH": 56,
+        "rows": 1,
+        "snap": "full",
+        "sheetH": 304,
+        "sheetTop": 56,
+        "previewH": 0,
+        "previewBottom": 56,
+        "overflowX": 0,
+        "docScroll": 0,
+        "theme": "dark",
+        "statusVisible": 3
+      }
+    }
+  },
+  {
+    "case": "fast flick past full clamps to full",
+    "pass": true,
+    "detail": {
+      "m": {
+        "w": 360,
+        "h": 680,
+        "vvH": 680,
+        "barH": 56,
+        "rows": 1,
+        "snap": "full",
+        "sheetH": 598,
+        "sheetTop": 82,
+        "previewH": 26,
+        "previewBottom": 82,
+        "overflowX": 0,
+        "docScroll": 0,
+        "theme": "dark",
+        "statusVisible": 3
+      },
+      "heights": {
+        "snap": "full"
+      }
+    }
+  },
+  {
+    "case": "drag sheet with menu open",
+    "pass": true,
+    "detail": {
+      "m": {
+        "w": 360,
+        "h": 680,
+        "vvH": 680,
+        "barH": 56,
+        "rows": 1,
+        "snap": "peek",
+        "sheetH": 105,
+        "sheetTop": 575,
+        "previewH": 519,
+        "previewBottom": 575,
+        "overflowX": 0,
+        "docScroll": 0,
+        "theme": "dark",
+        "statusVisible": 3
+      },
+      "menu": {
+        "open": true,
+        "left": 8,
+        "right": 352,
+        "top": 54,
+        "bottom": 664
+      },
+      "note": "the open menu owns the touch; sheet stays put rather than fighting it"
+    }
+  },
+  {
+    "case": "theme switch mid-drag",
+    "pass": true,
+    "detail": {
+      "w": 360,
+      "h": 680,
+      "vvH": 680,
+      "barH": 56,
+      "rows": 1,
+      "snap": "half",
+      "sheetH": 306,
+      "sheetTop": 374,
+      "previewH": 318,
+      "previewBottom": 374,
+      "overflowX": 0,
+      "docScroll": 0,
+      "theme": "light",
+      "statusVisible": 3
+    }
+  },
+  {
+    "case": "undo/redo at peek",
+    "pass": true,
+    "detail": {
+      "before": {
+        "w": 360,
+        "h": 680,
+        "vvH": 680,
+        "barH": 56,
+        "rows": 1,
+        "snap": "peek",
+        "sheetH": 105,
+        "sheetTop": 575,
+        "previewH": 519,
+        "previewBottom": 575,
+        "overflowX": 0,
+        "docScroll": 0,
+        "theme": "dark",
+        "statusVisible": 3
+      },
+      "after": {
+        "w": 360,
+        "h": 680,
+        "vvH": 680,
+        "barH": 56,
+        "rows": 1,
+        "snap": "peek",
+        "sheetH": 105,
+        "sheetTop": 575,
+        "previewH": 519,
+        "previewBottom": 575,
+        "overflowX": 0,
+        "docScroll": 0,
+        "theme": "dark",
+        "statusVisible": 3
+      }
+    }
+  },
+  {
+    "case": "width 320 menu reachable",
+    "pass": true,
+    "detail": {
+      "count": 14,
+      "bad": [],
+      "dd": {
+        "x": 8,
+        "y": 54,
+        "width": 304,
+        "height": 498,
+        "top": 54,
+        "right": 312,
+        "bottom": 552,
+        "left": 8
+      }
+    }
+  },
+  {
+    "case": "reduced motion instant, normal animated",
+    "pass": true,
+    "detail": {
+      "reduce": "1e-05s",
+      "normal": "0.2s"
+    }
+  },
+  {
+    "case": "empty state",
+    "pass": true,
+    "detail": {
+      "w": 390,
+      "h": 750,
+      "vvH": 750,
+      "barH": 56,
+      "rows": 1,
+      "snap": "half",
+      "sheetH": 338,
+      "sheetTop": 412,
+      "previewH": 356,
+      "previewBottom": 412,
+      "overflowX": 0,
+      "docScroll": 0,
+      "theme": "dark",
+      "statusVisible": 1
+    }
+  },
+  {
+    "case": "video loaded defaults to peek",
+    "pass": true,
+    "detail": {
+      "m": {
+        "w": 390,
+        "h": 750,
+        "vvH": 750,
+        "barH": 56,
+        "rows": 1,
+        "snap": "peek",
+        "sheetH": 105,
+        "sheetTop": 645,
+        "previewH": 589,
+        "previewBottom": 645,
+        "overflowX": 0,
+        "docScroll": 0,
+        "theme": "dark",
+        "statusVisible": 3
+      },
+      "touched": false
+    }
+  },
+  {
+    "case": "22 effects scrolled in full",
+    "pass": true,
+    "detail": {
+      "before": {
+        "w": 360,
+        "h": 680,
+        "vvH": 680,
+        "barH": 56,
+        "rows": 1,
+        "snap": "full",
+        "sheetH": 598,
+        "sheetTop": 82,
+        "previewH": 26,
+        "previewBottom": 82,
+        "overflowX": 0,
+        "docScroll": 0,
+        "theme": "dark",
+        "statusVisible": 3
+      },
+      "after": {
+        "w": 360,
+        "h": 680,
+        "vvH": 680,
+        "barH": 56,
+        "rows": 1,
+        "snap": "full",
+        "sheetH": 598,
+        "sheetTop": 82,
+        "previewH": 26,
+        "previewBottom": 82,
+        "overflowX": 0,
+        "docScroll": 0,
+        "theme": "dark",
+        "statusVisible": 3
+      },
+      "scrolled": {
+        "top": 8505,
+        "max": 8505,
+        "width": 0
+      }
+    }
+  },
+  {
+    "case": "select dropdown at half",
+    "pass": true,
+    "detail": {
+      "left": 12,
+      "right": 348,
+      "top": 419,
+      "bottom": 807,
+      "contentTop": 419,
+      "contentBottom": 680,
+      "listScroll": true,
+      "visible": true,
+      "overflowX": 0
+    }
+  },
+  {
+    "case": "Compare at peek",
+    "pass": true,
+    "detail": {
+      "on": true,
+      "sl": {
+        "left": 158,
+        "right": 202,
+        "top": 202.6875,
+        "bottom": 428.28125
+      },
+      "area": {
+        "left": 0,
+        "right": 360,
+        "top": 56,
+        "bottom": 575
+      },
+      "overflowX": 0
+    }
+  }
+]

@@ -2737,3 +2737,166 @@ pass faster in a paired test, so it is not in the tree.
 Three consecutive green runs on the cleaned tree; G11/G13 still use the
 paired/best-window rules from P2-1. The 62 cleanup screenshots are in
 `docs/evidence/cleanup/`; the P2-1 set stays untouched at tag `P2-1-pass`.
+
+## Part M — Mobile bottom sheet and single-row top bar — STATUS: PASS
+
+Mobile means viewport width ≤700 CSS px in any orientation. Widths 701+ keep
+the previous layout, including the 701–768 overlay branch. The permanent gate
+now covers both tasks with G14–G18.
+
+### M1-0 — baseline proof (before any change)
+
+Captured at HEAD `3d9e6f2` in `docs/evidence/m1-0/` (`baseline.json`,
+`before-dark-390x750.png`, `before-dark-360x680.png`,
+`before-light-390x750.png`).
+
+- 390×750: top bar **145 px / 3 rows**; the open panel was an absolute overlay
+  at x=50, leaving a **12.8%** preview strip.
+- 360×680: top bar 145 px / 3 rows; overlay at x=20, leaving **5.6%**.
+- `before-dark-390x750.png` was opened and described: File/View/Edit row,
+  zoom/theme/panel row, status row, then a panel covering 340 of 390 px.
+
+### M1-1 — bottom sheet — PASS
+
+The panel is now a bottom sheet in a one-column layout (top bar, preview,
+sheet). It never overlaps the preview: the preview is a flex child that shrinks
+as the sheet grows. The panel keeps the same DOM, controls and logic; a handle
+row was added above `.panel-content`.
+
+- Snaps are derived from `window.visualViewport.height`, never `vh`: peek =
+  handle + sticky action bar + safe-area bottom (measured 105 px at 360), half
+  = 45%, full = 88%, each clamped to the space below the top bar.
+- Empty state starts at half; an image or video switches to peek until the user
+  touches the sheet. The snap lives in memory only.
+- Handle drag uses Pointer Events with pointer capture, position/velocity
+  snapping, and a grabber tap cycle peek→half→full→peek. The panel toggle and
+  Escape move peek↔half.
+- The list scrolls inside the sheet with `overscroll-behavior: contain`; the
+  page never scrolls. Handle is `touch-action: none`, list is `pan-y`.
+- During a drag the pipeline is untouched (G15 observes 0 render/0 base); after
+  settling there is at most one render and one refit.
+- The handle is `role="separator"` with `aria-valuemin/max/now/text`,
+  `tabindex=0`, ArrowUp/Down, Enter/Space.
+- The status box moved into the handle row as the same element, style and three
+  segments. It is still a non-interactive `role=status`.
+- Reduced motion gets an instant snap; otherwise the existing 0.2 s height
+  transition is used (break-it measured `1e-05s` vs `0.2s`).
+- Soft keyboard: `visualViewport` resize/scroll feeds `--gc-vvh`, the focused
+  field is scrolled into view, safe-area bottom padding is applied and the meta
+  viewport has `viewport-fit=cover`.
+- Mobile touch targets are ≥44×44: steppers (46×90 content), checkboxes,
+  section Reset links, whole section headers, selects, swatches and the 6-dot
+  grip. Inputs are ≥16 px. Section titles are 16 px / `--text-primary`.
+- Numeric inputs whose `min` is ≥0 get `inputmode="decimal"`; ranges and
+  clamping are untouched.
+- Reorder on mobile is long-press only (`holdOnly`): moving before the
+  long-press cancels instead of starting a drag.
+
+Staged check policy: G14 measures sheet layout only in M1-1. Its top-bar
+≤56 px/one-row and 70%/40% preview-fraction clauses are enabled by the presence
+of `#mobile-menu-btn`, so they become active in M1-2; only the single-row bar
+makes those fractions reachable.
+
+### M1-2 — single-row top bar — PASS
+
+One row, 56 px plus safe-area top: menu button, zoom group, theme button and
+sheet toggle. At ≤380 px the horizontal padding and gaps shrink first (zoom
+level 56 px) so 360 and 320 both fit without wrapping, clipping or dropping a
+control. File/View/Edit items are cloned once into `#dropdown-mobile` with a
+`data-group`; all 14 commands and their shortcut labels are present, the menu
+uses the inverse theme, and keyboard shortcuts are unchanged. The clipboard/
+action handlers are the existing ones.
+
+The mobile menu button shares the top bar's 1 px border, 6 px radius, hover,
+active, expanded and focus states, and the existing 0.15 s transitions. The
+dropdown is fixed to the viewport, scrolls internally and keeps overscroll
+contained.
+
+### G8 rule change (deliberate)
+
+Old rule: at ≤768 px the bar was allowed to wrap to two rows as long as the
+second row contained only the status group; only >768 px had to be one row.
+
+New rule: at ≤700 px the bar must be exactly one row (status now lives in the
+sheet handle), while 701–768 keeps the old status-only second-row allowance.
+Reason: the old rule encoded the stacked three-row mobile bar that M1-2
+replaces; keeping it would let a regressed one-row bar pass.
+
+RED proof on a deliberately broken build (`docs/evidence/m1-2/g8-red.txt`):
+setting the top-bar icon buttons to 40 px produced, in both themes,
+`height` (40 vs 48), `2 rows at mobile width` and
+`wrapped row must contain only the status group`. The temporary rule was
+removed immediately afterwards; `git diff` contains no RED marker.
+
+### Permanent checks
+
+- **G14 mobile layout** — 360×680 dark + 22 effects, 390×750 light + 22
+  effects, 412×800 dark empty, 320×568 light, 640×360 landscape, 740×360
+  desktop branch. Checks: no horizontal overflow, no page scroll, status in
+  the handle with 3 segments, handle ARIA/role/focus, sheet flush to the
+  bottom, no overlap, canvas inside preview and hit-testable, default snap,
+  landscape peek ≥120 px, one row ≤56 px and peek/half preview fractions on
+  the mobile branch. Half snap must grow the sheet, shrink the preview and
+  still not overlap. Peek at 360: sheet 105 px, preview 519 px (76.3%);
+  half: preview 318 px (46.8%); 320 peek preview 407 px (71.7%); 640×360 peek
+  preview 199 px (>120).
+- **G15 mobile gestures** — CDP touch swipes peek→half→peek, fast flick,
+  grabber cycle, list scroll inside the sheet, handle drag without list
+  scroll, 0 pipeline calls during drag and ≤1 after settle, soft-keyboard
+  visibility, and touch Compare at 100/200/400% with 20/20 grabs each.
+- **G16 touch targets** — every visible control in the top bar and sheet, at
+  peek/half/full and again with all sections expanded and 22 effects:
+  0 violations (201 unique targets).
+- **G17 desktop unchanged** — 15 rects at 1280×720 and 701×800 (closed and
+  open) compared to `tests/gate/desktop_baseline.json`, tolerance 1 px.
+- **G18 menu reachability + parity** — desktop's 14 menu commands equal the
+  mobile clone list (group/action/text/key); every item is scroll-reachable,
+  ≥44 px, inside the viewport and the dropdown stays inside 360 px. Contrast:
+  menu text 15.67/15.62, menu border 3.59/3.14, status text 4.72/6.81, grip
+  8.38/10.27, menu icon 11.16/10.84 (dark/light).
+
+### Break-it (14/14)
+
+`docs/evidence/m1-2/break-it.json`, screenshots `break-*.png`:
+
+1. text zoom 200% (no overflow, one row), 2. soft keyboard while editing
+(value visible above the keyboard, page not scrolled), 3. rotate mid-drag
+(680×360, valid snap, no overflow), 4. fast flick past full (clamps to full),
+5. drag sheet with menu open (menu owns the touch; no overflow/page scroll),
+6. theme switch mid-drag, 7. undo/redo at peek (stays peek), 8. width 320
+(all 14 commands reachable), 9. reduced motion instant vs 0.2 s normal,
+10. empty state, 11. video loaded defaults to peek, 12. 22 effects scrolled in
+full, 13. select dropdown at half (internally scrollable, horizontal fit),
+14. Compare at peek.
+
+Note: 701–768 px deliberately keeps the old overlay layout because the task
+defines mobile as ≤700 px. At 640×360 (mobile landscape, height <500) there is
+no new layout; peek preview is 199 px, all controls are reachable and the
+documented next step is a landscape-specific snap once real-device testing is
+available.
+
+### Gate runs
+
+Three consecutive full runs on the final tree (`GATE_TASK=m1-2`), each
+`GATE PASS` with exit 0 (`docs/evidence/m1-2/gate-runs.txt`):
+
+| Run | Started | Finished | Result | Log |
+| --- | --- | --- | --- | --- |
+| 1 | 2026-11-08 05:19:26 +03:00 | 05:49:51 | PASS | `gate-run-1.log` |
+| 2 | 2026-11-08 05:49:51 +03:00 | 06:13:23 | PASS | `gate-run-2.log` |
+| 3 | 2026-11-08 06:13:23 +03:00 | 06:40:30 | PASS | `gate-run-3.log` |
+
+Every run: G1–G18 PASS, 0 FAIL lines, G5 `169 checks, 0 failures`, G10
+`239 checks, 0 failure(s)`, G11 `21 checks, 0 failure(s)`, G12
+`15 checks, 0 failure(s)`, G13 `25 checks, 0 failure(s)`. G14–G18 numbers were
+identical across the three runs; G18 contrast values are the ones listed
+above.
+
+### Honest scope note
+
+M1-1 was proven RED→green in isolation (`docs/evidence/m1-1/red.txt`,
+`stage.txt`) before M1-2 started, but it was not separately full-gated three
+times. Both tasks were then combined into one final tree and full-gated three
+times with the M1-2 top bar present, because M1-2 changes the same mobile
+layout and the two cannot be reverted independently without breaking the
+G14/G15 checks. The combined commit carries both tags and this note.

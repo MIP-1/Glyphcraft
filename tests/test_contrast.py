@@ -159,24 +159,42 @@ def run_theme(browser, theme, width, height):
     page.wait_for_selector(".canvas-area.has-content", timeout=15000)
     page.wait_for_timeout(700)
 
+    mobile = width <= 700
     results = audit(page)
 
     # Menus (closed by default, so audit them while open).
-    page.click("#menu-file")
-    page.wait_for_timeout(250)
-    results += audit(page)
-    page.keyboard.press("Escape")
-    page.click("#menu-view")
-    page.wait_for_timeout(250)
-    results += audit(page)
-    page.keyboard.press("Escape")
+    if mobile:
+        page.click("#panel-toggle-btn")
+        page.wait_for_timeout(300)
+        page.click("#mobile-menu-btn")
+        page.wait_for_timeout(250)
+        results += audit(page)
+        page.evaluate("() => closeAllMenus()")
+    else:
+        page.click("#menu-file")
+        page.wait_for_timeout(250)
+        results += audit(page)
+        page.keyboard.press("Escape")
+        page.click("#menu-view")
+        page.wait_for_timeout(250)
+        results += audit(page)
+        page.keyboard.press("Escape")
     page.click("#zoom-level")
     page.wait_for_timeout(250)
     results += audit(page)
-    page.keyboard.press("Escape")
+    page.evaluate("() => closeAllMenus()")
+    if mobile:
+        page.wait_for_timeout(150)
 
     # Size preset picker: collapsed and expanded (inverse palette).
-    page.locator("#output-preset-trigger").scroll_into_view_if_needed()
+    page.evaluate("""() => {
+      const el = document.getElementById('output-preset-trigger');
+      const c = document.querySelector('.panel-content');
+      const bar = document.getElementById('panel-actionbar');
+      const top = el.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop;
+      c.scrollTop = Math.max(0, top - bar.getBoundingClientRect().height - 8);
+    }""")
+    page.wait_for_timeout(200)
     page.click("#output-preset-trigger")
     page.wait_for_timeout(300)
     results += audit(page)

@@ -159,7 +159,7 @@ with sync_playwright() as p:
     record("22 effects listed", page.locator(".effect-item").count() == 22, str(page.locator(".effect-item").count()))
     with page.expect_file_chooser() as fc:
         open_menu("file")
-        page.click('[data-action="open"]')
+        page.click('#dropdown-file [data-action="open"]')
     fc.value.set_files(TEST_IMG)
     page.wait_for_timeout(900)
     record("File > Open Image menu", "900×600" in page.inner_text("#status-bar"))
@@ -553,7 +553,7 @@ with sync_playwright() as p:
 
     # 6. Compare split + hold original
     open_menu("edit")
-    page.click('[data-action="compare"]')
+    page.click('#dropdown-edit [data-action="compare"]')
     page.wait_for_timeout(600)
     overlay = page.is_visible("#compare-overlay")
     split = page.evaluate("""() => {
@@ -583,7 +583,7 @@ with sync_playwright() as p:
     page.wait_for_timeout(300)
     record("hold original differs", hold_sig != preset_sig, "original image shown")
     open_menu("edit")
-    page.click('[data-action="compare"]')
+    page.click('#dropdown-edit [data-action="compare"]')
     page.wait_for_timeout(300)
 
     # 7. Drag and drop + paste
@@ -709,7 +709,7 @@ with sync_playwright() as p:
     zfit = page.inner_text("#zoom-level")
     record("0 = fit window", zfit != "10%" and zfit != "800%", zfit)
     open_menu("view")
-    page.click('[data-action="fit-small"]')
+    page.click('#dropdown-view [data-action="fit-small"]')
     page.wait_for_timeout(350)
     zsmall = page.inner_text("#zoom-level")
     record("fit small ~ half of fit", abs(int(zsmall[:-1]) - int(zfit[:-1]) / 2) <= 3, f"{zfit} -> {zsmall}")
@@ -799,7 +799,7 @@ with sync_playwright() as p:
            json.dumps(zoom_border))
 
     open_menu("view")
-    page.click('[data-action="fullpage"]')
+    page.click('#dropdown-view [data-action="fullpage"]')
     page.wait_for_timeout(400)
     full_on = page.evaluate("() => document.querySelector('.workspace').classList.contains('fullpage')")
     page.keyboard.press("Escape")
@@ -1056,7 +1056,16 @@ with sync_playwright() as p:
     mpage.set_input_files("#file-input", TEST_IMG)
     mpage.wait_for_selector(".canvas-area.has-content", timeout=15000)
     mpage.wait_for_timeout(800)
-    mpage.locator("#output-preset-trigger").scroll_into_view_if_needed()
+    mpage.click("#panel-toggle-btn")
+    mpage.wait_for_timeout(300)
+    mpage.evaluate("""() => {
+      const el = document.getElementById('output-preset-trigger');
+      const c = document.querySelector('.panel-content');
+      const bar = document.getElementById('panel-actionbar');
+      const top = el.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop;
+      c.scrollTop = Math.max(0, top - bar.getBoundingClientRect().height - 8);
+    }""")
+    mpage.wait_for_timeout(200)
     mpage.click("#output-preset-trigger")
     mpage.wait_for_timeout(300)
     mpage.locator("[data-preset-more]").scroll_into_view_if_needed()
@@ -1073,14 +1082,15 @@ with sync_playwright() as p:
     record("360px picker fits + scrolls", mobile["left"] >= 0 and mobile["right"] <= 360 and mobile["listScroll"] and mobile["overflowX"] <= 1,
            json.dumps(mobile))
     mpage.keyboard.press("Escape")
-    mpage.click("#menu-file")
+    mpage.click("#mobile-menu-btn")
     mpage.wait_for_timeout(250)
-    menu_box = mpage.evaluate("""() => { const m=document.getElementById('dropdown-file').getBoundingClientRect(); return {left:m.left,right:m.right,width:m.width}; }""")
+    menu_box = mpage.evaluate("""() => { const m=document.getElementById('dropdown-mobile').getBoundingClientRect(); return {left:m.left,right:m.right,width:m.width}; }""")
     record("360px menu fits", menu_box["left"] >= 0 and menu_box["right"] <= 360, json.dumps(menu_box))
 
     # Sticky action bar at 360 with the panel open, in both themes.
     mpage.keyboard.press("Escape")
-    mpage.click("#panel-toggle-btn")
+    if not mpage.evaluate("() => document.getElementById('panel').classList.contains('open')"):
+        mpage.click("#panel-toggle-btn")
     mpage.wait_for_timeout(300)
     mpage.evaluate("() => { document.querySelector('.panel-content').scrollTop = 1200; }")
     mpage.wait_for_timeout(300)

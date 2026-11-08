@@ -1,0 +1,11 @@
+dark 1280 violations 0
+dark 360 violations 3
+   {'cell': 'dark 360', 'kind': 'height', 'detail': 'heights zoom-controls=48.0, theme-toggle=40.0, panel-toggle-btn=40.0'}
+   {'cell': 'dark 360', 'kind': 'rows', 'detail': '2 rows at mobile width, expected a single row: zoom-controls | theme-toggle, panel-toggle-btn'}
+   {'cell': 'dark 360', 'kind': 'rows', 'detail': 'wrapped row must contain only the status group: zoom-controls | theme-toggle, panel-toggle-btn'}
+light 1280 violations 0
+light 360 violations 3
+   {'cell': 'light 360', 'kind': 'height', 'detail': 'heights zoom-controls=48.0, theme-toggle=40.0, panel-toggle-btn=40.0'}
+   {'cell': 'light 360', 'kind': 'rows', 'detail': '2 rows at mobile width, expected a single row: zoom-controls | theme-toggle, panel-toggle-btn'}
+   {'cell': 'light 360', 'kind': 'rows', 'detail': 'wrapped row must contain only the status group: zoom-controls | theme-toggle, panel-toggle-btn'}
+EXIT=0

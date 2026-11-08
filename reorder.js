@@ -9,6 +9,7 @@
     var handleSelector = options.handleSelector || ".drag-handle";
     var longPress = options.longPress || 250;
     var moveThreshold = options.moveThreshold || 4;
+    var holdOnly = typeof options.holdOnly === "function" ? options.holdOnly : function () { return !!options.holdOnly; };
     var edge = options.edge || 56;
     var onReorder = options.onReorder || function () {};
     var scroller = options.scrollContainer || container.closest(".panel-content") || document.scrollingElement;
@@ -70,6 +71,11 @@
         var dy = e.clientY - pending.startY;
         if (Math.hypot(dx, dy) < moveThreshold) return;
         clearPressTimer();
+        if (holdOnly()) {
+          pending = null;
+          removeWindowListeners();
+          return;
+        }
         activate(e.clientX, e.clientY, e.clientY);
         return;
       }
