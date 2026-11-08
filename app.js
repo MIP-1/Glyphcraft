@@ -169,7 +169,18 @@ const state = {
   videoExportTotal: 0,
   history: { undo: [], redo: [], lastKey: "", lastAt: 0 },
   pendingReset: false,
-  exportProgress: { active: false, format: "", progress: 0, total: 0 }
+  exportProgress: { active: false, format: "", progress: 0, total: 0 },
+  workerReady: false,
+  workerSourceReady: false,
+  workerSourceId: 0,
+  workerJob: null,
+  workerPend: null,
+  workerNextId: 0,
+  workerStats: { posted: 0, drawn: 0, cancelled: 0, errors: 0 },
+  workerEpoch: 0,
+  currentStateKey: "",
+  fontsReady: false,
+  previewSource: null
 };
 
 const PREVIEW_MAX = 1600;
@@ -177,6 +188,21 @@ const MAX_PREVIEW_PIXELS = 1600 * 1600;
 const PLAYBACK_BUDGET_MS = 26;
 const PLAYBACK_SCALES = [1, 0.85, 0.7, 0.59, 0.5, 0.42, 0.35, 0.29, 0.24, 0.2, 0.17];
 const PLAYBACK_MIN_INTERVAL = 1000 / 40;
+const GC_APP_SRC = (document.currentScript && document.currentScript.src) || location.href;
+const GC_WORKER_URL = GC_APP_SRC.replace(/app(\.min)?\.js(\?.*)?$/, (m, min, q) => "render-worker" + (min || "") + ".js" + (q || ""));
+const GC_WORKER_DISABLED = /[?&]worker=0(&|$)/.test(location.search) || !!window.__GC_DISABLE_WORKER;
+const GC_WORKER_MIN_PIXELS = 900 * 1000;
+const GC_WORKER_MIN_EFFECTS = 6;
+const GC_FONT_READY = (document.fonts && document.fonts.load)
+  ? Promise.all([
+      document.fonts.load('400 14px "JetBrains Mono"'),
+      document.fonts.load('700 14px "JetBrains Mono"')
+    ]).then(() => {
+      state.fontsReady = true;
+      measureGlyphDensities.cache = null;
+      if (els.canvas) { rebuildRamp(); scheduleRender(0); }
+    }).catch(() => { state.fontsReady = false; })
+  : Promise.resolve().then(() => { state.fontsReady = true; });
 const els = {};
 function $(id) { return document.getElementById(id); }
 function on(el, ev, fn, opts) { if (el) el.addEventListener(ev, fn, opts); }
@@ -675,7 +701,7 @@ function requestRenderFrame() {
     state.renderId = null;
     if (!state.renderDirty) return;
     state.renderDirty = false;
-    render();
+    render(true);
   });
 }
 
@@ -719,7 +745,7 @@ function drawOriginal(destCtx, w, h, clipW) {
   destCtx.restore();
 }
 
-function render() {
+function render(interactive) {
   if (!state.source) {
     setStatusSegments("", "No image loaded", "");
     return;
@@ -737,6 +763,7 @@ function render() {
   const still = state.sourceType !== "video" && !state.videoExporting && !state.cacheDisabled;
   const viewKey = optsKey + "|" + (state.compare ? state.compareFrac : "-") + "|" + (state.showOriginal ? "orig" : "");
   const stateKey = pv.w + "x" + pv.h + "|" + state.sourceId + "|" + viewKey;
+  state.currentStateKey = stateKey;
   if (still && stateKey === state.lastRenderKey) return;
 
   let resized = false;
@@ -750,11 +777,15 @@ function render() {
   const cached = state.renderCache;
   const haveFrame = still && cached && cached.key === key
       && cached.canvas.width === pv.w && cached.canvas.height === pv.h;
+  if (interactive && !haveFrame && postWorkerRender(pv, opts, key, stateKey)) {
+    finishRenderUI(full);
+    return;
+  }
   if (!haveFrame) {
     const stageBaseKey = still
       ? pv.w + "x" + pv.h + "|" + state.sourceId + "|" + JSON.stringify(opts.adj || {})
       : null;
-    const base = prepareBase(state.source, pv.w, pv.h, opts, stageBaseKey);
+    const base = prepareBase(previewSourceForRender(), pv.w, pv.h, opts, stageBaseKey);
     renderToContext(base, els.ctx, pv.w, pv.h, opts);
     if (still) {
       cacheRenderedFrame(key, pv);
@@ -811,11 +842,7 @@ function render() {
       updateStatus(full);
     }
   } else {
-    state.uiSig = uiSignature();
-    applyTransform();
-    applyZoomUI();
-    updateCompareUI();
-    updateStatus(full);
+    finishRenderUI(full);
   }
 }
 
@@ -833,6 +860,303 @@ function cacheRenderedFrame(key, pv) {
   cctx.drawImage(els.canvas, 0, 0);
   cache.key = key;
 }
+
+/* ---- worker ---- */
+
+let renderWorker = null;
+let renderWorkerOff = GC_WORKER_DISABLED;
+const workerOnce = new Map();
+
+function initWorker() {
+  if (renderWorkerOff) return;
+  if (typeof Worker === "undefined" || typeof OffscreenCanvas === "undefined"
+      || typeof createImageBitmap !== "function") {
+    renderWorkerOff = true;
+    return;
+  }
+  if (!/^https?:/.test(GC_WORKER_URL)) {
+    renderWorkerOff = true;
+    return;
+  }
+  try {
+    renderWorker = new Worker(GC_WORKER_URL);
+  } catch (err) {
+    renderWorker = null;
+    renderWorkerOff = true;
+    return;
+  }
+  renderWorker.addEventListener("message", onWorkerMessage);
+  renderWorker.addEventListener("error", onWorkerError);
+}
+
+function onWorkerError() {
+  state.workerStats.errors++;
+  if (renderWorker) { try { renderWorker.terminate(); } catch (err) {} }
+  renderWorker = null;
+  renderWorkerOff = true;
+  state.workerReady = false;
+  state.workerJob = null;
+  state.workerPend = null;
+  for (const pending of workerOnce.values()) pending.reject(new Error("worker failed"));
+  workerOnce.clear();
+  scheduleRender(0);
+}
+
+function workerSetSource() {
+  if (!renderWorker || !state.workerReady) return;
+  if (state.sourceType !== "image" || !state.source) {
+    state.workerSourceReady = false;
+    return;
+  }
+  const source = previewSourceForRender();
+  const id = state.sourceId;
+  createImageBitmap(source).then(bitmap => {
+    if (!renderWorker || id !== state.sourceId || source !== previewSourceForRender()) {
+      bitmap.close();
+      return;
+    }
+    state.workerSourceReady = true;
+    state.workerSourceId = id;
+    renderWorker.postMessage({ type: "source", id, bitmap }, [bitmap]);
+    state.lastRenderKey = "";
+    scheduleRender(0);
+  }).catch(() => { state.workerSourceReady = false; });
+}
+
+function workerInvalidate() {
+  state.workerEpoch++;
+  state.workerJob = null;
+  state.workerPend = null;
+  state.workerSourceReady = false;
+  if (state.previewSource && typeof state.previewSource.close === "function") state.previewSource.close();
+  state.previewSource = null;
+}
+
+function previewSourceForRender() {
+  return state.previewSource || state.source;
+}
+
+function workerEligible(pv, opts) {
+  if (!renderWorker || !state.workerReady || !state.workerSourceReady || !state.fontsReady) return false;
+  if (state.sourceType !== "image" || !state.source) return false;
+  if (state.cacheDisabled || state.videoExporting || state.compare || state.showOriginal) return false;
+  if (state.workerSourceId !== state.sourceId) return false;
+  if (pv.w * pv.h < GC_WORKER_MIN_PIXELS) return false;
+  let enabled = 0;
+  for (const fx of opts.effects || []) if (fx.enabled) enabled++;
+  return enabled >= GC_WORKER_MIN_EFFECTS;
+}
+
+function postWorkerRender(pv, opts, frameKey, stateKey) {
+  if (!workerEligible(pv, opts)) return false;
+  if (state.workerJob && state.workerJob.stateKey === stateKey) return true;
+  if (state.workerPend && state.workerPend.stateKey === stateKey) return true;
+  if (state.workerPend) state.workerStats.cancelled++;
+  state.workerStats.posted++;
+  state.workerPend = {
+    jobId: ++state.workerNextId,
+    epoch: state.workerEpoch,
+    pv: { w: pv.w, h: pv.h },
+    frameKey,
+    stateKey,
+    kind: "preview",
+    opts
+  };
+  flushWorker();
+  return true;
+}
+
+function flushWorker() {
+  if (!renderWorker || state.workerJob || !state.workerPend) return;
+  const job = state.workerPend;
+  state.workerPend = null;
+  state.workerJob = job;
+  try {
+    renderWorker.postMessage({
+      type: "render",
+      job: job.jobId,
+      kind: job.kind,
+      sourceId: state.workerSourceId,
+      w: job.pv.w,
+      h: job.pv.h,
+      opts: job.opts
+    });
+  } catch (err) {
+    state.workerJob = null;
+    state.workerStats.errors++;
+    renderWorkerOff = true;
+    scheduleRender(0);
+  }
+}
+
+function onWorkerMessage(event) {
+  const d = event.data || {};
+  if (d.type === "ready") {
+    state.workerReady = true;
+    workerSetSource();
+    return;
+  }
+  if (d.type === "boot-error") {
+    onWorkerError();
+    return;
+  }
+  const once = workerOnce.get(d.job);
+  if (once) {
+    workerOnce.delete(d.job);
+    if (d.type === "result" && d.bitmap) once.resolve(d.bitmap);
+    else once.reject(new Error(d.message || "worker error"));
+    return;
+  }
+  if (d.type !== "result" && d.type !== "error") return;
+  const job = state.workerJob;
+  if (!job || job.jobId !== d.job) {
+    if (d.bitmap) d.bitmap.close();
+    return;
+  }
+  state.workerJob = null;
+  if (job.epoch !== state.workerEpoch) {
+    state.workerStats.cancelled++;
+    if (d.bitmap) d.bitmap.close();
+    flushWorker();
+    return;
+  }
+  if (d.type === "error") {
+    state.workerStats.errors++;
+    if (d.bitmap) d.bitmap.close();
+    renderWorkerOff = true;
+    state.workerReady = false;
+    if (renderWorker) { try { renderWorker.terminate(); } catch (err) {} renderWorker = null; }
+    scheduleRender(0);
+    return;
+  }
+  if (state.workerPend || job.stateKey !== state.currentStateKey) {
+    state.workerStats.cancelled++;
+    if (d.bitmap) d.bitmap.close();
+  } else {
+    drawWorkerResult(job, d);
+  }
+  flushWorker();
+}
+
+function drawWorkerResult(job, d) {
+  const bitmap = d.bitmap;
+  const pv = job.pv;
+  if (els.canvas.width !== pv.w || els.canvas.height !== pv.h) {
+    els.canvas.width = pv.w;
+    els.canvas.height = pv.h;
+  }
+  els.ctx.setTransform(1, 0, 0, 1, 0, 0);
+  els.ctx.clearRect(0, 0, pv.w, pv.h);
+  els.ctx.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  state.scale = displayScale(state.zoom, pv.w);
+  cacheRenderedFrame(job.frameKey, pv);
+  originalBitmap(pv.w, pv.h);
+  state.lastRenderKey = job.stateKey;
+  state.lastRender = d.ms || 0;
+  state.composite = { mode: "frame", x: 0, frameKey: job.frameKey, w: pv.w, h: pv.h };
+  state.workerStats.drawn++;
+  const full = computeOutputSize(state.sourceW, state.sourceH, state.opts.outputPreset, state.opts.outputWidth, state.opts.outputHeight, state.opts.outputFit);
+  finishRenderUI(full);
+}
+
+function finishRenderUI(full) {
+  state.uiSig = uiSignature();
+  applyTransform();
+  applyZoomUI();
+  updateCompareUI();
+  updateStatus(full);
+}
+
+function currentPreview() {
+  const full = computeOutputSize(state.sourceW, state.sourceH, state.opts.outputPreset, state.opts.outputWidth, state.opts.outputHeight, state.opts.outputFit);
+  return previewSize(full);
+}
+
+function canvasHash(canvas) {
+  const d = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+  let h = 2166136261;
+  for (let i = 0; i < d.length; i += 4) {
+    h ^= d[i]; h = Math.imul(h, 16777619);
+    h ^= d[i + 1]; h = Math.imul(h, 16777619);
+    h ^= d[i + 2]; h = Math.imul(h, 16777619);
+    h ^= d[i + 3]; h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+async function workerSyncHash() {
+  await GC_FONT_READY;
+  const pv = currentPreview();
+  const opts = renderOpts();
+  const base = prepareBase(previewSourceForRender(), pv.w, pv.h, opts, null);
+  const canvas = document.createElement("canvas");
+  canvas.width = pv.w;
+  canvas.height = pv.h;
+  renderToContext(base, canvas.getContext("2d", { willReadFrequently: true }), pv.w, pv.h, opts);
+  return canvasHash(canvas);
+}
+
+function workerOnceRender(pv, opts, kind) {
+  return new Promise((resolve, reject) => {
+    if (!renderWorker || !state.workerReady || !state.workerSourceReady) {
+      reject(new Error("worker unavailable"));
+      return;
+    }
+    const jobId = ++state.workerNextId;
+    workerOnce.set(jobId, { resolve, reject });
+    try {
+      renderWorker.postMessage({
+        type: "render",
+        job: jobId,
+        kind,
+        sourceId: state.workerSourceId,
+        w: pv.w,
+        h: pv.h,
+        opts
+      });
+    } catch (err) {
+      workerOnce.delete(jobId);
+      reject(err);
+    }
+  });
+}
+
+async function workerAsyncHash(kind) {
+  await GC_FONT_READY;
+  const pv = currentPreview();
+  const opts = renderOpts();
+  const bitmap = await workerOnceRender(pv, opts, kind || "preview");
+  const canvas = document.createElement("canvas");
+  canvas.width = pv.w;
+  canvas.height = pv.h;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  return canvasHash(canvas);
+}
+
+window.GCWorker = {
+  enabled() { return !!renderWorker && state.workerReady; },
+  stats() {
+    const s = state.workerStats;
+    return {
+      enabled: !!renderWorker && state.workerReady,
+      ready: !!state.workerReady,
+      sourceReady: !!state.workerSourceReady,
+      fontsReady: !!state.fontsReady,
+      inFlight: !!state.workerJob,
+      pending: !!state.workerPend,
+      posted: s.posted,
+      drawn: s.drawn,
+      cancelled: s.cancelled,
+      errors: s.errors
+    };
+  },
+  syncHash() { return workerSyncHash(); },
+  asyncHash() { return workerAsyncHash("preview"); },
+  renderKind(kind) { return workerAsyncHash(kind); }
+};
 
 function outputMeta() {
   const full = computeOutputSize(state.sourceW, state.sourceH, state.opts.outputPreset, state.opts.outputWidth, state.opts.outputHeight, state.opts.outputFit);
@@ -1112,6 +1436,7 @@ function loadFile(file) {
       state.sourceH = vid.videoHeight;
       state.sourceId++;
       clearStageCache();
+      workerInvalidate();
       resetPlaybackScale();
       syncVideoControl();
       if (previousUrl) URL.revokeObjectURL(previousUrl);
@@ -1142,11 +1467,24 @@ function loadFile(file) {
       state.sourceH = img.naturalHeight;
       state.sourceId++;
       clearStageCache();
+      workerInvalidate();
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       state.sourceUrl = url;
       els.canvasArea.classList.add("has-content");
       if (state.opts.palette === "__auto__") extractAutoPalette(img);
       scheduleRender(0);
+      if (typeof createImageBitmap === "function") {
+        createImageBitmap(img).then(bitmap => {
+          if (state.source !== img) { bitmap.close(); return; }
+          state.previewSource = bitmap;
+          state.lastRenderKey = "";
+          state.renderCache = null;
+          state.composite = null;
+          clearStageCache();
+          scheduleRender(0);
+          workerSetSource();
+        }).catch(() => {});
+      }
       requestAnimationFrame(() => {
         if (isMobileSheet() && !state.sheetTouched) setMobileSnap("peek", false);
         render();
@@ -2934,6 +3272,7 @@ function initReorder() {
 
 function init() {
   initEls();
+  initWorker();
   loadTheme();
   populatePalettes();
   populateOutputPresets();

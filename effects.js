@@ -76,6 +76,16 @@ function fxPrepareContext(c) {
   return ctx;
 }
 
+function fxCreateCanvas(W, H) {
+  if (typeof document === "undefined" && typeof OffscreenCanvas !== "undefined") {
+    return new OffscreenCanvas(W, H);
+  }
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = H;
+  return c;
+}
+
 function fxCanvas(w, h) {
   const W = Math.max(1, Math.round(w));
   const H = Math.max(1, Math.round(h));
@@ -88,10 +98,7 @@ function fxCanvas(w, h) {
       return c;
     }
   }
-  const c = document.createElement("canvas");
-  c.width = W;
-  c.height = H;
-  return c;
+  return fxCreateCanvas(W, H);
 }
 
 function fxRelease(c) {

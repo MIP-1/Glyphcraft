@@ -416,6 +416,7 @@ def main() -> int:
           }
         }""")
         page.wait_for_timeout(500)
+        C.wait_worker(page)
         coalesce_renders = page.evaluate("() => __perf.renders")
         coalesce_value = page.evaluate("() => Number(document.querySelector('#depth').value)")
         data["coalesce"] = {"renders": coalesce_renders, "value": coalesce_value}
