@@ -9,7 +9,7 @@
       "longtasks": [],
       "longtask_ms": 0,
       "longest_ms": 0,
-      "task_ms": 1.0,
+      "task_ms": 3.3,
       "script_ms": 0.0,
       "label": "idle 1920x1080"
     },
@@ -21,7 +21,7 @@
       "longtasks": [],
       "longtask_ms": 0,
       "longest_ms": 0,
-      "task_ms": 0.6,
+      "task_ms": 4.0,
       "script_ms": 0.0,
       "label": "idle 4K"
     },
@@ -33,7 +33,7 @@
       "longtasks": [],
       "longtask_ms": 0,
       "longest_ms": 0,
-      "task_ms": 4.2,
+      "task_ms": 8.0,
       "script_ms": 0.0,
       "label": "hidden"
     }
@@ -41,23 +41,23 @@
   "drags": {
     "1920x1080": {
       "renders": 151,
-      "avg_ms": 119.7,
-      "max_ms": 296.4,
-      "pipeline": 151,
-      "longtask_ms": 19129,
-      "longest_ms": 300,
-      "task_ms": 21003.4,
+      "avg_ms": 0.39,
+      "max_ms": 4.6,
+      "pipeline": 0,
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "task_ms": 1494.7,
       "frames": 151
     },
     "4K": {
-      "renders": 150,
-      "avg_ms": 166.71,
-      "max_ms": 411.6,
-      "pipeline": 150,
-      "longtask_ms": 25941,
-      "longest_ms": 420,
-      "task_ms": 27812.6,
-      "frames": 150
+      "renders": 151,
+      "avg_ms": 0.37,
+      "max_ms": 8.8,
+      "pipeline": 0,
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "task_ms": 1641.4,
+      "frames": 151
     }
   },
   "stepper": {
@@ -68,9 +68,9 @@
     "expected": 110
   },
   "memory": {
-    "heap0": 2749088,
-    "heap1": 2854072,
-    "pct": 3.82,
+    "heap0": 2774580,
+    "heap1": 2879944,
+    "pct": 3.8,
     "canvas0": 1,
     "canvas1": 1
   },
@@ -82,7 +82,7 @@
     "longtasks": [],
     "longtask_ms": 0,
     "longest_ms": 0,
-    "task_ms": 21.0,
+    "task_ms": 1.7,
     "script_ms": 0.0,
     "label": "video paused"
   },
@@ -104,21 +104,21 @@
     "stacks": 20
   },
   "gain": {
-    "cold_render_ms": 986.5,
+    "cold_render_ms": 1026.5,
     "cold_runs": [
-      997.9,
-      845.6,
-      986.5
+      1026.5,
+      1051.6,
+      918.2
     ],
-    "warm_last_effect_ms": 482.4,
+    "warm_last_effect_ms": 395.8,
     "warm_runs": [
-      370,
-      498.8,
-      482.4
+      350.8,
+      395.8,
+      418.7
     ],
-    "drag_avg_4k_ms": 166.71,
-    "warm_ratio": 0.489,
-    "drag_ratio": 0.169
+    "drag_avg_4k_ms": 0.37,
+    "warm_ratio": 0.386,
+    "drag_ratio": 0.0
   },
   "coalesce": {
     "renders": 1,
@@ -130,5 +130,5 @@
     "same": true
   },
   "baseline": false,
-  "generated": "2026-11-04T10:34:16"
+  "generated": "2026-11-08T17:35:55"
 }

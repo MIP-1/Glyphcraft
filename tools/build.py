@@ -25,7 +25,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
-SCRIPTS = ("engine.js", "effects.js", "reorder.js", "app.js")
+SCRIPTS = ("engine.js", "effects.js", "reorder.js", "app.js", "render-worker.js")
 
 SECTION = re.compile(r"^/\*\s*[-=*]{3,}.*[-=*]{3,}\s*\*/$")
 INVARIANT = re.compile(r"\b(must|never|do not|only|always|cannot|keep)\b", re.I)

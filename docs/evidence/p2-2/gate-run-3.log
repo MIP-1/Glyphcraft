@@ -1,0 +1,29 @@
+# Captured summary of GATE_TASK=p2-2-run-3.
+# The raw stdout log was written to /tmp/opencode/gate_run_3.log and removed by
+# the system temp cleanup on 2026-11-09 05:19 before it could be copied here.
+# The lines below are the check-summary lines as captured from the live run.
+# Note: the G14 cell for light 740x360 printed an empty `snap=` field; the check
+# still passed and this is recorded verbatim.
+START 2026-11-08T17:14:27+03:00
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 73352 element/state checks, 10 cells, 84 scans
+G3 PASS screenshots: 58 captured in docs/evidence/p2-2-run-3/
+G4 PASS frame timings: dark 1280: median=16.69999999999709ms p95=1233.4000000000015ms frames=130, dark 360: median=16.700000000000728ms p95=1283.2999999999993ms frames=126, light 1280: median=16.700000000000728ms p95=1149.8999999999942ms frames=121, light 360: median=16.700000000000728ms p95=1216.7000000000044ms frames=116
+G5 PASS existing tests: REPORT WRITTEN 169 checks, 0 failures (184.6s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 PASS top-bar geometry: 0 violation(s)
+G9 PASS numeric steppers: 65 measurements, 15 hold-rate rows
+G10 PASS effects: 239 checks, 0 failure(s) (44.5s)
+G11 PASS compare split: 21 checks, 0 failure(s) (128.3s)
+G12 PASS load: 15 checks, 0 failure(s) (149.0s)
+G13 PASS video: 25 checks, 0 failure(s) (99.6s)
+G14 PASS mobile layout: dark 360x680: snap=peek sheet=105px preview=519px topbar=56px/1row | light 390x750: snap=peek sheet=105px preview=589px topbar=56px/1row | dark 412x800: snap=half sheet=360px preview=384px topbar=56px/1row | light 320x568: snap=peek sheet=105px preview=407px topbar=56px/1row | dark 640x360: snap=peek sheet=105px preview=199px topbar=56px/1row | light 740x360: snap= sheet=267px preview=267px topbar=93px/2row | docs/evidence/p2-2-run-3/m1-g14-dark-360x680-peek.png | docs/evidence/p2-2-run-3/m1-g14-dark-360x680-half.png | docs/evidence/p2-2-run-3/m1-g14-light-390x750-peek.png | docs/evidence/p2-2-run-3/m1-g14-light-390x750-half.png | docs/evidence/p2-2-run-3/m1-g14-dark-412x800-half.png | docs/evidence/p2-2-run-3/m1-g14-dark-412x800-half.png
+G15 PASS mobile gestures: swipes peek->half->peek, flick->half | tap cycle half,full,peek | pipeline during={'r': 0, 'b': 0} after={'r': 0, 'b': 0} | keyboard vvH=400 input=348..392 | compare 100%=20/20, 200%=20/20, 400%=20/20
+G16 PASS touch targets: peek:261 half:261 full:260 unique=201 unique+effects=201
+G17 PASS desktop unchanged: 15 rect(s)
+G18 PASS menu reachability: desktop items=14 | contrast {"dark": {"menuText": 15.67, "menuBorder": 3.59, "handleGrip": 8.38, "handleBorder": 1.24, "statusText": 4.72, "menuButton": 11.16}, "light": {"menuText": 15.62, "menuBorder": 3.14, "handleGrip": 10.27, "handleBorder": 1.34, "statusText": 6.81, "menuButton": 10.84}}
+G19 PASS worker: 6 checks, 0 failure(s) (33.4s)
+GATE PASS
+GATE_EXIT=0
+END 2026-11-08T17:39:45+03:00

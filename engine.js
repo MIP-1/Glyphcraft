@@ -31,13 +31,25 @@ const BUILTIN_PALETTES = [
   { name: "Monochrome", colors: ["#000", "#222", "#444", "#666", "#888", "#aaa", "#ccc", "#fff"] }
 ];
 
+function gcCreateCanvas(w, h) {
+  const W = Math.max(1, Math.round(w));
+  const H = Math.max(1, Math.round(h));
+  if (typeof document === "undefined" && typeof OffscreenCanvas !== "undefined") {
+    return new OffscreenCanvas(W, H);
+  }
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = H;
+  return c;
+}
+
 function measureGlyphDensities(font, chars) {
   const cacheKey = font + "|" + chars;
   if (measureGlyphDensities.cache && measureGlyphDensities.cache.key === cacheKey) {
     return measureGlyphDensities.cache.densities;
   }
   const size = 16;
-  const canvas = document.createElement("canvas");
+  const canvas = gcCreateCanvas(size, size);
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   ctx.font = font;
@@ -231,7 +243,7 @@ function scriptMetrics(destW, destH, depth) {
 const GC_SCRATCH = new Map();
 function gcScratch(key, w, h) {
   let c = GC_SCRATCH.get(key);
-  if (!c) { c = document.createElement("canvas"); GC_SCRATCH.set(key, c); }
+  if (!c) { c = gcCreateCanvas(w, h); GC_SCRATCH.set(key, c); }
   if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
   return c;
 }

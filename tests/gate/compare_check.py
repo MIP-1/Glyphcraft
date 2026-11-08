@@ -144,6 +144,22 @@ class Server:
         self.httpd.server_close()
 
 
+def wait_worker(page, timeout_ms=30000):
+    """Wait for the P2-2 async render queue to drain (no-op without a worker).
+
+    Measurements that follow a state change must describe the settled frame.
+    The worker path is asynchronous, so the render counter alone is not enough.
+    """
+    page.wait_for_function(
+        """() => {
+          if (!window.GCWorker || typeof GCWorker.stats !== 'function') return true;
+          const s = GCWorker.stats();
+          return !s.inFlight && !s.pending;
+        }""",
+        timeout=timeout_ms,
+    )
+
+
 def settle(page, quiet_ms=220, timeout_ms=15000):
     """Wait until the render counter has been stable for quiet_ms."""
     # `__settleStart` was never assigned, so the timeout clause was always true
@@ -166,6 +182,7 @@ def settle(page, quiet_ms=220, timeout_ms=15000):
         arg=[quiet_ms, timeout_ms],
         timeout=timeout_ms + 5000,
     )
+    wait_worker(page, timeout_ms=timeout_ms + 5000)
 
 
 def reset(page):

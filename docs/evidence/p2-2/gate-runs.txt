@@ -1,0 +1,23 @@
+P2-2 full gate, three consecutive runs on the frozen tree.
+
+Run  Started                    Finished                   Duration  Result  Log
+1    2026-11-08T16:26:07+03:00  2026-11-08T16:50:47+03:00  24m40s    PASS    gate-run-1.log
+2    2026-11-08T16:50:47+03:00  2026-11-08T17:14:27+03:00  23m40s    PASS    gate-run-2.log
+3    2026-11-08T17:14:27+03:00  2026-11-08T17:39:45+03:00  25m18s    PASS    gate-run-3.log
+
+Every run: G1-G19 PASS, 0 non-PASS lines, GATE PASS, exit 0.
+G5 169 checks, 0 failures. G10 239 checks, 0 failures. G11 21 checks.
+G12 15 checks. G13 25 checks. G19 6 checks, 0 failures (WORKER PASS).
+G3 wrote 58 screenshots per run in docs/evidence/p2-2-run-N/ (174 files).
+
+Provenance: the raw stdout logs were written under /tmp/opencode and removed
+by the system temp cleanup at 2026-11-09 05:19, before they could be copied.
+The three .log files in this directory are the captured check-summary lines
+from the live runs, each with that provenance header, not byte-for-byte copies
+of the raw stdout. The 174 screenshot files are the originals.
+
+An earlier launch of the same three-run loop (16:23-16:24) aborted each run at
+G2's first page.goto with a 30 s navigation timeout (Google Fonts resource);
+G1 passed in each. A network check and the exact G2 flow succeeded immediately
+afterwards, and the three runs above then passed. The aborted runs produced no
+gate rows and are not counted.

@@ -2900,3 +2900,265 @@ times. Both tasks were then combined into one final tree and full-gated three
 times with the M1-2 top bar present, because M1-2 changes the same mobile
 layout and the two cannot be reverted independently without breaking the
 G14/G15 checks. The combined commit carries both tags and this note.
+
+---
+
+## P2-2 — Web Worker + OffscreenCanvas — STATUS: PASS
+
+Tag `P2-2-pass` on the commit that adds this section.
+
+### What changed
+
+The effect pipeline can now run in a classic worker (`render-worker.js`) that
+imports `engine.js` and `effects.js` (`engine.min.js` / `effects.min.js` from
+the minified build) and draws into `OffscreenCanvas`. The main thread keeps the
+UI, pan/zoom and the final `drawImage` of a transferred `ImageBitmap`.
+
+- Only requestAnimationFrame renders (slider, stepper, wheel, pan, resize) are
+  eligible for the worker. Direct `render()` calls (tests, video playback,
+  export prep) stay synchronous, so existing contracts do not change.
+- Eligibility: image source, worker ready, fonts ready, ≥6 enabled effects,
+  preview ≥900,000 px, and no compare / original / cache-off / video-export
+  state. Anything else renders on the main thread exactly as before.
+- One job in flight, one latest-wins pending job. Newer state cancels the
+  pending job and discards the in-flight result (`cancelled`). Results arrive
+  as transferable bitmaps; the previous bitmap is closed.
+- A state epoch invalidates jobs across image/video changes. The worker's
+  source is a persistent `ImageBitmap` replaced only when the source changes.
+- Fallback: `?worker=0` or `window.__GC_DISABLE_WORKER`, and any worker boot or
+  runtime error, permanently return the page to the synchronous path.
+- Two job kinds, `preview` and `full`, are in the protocol for P2-3.
+
+### Root cause 1 — resampling parity
+
+`drawImage(HTMLImageElement, 0, 0, w, h)` and `drawImage(ImageBitmap, ...)` do
+not resample identically when downscaling in Chromium. On the 3840×2160
+fixture to a 1600×900 preview the hashes were `3734516470` (element) and
+`1004756903` (bitmap). `createImageBitmap` options (`colorSpaceConversion`,
+`premultiplyAlpha`, `imageOrientation`, `none`, created from a canvas) all
+produced the same bitmap hash; only the element path differed.
+
+Fix: the app keeps `state.previewSource`, an `ImageBitmap` of the loaded image,
+and every preview render (main thread or worker) starts from that bitmap.
+Export still starts from the original element at export size, so exported
+files are unchanged. Per-effect parity on the final tree:
+
+| Probe | sync = worker hash |
+| --- | --- |
+| no effects, script | 4055211536 |
+| no effects, dither | 2665564049 |
+| posterize | 2638641375 |
+| edges | 3201652601 |
+| sketch | 843502753 |
+| emboss | 527045310 |
+| blur | 2622393948 |
+| sharpen | 1222504463 |
+| thermal | 767249138 |
+| all seven heavy | 2243323070 |
+
+### Root cause 2 — the worker cannot see document fonts
+
+A worker has its own `self.fonts` and does not inherit `document.fonts`; the
+same glyph string rendered with a fallback face. We now self-host the exact
+Google Fonts JetBrains Mono latin woff2 the page uses
+(`assets/fonts/JetBrainsMono-latin.woff2`, 31,432 bytes), declare 400 and 700
+in `style.css`, drop JetBrains Mono from the Google Fonts request, and register
+the same bytes in the worker with `FontFace`. Probed hashes for 400, 700,
+italic 400 and bold-italic are identical on both threads before any pipeline
+work (e.g. `1293116069`, `2175771123`, `70471496`, `3893078574`).
+
+### Root cause 3 — caches captured a pre-font, pre-bitmap frame
+
+Two caches could keep a frame that was produced before the good inputs existed;
+both were found while running the break-it and dist smoke on the final tree.
+
+- The first render after a load runs from the `HTMLImageElement` before
+  `createImageBitmap` resolves. `lastRenderKey = ""` alone was not enough:
+  `renderCache` (the frame cache) and the effect stage cache still served that
+  frame, so on a 3840×2160 image the visible preview could keep the element
+  resampling while the worker used the bitmap. Installing `state.previewSource`
+  now also clears `renderCache`, `composite` and the stage cache.
+- `measureGlyphDensities` cached densities under a font-string key only. If the
+  glyph ramp was built before the webfont loaded, the fallback-font densities
+  were reused forever, giving two different ramp orders on load (and a 50/50
+  dist-smoke hash flip). When fonts become ready the density cache is cleared
+  and the ramp is rebuilt (and re-rendered).
+
+After both fixes a 4-run dist smoke is deterministic: source and dist both
+`4135467496` in every run.
+
+### RED before GREEN
+
+Acceptance check `tests/gate/p2_2_check.py` (now permanent G19), first run on
+the untouched tree:
+
+```
+worker + OffscreenCanvas enabled       enabled=False stats=None canvasW=1600  FAIL
+heavy drag: no long task >50ms         worst=192ms over50=86 posted=None drawn=None cancelled=None scroll=10/10 maxRt=31.9ms  FAIL
+worker equals main-thread render       EXCEPTION ReferenceError: GCWorker is not defined  FAIL
+preview/full job types agree           EXCEPTION ReferenceError: GCWorker is not defined  FAIL
+20 rapid updates: latest only          EXCEPTION ReferenceError: GCWorker is not defined  FAIL
+fallback renders the same pixels       EXCEPTION ReferenceError: GCWorker is not defined  FAIL
+
+6 checks, 6 failure(s)
+WORKER FAIL
+```
+
+The 3 s drag produced 86 long tasks over 50 ms with a worst frame of 192 ms —
+the main thread was the renderer.
+
+### GREEN acceptance results
+
+Same check, final tree:
+
+```
+worker + OffscreenCanvas enabled       enabled=True stats={'enabled': True, 'ready': True, 'sourceReady': True, 'fontsReady': True, 'inFlight': False, 'pending': False, 'posted': 1, 'drawn': 1, 'cancelled': 0, 'errors': 0} canvasW=1600  PASS
+heavy drag: no long task >50ms         worst=0ms over50=0 posted=133 drawn=1 cancelled=132 depth=80->75 scroll=10/10 maxRt=5.1ms  PASS
+worker equals main-thread render       sync=2247827130 worker=2247827130  PASS
+preview/full job types agree           preview=2247827130 full=2247827130  PASS
+20 rapid updates: latest only          drawn=1 cancelled=18 posted=153 final=2178437341 expected=2178437341  PASS
+fallback renders the same pixels       workerEnabled=False hash=2243323070 sync=2243323070 errors=[]  PASS
+
+6 checks, 0 failure(s)
+WORKER PASS
+```
+
+Requirements covered: no long task > 50 ms while dragging a slider with seven
+heavy effects on a 3840×2160 image, the panel scrolls on every probe, the
+worker hash equals the main-thread hash exactly (0/255 difference, so the
+1/255 allowance was not needed), 20 rapid updates draw only the latest result,
+and the disabled-worker build renders the same pixels with no page error.
+
+### G19 is a permanent gate check
+
+`tests/gate/run_gate.py` now runs `p2_2_check.py` as G19 and requires ≥6
+checks, no `FAIL` rows and `WORKER PASS`. No existing threshold was changed.
+
+### Break-it (6/6)
+
+`tests/gate/p2_2_breakit.py`, run through the real file loader:
+
+1. a new image arrives while a heavy job is in flight;
+2. Compare is switched on mid-flight (split must win, left strip equals the
+   original bitmap, the in-flight job is cancelled);
+3. caching disabled, forcing the synchronous path;
+4. the output size shrinks while a job is in flight;
+5. `?worker=0` disables the worker for the whole page;
+6. a video replaces the image mid-flight (worker source invalidated).
+
+Final run:
+
+```
+new image while a job is in flight           source=1280 got=531199641 want=531199641 errors=[]  PASS
+compare on while a job is in flight          mode=split compare=True leftStripDiff=0 cancelled 0->1 errors=[]  PASS
+cache disabled forces the sync path          drawn 3->3 got=2243323070 want=2243323070 errors=[]  PASS
+output shrinks while a job is in flight      canvas=[800, 450] got=1719677662 want=1719677662 errors=[]  PASS
+video replaces image mid-flight              sourceType=video workerSourceReady=False errors=[]  PASS
+?worker=0 query disables the worker          enabled=False got=2243323070 want=2243323070 errors=[]  PASS
+
+6 cases, 0 failure(s)
+BREAK-IT PASS
+```
+
+Each case asserts the final canvas equals a fresh synchronous render of the
+current state (where a canvas is the artefact) and that no page error was
+raised. Cases 3 and 4 explicitly reset Compare/Original first; case 2 leaves
+Compare on by design.
+
+### Harness wait added to G11/G12 (no assertion changed)
+
+The async worker delivers frames after the render counter settles. G11
+(compare) and G12 (load) were measuring the next action while a job was still
+in flight, which produced `toggle 4K heavy: pipeline=1` and `unchanged state
+skips the render — pipeline=1`. `compare_check.settle()` and the coalescing
+step in `load_check.py` now wait for `GCWorker.stats().inFlight/pending` to
+drain. Thresholds and assertions are untouched; standalone results:
+G11 `21 checks, 0 failure(s)`, G12 `15 checks, 0 failure(s)`.
+
+### Screenshots
+
+`docs/evidence/p2-2/{dark,light}-{1280,360}-heavy.png`, re-captured by the
+acceptance check on the final tree with the seven-effect stack settled. The
+dark pair was opened and is genuinely dark (black surfaces); the light pair is
+cream.
+
+- `dark-1280-heavy.png` — dark theme, 1280 px: File/View/Edit menubar, status
+  `100% · 3840×2160 · 491ms`, zoom group, theme and panel buttons. The preview
+  is centred on the black canvas area with red glyph art; the right panel shows
+  Export Image / Reset All, Script Options (Depth 75, Category All, Set All,
+  empty Inject Characters, Offset 0, Text Style Regular, Use Palette checked,
+  Transparent Background unchecked, Auto Levels checked, black Background
+  Color, Charset Preset ASCII). No overflow, no clipped text.
+- `light-1280-heavy.png` — same geometry and controls in the light theme,
+  status `51% · 3840×2160 · 491ms`; cream surfaces, dark-red glyph art on the
+  black preview. Contrast holds; no overflow.
+- `dark-360-heavy.png` — mobile, status `51% · 3840×2160 · 491ms`: one top-bar
+  row, preview above the bottom sheet, sheet showing Export/Reset, Script
+  Options and Depth 75. Nothing overlaps; no horizontal overflow.
+- `light-360-heavy.png` — the same mobile layout and numbers in the light
+  theme.
+
+G3 wrote 58 screenshots per run; all 174 files are retained in
+`docs/evidence/p2-2-run-{1,2,3}/`. They were counted and reviewed as two
+labelled contact sheets plus three full-size spot checks, not opened one by
+one in this pass (recorded under HUMAN-CHECK).
+
+### Files changed
+
+- `render-worker.js` (new): worker boot, font registration, source/render
+  protocol, `preview`/`full` kinds, transferable results, errors.
+- `app.js`: worker client (init, eligibility, latest-wins queue, epoch,
+  bitmap results, fallback), `GCWorker` test hooks, `render(interactive)`,
+  preview `ImageBitmap`, cache invalidation on load and on font readiness.
+- `engine.js`, `effects.js`: `gcCreateCanvas` / `fxCreateCanvas` so canvas
+  creation works in a worker; no algorithm changes.
+- `style.css`: self-hosted JetBrains Mono 400/700.
+- `index.html`: JetBrains Mono removed from the Google Fonts request.
+- `assets/fonts/JetBrainsMono-latin.woff2` (new).
+- `tools/build.py`: builds `render-worker.min.js`.
+- `tests/gate/run_gate.py`: G19; docstring and failure list updated.
+- `tests/gate/compare_check.py`, `tests/gate/load_check.py`: drain wait only.
+- `tests/gate/p2_2_check.py`, `tests/gate/p2_2_breakit.py` (new).
+
+### Gate runs
+
+Three consecutive full runs on the frozen tree:
+
+| Run | Started | Finished | Duration | Result | Log |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 2026-11-08 16:26:07 +03:00 | 16:50:47 | 24m40s | PASS | `docs/evidence/p2-2/gate-run-1.log` |
+| 2 | 2026-11-08 16:50:47 +03:00 | 17:14:27 | 23m40s | PASS | `docs/evidence/p2-2/gate-run-2.log` |
+| 3 | 2026-11-08 17:14:27 +03:00 | 17:39:45 | 25m18s | PASS | `docs/evidence/p2-2/gate-run-3.log` |
+
+Every run: G1–G19 PASS, `GATE PASS`, exit 0, and no non-PASS check line. G5
+`169 checks, 0 failures`; G10 `239 checks, 0 failure(s)`; G11 `21 checks`;
+G12 `15 checks`; G13 `25 checks`; G19 `6 checks, 0 failure(s)` and
+`WORKER PASS`.
+
+Log provenance: the raw stdout logs lived in `/tmp/opencode` and were removed
+by the system temp cleanup at 2026-11-09 05:19 before they could be copied.
+The three committed `.log` files are the captured check-summary lines from the
+live runs, with that provenance header in each file. The screenshot sets and
+`gate-runs.txt` are the originals. An earlier launch of the same loop
+(16:23–16:24) aborted at G2's first `page.goto` with a 30 s Google Fonts
+navigation timeout; the network and the exact G2 flow succeeded immediately
+afterwards, and the three counted runs then passed. Those aborted attempts
+produced no gate rows.
+
+### HUMAN-CHECK
+
+- Real-device frame rate, real GPU playback and real Safari are not claimed by
+  the headless Chromium gate. The long-task numbers come from Chromium's
+  `longtask` observer in a headless browser.
+- The worker's font bytes and the main thread's font bytes are the same file
+  here; a browser whose `FontFace` in workers behaves differently is
+  unverified.
+- G3's 174 screenshots were reviewed as contact sheets and spot checks, not
+  individually; an individual pass over all 58 per run remains for the owner
+  or a follow-up session.
+
+### Commit / tag
+
+Tag `P2-2-pass` resolves to this commit. No runtime file changed after the
+green gates; only this section, the evidence logs and the re-captured heavy
+screenshots were added.
