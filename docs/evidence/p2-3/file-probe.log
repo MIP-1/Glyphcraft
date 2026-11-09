@@ -1,0 +1,9 @@
+file url file:///home/mustafa/glyphcraft/index.html
+reference(worker disabled over http): 2243323070 workerEnabled False
+file:// canvas: 2243323070 workerEnabled False stats {'enabled': False, 'ready': False, 'sourceReady': False, 'fontsReady': True, 'inFlight': False, 'pending': False, 'posted': 0, 'drawn': 0, 'cancelled': 0, 'errors': 0}
+file integrity {'w': 1600, 'h': 900, 'nonBlack': 1440000, 'loading': True, 'sourceType': 'image'}
+hash equal True
+file pageerrors []
+file console errors []
+screenshot docs/evidence/p2-3/file-fallback.png
+EXIT=0

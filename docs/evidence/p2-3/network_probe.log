@@ -1,0 +1,14 @@
+NORMAL
+  blocked: False
+  own: ['http://127.0.0.1:35699/index.html', 'http://127.0.0.1:35699/style.css', 'http://127.0.0.1:35699/engine.js', 'http://127.0.0.1:35699/effects.js', 'http://127.0.0.1:35699/reorder.js', 'http://127.0.0.1:35699/app.js', 'http://127.0.0.1:35699/assets/fonts/JetBrainsMono-latin.woff2', 'http://127.0.0.1:35699/assets/fonts/Goodmountain-Regular.woff2', 'http://127.0.0.1:35699/render-worker.js', 'http://127.0.0.1:35699/engine.js', 'http://127.0.0.1:35699/effects.js', 'http://127.0.0.1:35699/assets/fonts/JetBrainsMono-latin.woff2', 'http://127.0.0.1:35699/assets/fonts/JetBrainsMono-latin.woff2']
+  third_party: ['https://fonts.googleapis.com/css2?family=UnifrakturCook:ital,wght@0,700;1,700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap', 'https://fonts.gstatic.com/s/crimsontext/v19/wlp2gwHKFkZgtmSR3NB0oRJfbwhT.woff2', 'https://fonts.gstatic.com/s/crimsontext/v19/wlppgwHKFkZgtmSR3NB0oRJXsCxGDNNQ.woff2']
+  pageerrors: []
+  console_errors: []
+  state: {'logo': 'Goodmountain, UnifrakturCook, "Old English Text MT", serif', 'ui': '"Crimson Text", Georgia, serif', 'mono': '"JetBrains Mono", "Fira Mono", monospace', 'canvasW': 300, 'app': False}
+GOOGLE FONTS BLOCKED
+  blocked: True
+  own: ['http://127.0.0.1:35699/index.html', 'http://127.0.0.1:35699/style.css', 'http://127.0.0.1:35699/engine.js', 'http://127.0.0.1:35699/effects.js', 'http://127.0.0.1:35699/reorder.js', 'http://127.0.0.1:35699/app.js', 'http://127.0.0.1:35699/assets/fonts/JetBrainsMono-latin.woff2', 'http://127.0.0.1:35699/assets/fonts/Goodmountain-Regular.woff2', 'http://127.0.0.1:35699/render-worker.js', 'http://127.0.0.1:35699/engine.js', 'http://127.0.0.1:35699/effects.js', 'http://127.0.0.1:35699/assets/fonts/JetBrainsMono-latin.woff2', 'http://127.0.0.1:35699/assets/fonts/JetBrainsMono-latin.woff2']
+  third_party: ['https://fonts.googleapis.com/css2?family=UnifrakturCook:ital,wght@0,700;1,700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap']
+  pageerrors: []
+  console_errors: ['error: Failed to load resource: net::ERR_FAILED']
+  state: {'logo': 'Goodmountain, UnifrakturCook, "Old English Text MT", serif', 'ui': '"Crimson Text", Georgia, serif', 'mono': '"JetBrains Mono", "Fira Mono", monospace', 'canvasW': 300, 'app': False}

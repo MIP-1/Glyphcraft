@@ -1,0 +1,9 @@
+load http://127.0.0.1:41229/index.html
+hash
+load http://127.0.0.1:41229/dist/index.html
+hash
+source: hash=4135467496 canvas=900x600
+dist:   hash=4135467496 canvas=900x600
+errors: []
+DIST SMOKE PASS
+SMOKE_EXIT=0

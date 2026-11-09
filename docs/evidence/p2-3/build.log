@@ -1,0 +1,10 @@
+npm notice run glyphcraft@1.0.0 build
+npm notice run python tools/build.py
+engine.js: 35822 -> 32925 bytes
+effects.js: 30376 -> 27947 bytes
+reorder.js: 9972 -> 8376 bytes
+app.js: 123067 -> 112744 bytes
+render-worker.js: 2662 -> 2514 bytes
+style.css: 46876 -> 42842 bytes
+dist/ ready: JS 201899 -> 184506 bytes, 12 paths
+BUILD_EXIT=0

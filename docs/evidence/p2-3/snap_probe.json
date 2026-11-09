@@ -1,0 +1,158 @@
+[
+ [
+  [
+   "after-load",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+100",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+300",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+700",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+1500",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ]
+ ],
+ [
+  [
+   "after-load",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+100",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+300",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+700",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+1500",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ]
+ ],
+ [
+  [
+   "after-load",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+100",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+300",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+700",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ],
+  [
+   "after+1500",
+   {
+    "snap": "half",
+    "mobile": false,
+    "width": 740,
+    "mobileBtn": true,
+    "sheetH": 267
+   }
+  ]
+ ]
+]

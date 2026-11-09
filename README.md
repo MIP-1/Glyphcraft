@@ -173,9 +173,12 @@ They do not modify the source tree.
 
 The project is a static site. Pushing the folder to GitHub Pages (or any static
 host) works as-is; `.nojekyll` is not required because there are no
-underscore-prefixed paths. The only network request is the optional Google
-Fonts stylesheet (and its font files); the page falls back to Georgia/serif if
-it is blocked. JetBrains Mono is self-hosted and never touches the network.
+underscore-prefixed paths. Apart from the files of the site itself (including
+the two self-hosted woff2 fonts), the only third-party requests are the
+optional Google Fonts stylesheet and the Crimson Text faces it selects; the
+page falls back to Goodmountain/Georgia/serif if they are blocked. JetBrains
+Mono is served from this origin; its SIL OFL 1.1 licence sits next to it in
+`assets/fonts/JetBrainsMono-OFL.txt`.
 
 ## Browser support
 

@@ -1,0 +1,6 @@
+viewport_canvas [3840, 2160, 1600, 900]
+depth before drag 80 after drag 75
+hash fresh/default-depth 2243323070
+hash post-drag 2247827130 repeat 2247827130
+hash depth restored 2243323070
+long tasks [] errors []

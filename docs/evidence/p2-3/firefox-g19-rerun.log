@@ -1,0 +1,10 @@
+worker + OffscreenCanvas enabled       enabled=True stats={'enabled': True, 'ready': True, 'sourceReady': True, 'fontsReady': True, 'inFlight': False, 'pending': False, 'posted': 1, 'drawn': 1, 'cancelled': 0, 'errors': 0} canvasW=1600  PASS
+heavy drag: no long task >50ms         worst=0ms over50=0 posted=131 drawn=1 cancelled=130 depth=80->74 scroll=10/10 maxRt=103.8ms  PASS
+worker equals main-thread render       sync=1212541770 worker=1212541770  PASS
+preview/full job types agree           preview=1212541770 full=1212541770  PASS
+20 rapid updates: latest only          drawn=1 cancelled=18 posted=151 final=3301346089 expected=3301346089  PASS
+fallback renders the same pixels       workerEnabled=False hash=1764367753 sync=1764367753 errors=[]  PASS
+
+6 checks, 0 failure(s)
+WORKER PASS
+EXIT=0
