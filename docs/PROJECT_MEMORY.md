@@ -1,6 +1,6 @@
 # Glyphcraft — Project Memory (handoff)
 
-Snapshot date: 2026-11-08. Put this file at `docs/PROJECT_MEMORY.md`. Read it at the start of every new session, then read `docs/GATE.md`.
+Snapshot date: 2026-11-09. Put this file at `docs/PROJECT_MEMORY.md`. Read it at the start of every new session, then read `docs/GATE.md`.
 English only. Do not add Arabic anywhere in the repo (gate check G6).
 
 ## 1. What Glyphcraft is
@@ -25,7 +25,7 @@ Web app (HTML/CSS/JS, built with opencode) that loads an image or video and appl
 | 1 | `part1_gate_foundation.md` | P1-0 gate, P1-1 remove Arabic, P1-2 light theme, P1-3 top bar | P1-0 PASS (commit ae85c1c, tag P1-0-pass); P1-1 PASS (2446db4); P1-2 PASS (961ede5); P1-3 PASS (commit 855a5b4, tag `P1-3-pass`; fresh G8 evidence and 62 screenshots in `docs/evidence/p1-3/`) |
 | 1B | `part1b_hotfix.md` | H0 top bar; H1 stepper arrows; H2 white effects (Pencil Sketch first); H3 Compare freeze + grab; H4 reduce load | H0 PASS (7940130, tag H0-pass); H1 PASS (tag H1-pass); H2 PASS (tag H2-pass); H3 PASS (tag H3-pass); H4 PASS (commits da8e572, 81f6e00, 6c3031e, 9cdc711, a6909ee; tag H4-pass) |
 | 1C | `part1c.md` | C1 audit Part 1B, C2 video play/pause control, C3 multi-effect cost | C1/C2/C3 PASS (one commit, tags `C1-audit-pass`, `C2-video-control-pass`, `C3-perf-pass`; see `docs/GATE.md` Part 1C and `docs/HANDOFF_PART1C.md`). One commit for three tasks because the control exposed the pointer-capture bug and the perf work exposed the preview-collapse bug; the commit body records the departure from one-commit-per-task |
-| 2 | `part2_performance_core.md` | P2-1 before/after fps, P2-2 Worker + OffscreenCanvas, P2-3 fast preview, P2-4 undo/redo/history, P2-5 before/after finish, P2-6 presets | **P2-1 PASS (tag `P2-1-pass`, gate runs 5–7).** `originalBitmap` cache (drawOriginal 9.9 → 0.07 ms/frame; 4K render median 10.2 → 0.6 ms), band-only split repaint, paired G11/G13 budgets, 7/7 break-it cases, 62 screenshots. Post-PASS cleanup PASS (tag `P2-1-cleanup-pass`, gate runs 8–10). P2-2 … P2-6 NOT STARTED |
+| 2 | `part2_performance_core.md` | P2-1 before/after fps, P2-2 Worker + OffscreenCanvas, P2-3 fast preview, P2-4 undo/redo/history, P2-5 before/after finish, P2-6 presets | **P2-1 PASS (tag `P2-1-pass`, gate runs 5–7).** `originalBitmap` cache (drawOriginal 9.9 → 0.07 ms/frame; 4K render median 10.2 → 0.6 ms), band-only split repaint, paired G11/G13 budgets, 7/7 break-it cases, 62 screenshots. Post-PASS cleanup PASS (tag `P2-1-cleanup-pass`, gate runs 8–10). **P2-2 PASS (tag `P2-2-pass`, full gate 1–3 PASS, permanent G19, 6/6 break-it, exact 0/255 sync/worker parity, 174 screenshots).** P2-3 … P2-6 NOT STARTED |
 | M | `partM_mobile.md` | M1-1 mobile bottom sheet; M1-2 single-row mobile top bar | **M1-1 PASS and M1-2 PASS**, one commit on `main`, tags `M1-1-pass` / `M1-2-pass`; permanent G14–G18, G8 mobile rule changed with RED proof, 14/14 break-it; gates 1–3 in `docs/evidence/m1-2/`. Two tasks share one commit because M1-2 builds directly on the M1-1 mobile branch; `docs/GATE.md` records that M1-1 was proven RED→green in isolation but not separately full-gated 3× |
 | 3 | `part3_remaining_features.md` | Command Palette, drag to add effects, advanced export, batch ZIP, final regression | NOT STARTED |
 
@@ -35,8 +35,10 @@ Post-PASS cleanup (2026-11-04, tag `P2-1-cleanup-pass`): explanatory comments an
 
 Part M (2026-11-08, tags `M1-1-pass` / `M1-2-pass`, one commit): mobile ≤700 px is a column with a single 56 px top-bar row and a bottom sheet. Snaps derive from `visualViewport` (peek 105 px at 360 = handle + sticky bar + safe area, half 45%, full 88%); the sheet never overlaps the preview. Drag uses Pointer Events; grabber tap cycles; handle is an ARIA separator with Arrow keys and Enter/Space. Status moved into the handle row as the same component. Soft keyboard/safe-area handled via `--gc-vvh` + `viewport-fit=cover`. All mobile touch targets ≥44×44, inputs ≥16 px, numeric `inputmode="decimal"`, reorder long-press only. Mobile menu holds all 14 File/View/Edit commands in the inverse palette. 701–768 keeps the old overlay; G17 proves 1280×720 and 701×800 unchanged. G14–G18 are permanent. 14/14 break-it; 169 tests, G1–G13 and contrast green; gates 1–3 PASS.
 
+P2-2 (2026-11-08/09, tag `P2-2-pass`, one commit): preview effects run in a classic worker (`render-worker.js`) drawing into `OffscreenCanvas`; only rAF renders are eligible (image, worker + fonts ready, ≥6 effects, preview ≥900k px, no compare/original/cache-off/video-export). One in-flight + one latest-wins pending job, transferred `ImageBitmap` results, epoch invalidation, persistent worker source, `?worker=0` / `__GC_DISABLE_WORKER` / error fallback. Parity is exact 0/255 because preview always starts from `state.previewSource` (Chromium resamples `HTMLImageElement` and `ImageBitmap` differently); installing that bitmap clears the frame/composite/stage caches. The worker registers the self-hosted JetBrains Mono bytes with `FontFace`; font readiness clears the font-string-keyed glyph-density cache and rebuilds the ramp. Permanent G19 (drag with 7 heavy effects on 4K: 0 long tasks >50 ms; sync = worker; latest-only; preview/full; fallback), 6/6 break-it, 169 tests, gates 1–3 PASS. G3 wrote 58 screenshots per run (174 files in `docs/evidence/p2-2-run-{1,2,3}/`); the raw `/tmp` gate logs were removed by temp cleanup, so `docs/evidence/p2-2/gate-run-{1,2,3}.log` are the captured summary lines with a provenance header. Screenshots were contact-sheet and spot-check reviewed, not individually (HUMAN-CHECK).
+
 ### Already audited feature state (verify, do not trust)
-- Undo/redo exists (60-step cap, no History submenu, no disabled states). Compare exists under Edit (key `C`, hold-original on `O`; should move to View and use `B`). Presets: 7 built-ins + custom save/load, no rename/delete/import/export. Preview always downscaled (max 1600 px / 2.5 MP). No Worker. No command palette, no drag-to-add, no batch.
+- Undo/redo exists (60-step cap, no History submenu, no disabled states). Compare exists under Edit (key `C`, hold-original on `O`; should move to View and use `B`). Presets: 7 built-ins + custom save/load, no rename/delete/import/export. Preview always downscaled (max 1600 px / 2.5 MP). Worker preview exists (P2-2); fast full preview is P2-3. No command palette, no drag-to-add, no batch.
 
 ## 4. Known bugs (reported by the owner by hand-testing)
 1. ~~**Steppers:** fast repeated clicks add 1–3 steps then the value falls back to 0; holding an arrow is slower than before; also affects the arrows beside each effect box.~~ **Fixed in H1** (shared 44×44 stepper; rapid-press reset and 6px hit strip gone; hold 21/50/78 vs 17/37/57 at 1/2/3s).
@@ -54,12 +56,14 @@ Part M (2026-11-08, tags `M1-1-pass` / `M1-2-pass`, one commit): mobile ≤700 p
 - G5 the 169 existing tests (`tests/test_suite.py`), count may only go up
 - G6 no Arabic characters; G7 no Theme item in View; G8 top-bar geometry
 - G9 numeric steppers; G10 effect sweep; G11 compare split; G12 load/idle; G13 video control + multi-effect playback
-- G14 mobile layout (≤700 px: one column, no overlap, one-row bar, snaps, status in handle); G15 mobile gestures (CDP touch, pipeline idle during drag, touch Compare); G16 touch targets ≥44×44 with zero exceptions; G17 desktop unchanged (1280×720 and 701×800 rects); G18 mobile menu reachability + contrast parity
+- G14 mobile layout (≤700 px: one column, no overlap, one-row bar, snaps, status in handle); G15 mobile gestures (CDP touch, pipeline idle during drag, touch Compare); G16 touch targets ≥44×44 with zero exceptions; G17 desktop unchanged (1280×720 and 701×800 rects); G18 mobile menu reachability + contrast parity; G19 worker acceptance (≥6 checks, no FAIL, `WORKER PASS`)
 - New acceptance tests from every task are added permanently (G9+).
 Rules: states are PASS / FAIL / BLOCKED / HUMAN-CHECK only; test first (see it RED), fix, run gate 3× in a row, OPEN every screenshot and describe it, list 5 ways it could break, record in `docs/GATE.md`, one commit per task with tag `<task>-pass`. Never weaken a test or threshold; if a check looks wrong, show numbers from 3+ runs, prove the replacement still fails a deliberately slowed build, and record the old rule, new rule and reason in `docs/GATE.md`. After 3 failed attempts: BLOCKED. Real-device checks are HUMAN-CHECK.
 
 ## 6. Important findings
 - **Light-theme bug root cause:** the owner's Zen/Noctalia `userContent.css` declares `--surface`, `--text`, `--muted` on `*` in dark OS mode, which overrode the app's inherited tokens (app showed dark cards + invisible names on a light panel). Fix: app tokens renamed `--gc-surface`, unused generic aliases removed; the gate now injects `tests/gate/host_usercontent.css` during its real flow. Keep every app CSS variable namespaced `--gc-*`.
+- **Worker parity:** Chromium resamples `HTMLImageElement` and `ImageBitmap` differently when downscaling (`3734516470` vs `1004756903` on 4K → 1600×900). Always start preview renders from the persistent `ImageBitmap`; clear frame/composite/stage caches when it is installed, or the first element-based frame survives.
+- **Worker fonts:** workers do not inherit `document.fonts`. Self-host the exact woff2 and register the same bytes with `FontFace` in the worker; reject worker boot if registration fails. Also clear the font-string-keyed glyph-density cache when fonts become ready, otherwise the ramp keeps fallback metrics.
 - 22 effects: halftone, crt, glitch, vhs, pixelate, pixelsort, bloom, grain, vignette, duotone, posterize, edges, sketch, oil, emboss, blur, sharpen, invert, sepia, thermal, matrix, retro.
 - The earlier "all green" reports were misleading because the tests did not cover the owner's real browser conditions. Always test the fullest state in both themes with the host CSS fixture.
 
@@ -67,6 +71,8 @@ Rules: states are PASS / FAIL / BLOCKED / HUMAN-CHECK only; test first (see it R
 - Phone resolutions not confirmed from official specs: iPhone 18 Pro Max 1320×2868; iPhone 18 Pro and 18 1206×2622; Galaxy S26 Ultra and S26+ 1440×3120; S26 1080×2340.
 - Real mobile browsers: Android Firefox/Chrome and iOS Safari sheet drag feel, grabber tap cycle, soft keyboard and URL-bar collapse, and real-device frame rate are NOT claimed. The gate runs headless Chromium with CDP touch.
 - Real touch hardware: Compare split grab at 100/200/400% and the sheet handle gesture (headless reports 20/20 grabs, 0 pipeline calls during drag).
+- P2-2 worker: real-device frame rate, real GPU playback and real Safari are not claimed. Worker `FontFace` support in real Safari/Firefox is unverified; if registration fails the page falls back to the synchronous path.
+- P2-2 screenshots: G3 wrote 174 files (58 × 3 runs). They were reviewed as labelled contact sheets plus three full-size spot checks, not opened one by one; an individual pass remains.
 - Mobile landscape (height <500 px) has no separate layout yet; 640×360 is usable with a 199 px peek preview. A landscape-specific snap is a next step after real-device testing.
 - Physical Safari, full moving-video WebM/MP4 export and playback.
 - Owner checks by hand after each part (Ctrl+Shift+R, both themes, narrow and wide window, one real phone).
@@ -85,9 +91,9 @@ Continue from the first task that is not PASS. Do not ask me which effect or val
 ```
 
 ## 10. Next actions
-1. Part 1, Part 1B, Part 1C, P2-1 and Part M are PASS, each tagged `<task>-pass`; Part M's three green gates are `docs/evidence/m1-2/gate-run-1/2/3.log`; P2-1's are `docs/evidence/p2-1/gate-run-5/6/7.log`; the cleanup's are `docs/evidence/cleanup/gate-run-8/9/10.log`.
-2. **Next action: start P2-2** (Worker + OffscreenCanvas) from `docs/prompts/part2_performance_core.md`. Write its acceptance check first, see it RED, then implement.
-3. Then P2-3 fast preview, followed by P2-4 to P2-6 in order. Do not start P3 before the owner confirms Part 2.
+1. Part 1, Part 1B, Part 1C, P2-1, Part M and P2-2 are PASS, each tagged `<task>-pass`; Part M's three green gates are `docs/evidence/m1-2/gate-run-1/2/3.log`; P2-1's are `docs/evidence/p2-1/gate-run-5/6/7.log`; the cleanup's are `docs/evidence/cleanup/gate-run-8/9/10.log`; P2-2's are `docs/evidence/p2-2/gate-run-1/2/3.log`.
+2. **Next action: start P2-3** (fast preview) from `docs/prompts/part2_performance_core.md`, on top of the existing `preview` / `full` worker job kinds. Write its acceptance check first, see it RED, then implement.
+3. Then P2-4 to P2-6 in order. Do not start P3 before the owner confirms Part 2.
 4. Mobile landscape refinement (height <500 px): keep the current working layout, then add a landscape-specific snap after real-device testing.
 5. After each task: open every screenshot, list 5 ways it could break, run the full gate 3× in a row, record the block in `docs/GATE.md`, commit and tag `<task>-pass`.
 6. Then Part 3 (P3-1 … P3-5).

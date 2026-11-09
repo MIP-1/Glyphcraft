@@ -6,20 +6,18 @@ still (PNG / JPG / WebP / SVG / TXT) or a WebM clip.
 
 Everything runs locally. There is no install and no server side: plain HTML,
 CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
-`reorder.js` → `app.js`). Git keeps the readable sources; `npm run build`
+`reorder.js` → `app.js`), plus `render-worker.js`, which `app.js` starts when
+the browser supports it. Git keeps the readable sources; `npm run build`
 writes an optional minified `dist/` for publishing.
 
-## Status — 2026-11-08
+## Status — 2026-11-09
 
 **Current status:** PASS — Part 1, Part 1B, Part 1C, P2-1 and its post-PASS
-cleanup, and Part M are complete. P2-2 is next and not started. Tag `P2-1-pass`
-marks the P2-1 closeout; tag `P2-1-cleanup-pass` marks the cleanup commit;
-tags `M1-1-pass` and `M1-2-pass` mark the single Part M commit on `main`
-(both tasks share one commit because M1-2 reuses the M1-1 mobile branch;
-`docs/GATE.md` records the combined evidence honestly; the tag resolves to the
-exact commit with `git rev-parse M1-2-pass`).
-`npm run gate` is green three times in a row on the final tree
-(`docs/evidence/m1-2/gate-run-1/2/3.log`).
+cleanup, Part M, and P2-2 are complete. P2-3 is next and not started. Tag
+`P2-2-pass` marks the P2-2 closeout. Earlier tags: `P2-1-cleanup-pass` (cleanup
+commit), `P2-1-pass`, and `M1-1-pass` / `M1-2-pass` on the single Part M
+commit. `npm run gate` is green three times in a row on the final P2-2 tree
+(`docs/evidence/p2-2/gate-run-1/2/3.log`).
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -37,7 +35,7 @@ exact commit with `git rev-parse M1-2-pass`).
 | P2-1 post-PASS cleanup + publish build | PASS | tag `P2-1-cleanup-pass`, gate runs 8–10, `docs/GATE.md` cleanup |
 | M1-1 mobile bottom sheet | PASS | Part M commit, tag `M1-1-pass` |
 | M1-2 single-row mobile top bar | PASS | same commit, tag `M1-2-pass` |
-| P2-2 Worker + OffscreenCanvas | NOT STARTED | no `Worker` or `OffscreenCanvas` in the repo |
+| P2-2 Worker + OffscreenCanvas | PASS | tag `P2-2-pass`, gate runs 1–3, `docs/GATE.md` P2-2 |
 | P2-3 fast preview | NOT STARTED | preview is always downscaled |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
 | P2-5 before/after finish | NOT STARTED | |
@@ -46,39 +44,37 @@ exact commit with `git rev-parse M1-2-pass`).
 
 **Done in this step**
 
-- Mobile now means viewport width ≤700 px in any orientation. The layout is
-  one column: one-row top bar, preview, bottom sheet. The panel keeps its DOM,
-  controls and logic, and never covers the preview: the preview shrinks as the
-  sheet grows. Snaps come from `window.visualViewport.height` (peek = handle +
-  sticky action bar + safe area, measured 105 px at 360; half = 45%; full =
-  88%). Dragging the handle uses Pointer Events with capture and
-  position/velocity snapping; the grabber tap cycles peek → half → full. The
-  handle is an ARIA separator with ArrowUp/Down and Enter/Space. The status box
-  moved into the handle row as the same three-segment component.
-- Soft keyboard handling uses `visualViewport` resize/scroll, `viewport-fit=cover`
-  and safe-area padding, and scrolls the focused field into view. Mobile touch
-  targets are ≥44×44, inputs are ≥16 px, numeric fields get
-  `inputmode="decimal"`, and effect reordering is long-press only.
-- The top bar is a single 56 px row (plus safe-area top): menu, zoom group,
-  theme button and sheet toggle. File/View/Edit live in the mobile menu with
-  the inverse palette, all 14 commands and shortcut labels, and unchanged
-  keyboard shortcuts. At 320 px the padding and gaps shrink first; nothing
-  wraps, clips or disappears. Widths 701+ keep the previous layout, including
-  the 701–768 overlay branch.
-- New permanent checks G14–G18: mobile layout, gestures (CDP touch), touch
-  targets, desktop-unchanged guard and menu reachability/contrast. G8's mobile
-  rule changed deliberately from "two rows allowed if status-only" to "exactly
-  one row at ≤700 px", with a RED proof on a broken build.
-- 169 existing tests, G1–G13, contrast (9068 pairs, 0 violations), the publish
-  build and `tools/dist_smoke.py` (same canvas hash `651948841`) are green.
-  Baseline evidence is in `docs/evidence/m1-0/`; RED/green logs, screenshots
-  and 14/14 break-it cases are in `docs/evidence/m1-1/` and `m1-2/`.
+- The preview effect pipeline can run in a classic Web Worker drawing into
+  `OffscreenCanvas`. Only rAF-driven renders are eligible: image source, worker
+  ready, fonts ready, ≥6 enabled effects, preview ≥900,000 px, and no compare /
+  original / cache-off / video-export. Everything else stays synchronous, so
+  tests, video playback and export behave exactly as before.
+- One job in flight, one latest-wins pending job; transferred `ImageBitmap`
+  results, an epoch that drops stale jobs across image/video changes, and a
+  persistent worker-side source bitmap.
+- Pixel parity is exact (0/255, so the 1/255 allowance was not used). The
+  preview starts from a persistent `ImageBitmap`, never the `HTMLImageElement`,
+  because Chromium resamples the two differently when downscaling. The frame,
+  composite and stage caches are cleared when that bitmap is installed.
+- The worker registers the same self-hosted JetBrains Mono 400/700 bytes
+  (`assets/fonts/JetBrainsMono-latin.woff2`) with `FontFace`. Font readiness
+  also clears the cached glyph densities and rebuilds the ramp, so a page never
+  keeps a fallback-font ramp.
+- Fallback: `?worker=0`, `window.__GC_DISABLE_WORKER`, or any boot/runtime error
+  permanently returns to the synchronous path with the same pixels and no page
+  error.
+- New permanent G19: the acceptance check proves no long task >50 ms over a 3 s
+  seven-effect drag on 3840×2160, exact sync/worker parity, latest-only under 20
+  rapid updates, `preview`/`full` job parity, and the disabled-worker fallback.
+  6/6 break-it cases pass. 169 tests, G1–G19, the publish build and a
+  deterministic `tools/dist_smoke.py` (`4135467496`) are green; the full gate
+  passed three times in a row.
 
 **Next steps**
 
-1. Start P2-2: move the effect pipeline to a Worker with OffscreenCanvas, add
-   its acceptance check first, and keep G11/G13 green.
-2. Then P2-3 fast preview, followed by P2-4 to P2-6 in order.
+1. Start P2-3: fast preview on top of the existing `preview` / `full` worker
+   job kinds, acceptance check first.
+2. Then P2-4 undo/redo/history, P2-5 before/after finish and P2-6 presets.
 3. Mobile landscape refinement (height <500 px): the sheet and all controls
    work today (640×360 peek preview is 199 px), but add a landscape-specific
    snap once real-device testing is available.
@@ -86,17 +82,19 @@ exact commit with `git rev-parse M1-2-pass`).
 
 **HUMAN-CHECK**
 
+- Real-device frame rate, real GPU playback and real Safari: the worker's
+  long-task numbers come from headless Chromium and are not a real-device
+  claim.
+- Worker `FontFace` support in a real Safari/Firefox: if a browser cannot
+  register the self-hosted font in the worker, the code falls back to the
+  synchronous path, but that fallback is unverified there.
+- G3 wrote 174 screenshots across the three gate runs; they were reviewed as
+  contact sheets and spot checks in this pass, not individually. An individual
+  pass over all 58 per run remains.
 - Real Android Firefox/Chrome and iOS Safari: sheet drag feel, grabber tap
-  cycle, soft keyboard and URL-bar collapse, and real-device frame rate are not
-  claimed by the headless Chromium gate.
-- Real touch hardware: Compare split grab at 100/200/400% and the sheet handle
-  gesture. Headless CDP touch reports 20/20 grabs and 0 pipeline calls during a
-  drag.
+  cycle, soft keyboard and URL-bar collapse.
 - Desktop: confirm 701–768 px still shows the old overlay and 1280 px is
   unchanged (G17 compares 15 rects, tolerance 1 px).
-- Drag the split on a 4K image in a real browser: it must stay under the
-  pointer and stay correct after zoom, pan, resize, a value change, undo/redo
-  and a theme switch.
 
 ## Run it
 
@@ -160,9 +158,11 @@ borders in both themes at 360 px and 1280 px.
 ## Tests
 
 ```bash
-python tests/test_suite.py     # 169 checks, headless Chromium via Playwright
-python tests/test_contrast.py  # WCAG contrast audit, both themes, 2 widths
-python tools/dist_smoke.py     # publish build renders the same canvas
+python tests/test_suite.py        # 169 checks, headless Chromium via Playwright
+python tests/test_contrast.py     # WCAG contrast audit, both themes, 2 widths
+python tests/gate/p2_2_check.py   # worker acceptance (also permanent G19)
+python tests/gate/p2_2_breakit.py # six hostile worker cases
+python tools/dist_smoke.py        # publish build renders the same canvas
 ```
 
 Reports and screenshots land in `tests/reports/` (gitignored). Tests use
@@ -174,7 +174,8 @@ They do not modify the source tree.
 The project is a static site. Pushing the folder to GitHub Pages (or any static
 host) works as-is; `.nojekyll` is not required because there are no
 underscore-prefixed paths. The only network request is the optional Google
-Fonts stylesheet — the page falls back to Georgia/serif if it is blocked.
+Fonts stylesheet (and its font files); the page falls back to Georgia/serif if
+it is blocked. JetBrains Mono is self-hosted and never touches the network.
 
 ## Browser support
 
