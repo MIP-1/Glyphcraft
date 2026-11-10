@@ -10,14 +10,14 @@ CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
 the browser supports it. Git keeps the readable sources; `npm run build`
 writes an optional minified `dist/` for publishing.
 
-## Status — 2026-11-09
+## Status — 2026-11-10
 
-**Current status:** PASS — Part 1, Part 1B, Part 1C, P2-1 and its post-PASS
-cleanup, Part M, and P2-2 are complete. P2-3 is next and not started. Tag
-`P2-2-pass` marks the P2-2 closeout. Earlier tags: `P2-1-cleanup-pass` (cleanup
-commit), `P2-1-pass`, and `M1-1-pass` / `M1-2-pass` on the single Part M
-commit. `npm run gate` is green three times in a row on the final P2-2 tree
-(`docs/evidence/p2-2/gate-run-1/2/3.log`).
+**Current status:** IN PROGRESS — P2-3 Step 3 (audit, baseline, golden outputs,
+decision table) is complete on branch `p2-3-work` and tagged `P2-3-A-pass`.
+Step 4 (video: 850 MB limit and native-resolution export) is next. Part 1,
+Part 1B, Part 1C, P2-1 and its post-PASS cleanup, Part M, and P2-2 remain
+complete and tagged. `npm run gate` was green three times in a row on the final
+P2-2 tree (`docs/evidence/p2-2/gate-run-1/2/3.log`).
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -36,7 +36,7 @@ commit. `npm run gate` is green three times in a row on the final P2-2 tree
 | M1-1 mobile bottom sheet | PASS | Part M commit, tag `M1-1-pass` |
 | M1-2 single-row mobile top bar | PASS | same commit, tag `M1-2-pass` |
 | P2-2 Worker + OffscreenCanvas | PASS | tag `P2-2-pass`, gate runs 1–3, `docs/GATE.md` P2-2 |
-| P2-3 fast preview | NOT STARTED | preview is always downscaled |
+| P2-3 fast preview | IN PROGRESS | Step 3 (audit/baseline/golden/decisions) complete, tag `P2-3-A-pass` |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
 | P2-5 before/after finish | NOT STARTED | |
 | P2-6 presets finish | NOT STARTED | |
@@ -70,15 +70,35 @@ commit. `npm run gate` is green three times in a row on the final P2-2 tree
   deterministic `tools/dist_smoke.py` (`4135467496`) are green; the full gate
   passed three times in a row.
 
+**P2-3 Step 3 (this step)**
+
+- Full audit of every source, tool and test file: `docs/evidence/p2-3/audit.md`.
+- Measured baseline on the unchanged tree: `docs/evidence/p2-3/baseline.json`
+  and `baseline.log`. The preview clamps 1080p and 4K to 1600x900; native
+  samples are one-shot. Slowest item is `oil` at 1.7–2.5 s preview and
+  8.8–13.1 s native 4K. Worker drag stays at 16.7 ms rAF with 0 long tasks;
+  sync drag is 83.3 ms with 1,000 long tasks. Playback is 16.7 ms in all six
+  video cells. Headless software raster is a floor, not a GPU claim.
+- 200 golden canvas hashes (22 effects × 3 modes × 1080p/4K, 44 native
+  Effects Only cases, and 24 stack cases), seed `0x5EED1234`, no excluded
+  effects: `tests/gate/golden_p2_3.json`, `docs/evidence/p2-3/golden.md`.
+- New permanent G20 runs the golden check. It passed 200/200 exact in 193.5 s.
+- Decision table: no module rebuild. `effects.js`, `engine.js`, `app.js` and
+  the video path are OPTIMIZE IN PLACE; `reorder.js`, `render-worker.js`,
+  `index.html`/`style.css` and the build are KEEP. See
+  `docs/evidence/p2-3/decisions.md`.
+
 **Next steps**
 
-1. Start P2-3: fast preview on top of the existing `preview` / `full` worker
-   job kinds, acceptance check first.
-2. Then P2-4 undo/redo/history, P2-5 before/after finish and P2-6 presets.
-3. Mobile landscape refinement (height <500 px): the sheet and all controls
-   work today (640×360 peek preview is 199 px), but add a landscape-specific
-   snap once real-device testing is available.
-4. Re-run the full gate three times after each task and open every screenshot.
+1. P2-3 Step 4: split the 40 MB image limit from the new 850 MB video limit,
+   export video at the source's native resolution, and add the boundary,
+   whole-file-read and ffprobe checks (RED first).
+2. Then Step 5 speed work in the order in `decisions.md`, one change per commit,
+   with G20 exact and paired before/after numbers.
+3. Then the three full gate runs, break-it, docs, merge and `P2-3-pass`.
+4. After P2-3: P2-4 undo/redo/history, P2-5 before/after finish and P2-6 presets.
+5. Mobile landscape refinement (height <500 px): the sheet and controls work
+   today, but add a landscape-specific snap once real-device testing is available.
 
 **HUMAN-CHECK**
 
@@ -161,6 +181,7 @@ borders in both themes at 360 px and 1280 px.
 python tests/test_suite.py        # 169 checks, headless Chromium via Playwright
 python tests/test_contrast.py     # WCAG contrast audit, both themes, 2 widths
 python tests/gate/p2_2_check.py   # worker acceptance (also permanent G19)
+python tests/gate/golden_check.py # 200 effect/mode/input canvas hashes (also G20)
 python tests/gate/p2_2_breakit.py # six hostile worker cases
 python tools/dist_smoke.py        # publish build renders the same canvas
 ```

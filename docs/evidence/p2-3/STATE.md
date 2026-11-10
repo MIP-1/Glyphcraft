@@ -12,4 +12,17 @@
   - font OFL licence added; README network sentence corrected
   - build + dist smoke re-run green
 - Tag: `P2-2-closeout-pass`
-- Next: Step 3 — Task A audit/baseline/decisions
+- Step 3 (Task A):
+  - A1 audit complete: `docs/evidence/p2-3/audit.md`
+  - A2 baseline complete: `baseline.json` + `baseline.log`, all 9 sections,
+    no page errors, 132 render rows, 24 stack rows
+  - A3 golden complete: 200 cases, seed `0x5EED1234`, no exclusions;
+    `tests/gate/golden_p2_3.json`, generator `tests/bench/golden_gen.py`,
+    checker `tests/gate/golden_check.py`; two exact check runs
+  - G20 wired into `tests/gate/run_gate.py`; standalone G20 PASS 200/200
+    exact in 193.5 s (`g20-run.log`)
+  - A4 decisions complete: `docs/evidence/p2-3/decisions.md`; no rebuild
+    candidate, no owner question needed
+- Tag: `P2-3-A-pass`
+- Next: Step 4 — Task B video (850 MB limit, native-resolution export),
+  checks RED first

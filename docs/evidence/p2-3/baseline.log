@@ -1,0 +1,191 @@
+wrote docs/evidence/p2-3/baseline.json
+=== startup ===
+wrote docs/evidence/p2-3/baseline.json
+=== render ===
+render 1080p script halftone   preview=507.8ms full=1259.5ms 1920x1080
+render 1080p script crt        preview=334.3ms full=745.5ms 1920x1080
+render 1080p script glitch     preview=245.8ms full=311.4ms 1920x1080
+render 1080p script vhs        preview=202.3ms full=238.8ms 1920x1080
+render 1080p script pixelate   preview=143.4ms full=158.4ms 1920x1080
+render 1080p script pixelsort  preview=198.3ms full=212.6ms 1920x1080
+render 1080p script bloom      preview=172.3ms full=244.7ms 1920x1080
+render 1080p script grain      preview=157.2ms full=273.7ms 1920x1080
+render 1080p script vignette   preview=130.9ms full=265.1ms 1920x1080
+render 1080p script duotone    preview=179.8ms full=237.5ms 1920x1080
+render 1080p script posterize  preview=165.2ms full=292.8ms 1920x1080
+render 1080p script edges      preview=159.3ms full=349.5ms 1920x1080
+render 1080p script sketch     preview=455.4ms full=665.4ms 1920x1080
+render 1080p script oil        preview=1727.1ms full=3659.2ms 1920x1080
+render 1080p script emboss     preview=258.9ms full=253.8ms 1920x1080
+render 1080p script blur       preview=180ms full=382.3ms 1920x1080
+render 1080p script sharpen    preview=339.9ms full=760.8ms 1920x1080
+render 1080p script invert     preview=228.4ms full=173.1ms 1920x1080
+render 1080p script sepia      preview=197ms full=279.9ms 1920x1080
+render 1080p script thermal    preview=179.3ms full=291.1ms 1920x1080
+render 1080p script matrix     preview=121.1ms full=137.9ms 1920x1080
+render 1080p script retro      preview=327.4ms full=182.1ms 1920x1080
+render 1080p dither halftone   preview=338.4ms full=635.9ms 1920x1080
+render 1080p dither crt        preview=314.2ms full=469.5ms 1920x1080
+render 1080p dither glitch     preview=349.3ms full=1546.4ms 1920x1080
+render 1080p dither vhs        preview=322.4ms full=395.4ms 1920x1080
+render 1080p dither pixelate   preview=274.6ms full=331.4ms 1920x1080
+render 1080p dither pixelsort  preview=369.6ms full=516.6ms 1920x1080
+render 1080p dither bloom      preview=375.9ms full=470.8ms 1920x1080
+render 1080p dither grain      preview=332.8ms full=503.4ms 1920x1080
+render 1080p dither vignette   preview=368.7ms full=366.3ms 1920x1080
+render 1080p dither duotone    preview=285.3ms full=418.9ms 1920x1080
+render 1080p dither posterize  preview=289.7ms full=420.2ms 1920x1080
+render 1080p dither edges      preview=339.3ms full=542.5ms 1920x1080
+render 1080p dither sketch     preview=305.4ms full=516.8ms 1920x1080
+render 1080p dither oil        preview=1703.9ms full=2486.2ms 1920x1080
+render 1080p dither emboss     preview=348.3ms full=449.7ms 1920x1080
+render 1080p dither blur       preview=309.2ms full=1147.9ms 1920x1080
+render 1080p dither sharpen    preview=465.3ms full=496.9ms 1920x1080
+render 1080p dither invert     preview=282ms full=370.6ms 1920x1080
+render 1080p dither sepia      preview=324ms full=749.7ms 1920x1080
+render 1080p dither thermal    preview=374.3ms full=458.7ms 1920x1080
+render 1080p dither matrix     preview=281.9ms full=607.9ms 1920x1080
+render 1080p dither retro      preview=445.3ms full=646.7ms 1920x1080
+render 1080p effects halftone   preview=95.8ms full=105.8ms 1920x1080
+render 1080p effects crt        preview=64.9ms full=82.4ms 1920x1080
+render 1080p effects glitch     preview=84.4ms full=136.5ms 1920x1080
+render 1080p effects vhs        preview=69.3ms full=70.4ms 1920x1080
+render 1080p effects pixelate   preview=11.5ms full=10ms 1920x1080
+render 1080p effects pixelsort  preview=57.6ms full=73.2ms 1920x1080
+render 1080p effects bloom      preview=69.3ms full=75.6ms 1920x1080
+render 1080p effects grain      preview=53.6ms full=60.2ms 1920x1080
+render 1080p effects vignette   preview=18.4ms full=22ms 1920x1080
+render 1080p effects duotone    preview=41.4ms full=56.7ms 1920x1080
+render 1080p effects posterize  preview=35.9ms full=30.1ms 1920x1080
+render 1080p effects edges      preview=62.9ms full=85.9ms 1920x1080
+render 1080p effects sketch     preview=83.1ms full=80ms 1920x1080
+render 1080p effects oil        preview=1658.5ms full=2619.1ms 1920x1080
+render 1080p effects emboss     preview=131.8ms full=143.3ms 1920x1080
+render 1080p effects blur       preview=65.7ms full=174.4ms 1920x1080
+render 1080p effects sharpen    preview=130.9ms full=145.2ms 1920x1080
+render 1080p effects invert     preview=36.3ms full=52.1ms 1920x1080
+render 1080p effects sepia      preview=50.4ms full=62.8ms 1920x1080
+render 1080p effects thermal    preview=53.4ms full=69.7ms 1920x1080
+render 1080p effects matrix     preview=13.6ms full=8.8ms 1920x1080
+render 1080p effects retro      preview=102ms full=250.5ms 1920x1080
+render 4k script halftone   preview=168.6ms full=752.2ms 3840x2160
+render 4k script crt        preview=166.9ms full=590.6ms 3840x2160
+render 4k script glitch     preview=191.2ms full=824ms 3840x2160
+render 4k script vhs        preview=153.6ms full=697.9ms 3840x2160
+render 4k script pixelate   preview=105.4ms full=518.6ms 3840x2160
+render 4k script pixelsort  preview=178.8ms full=711.8ms 3840x2160
+render 4k script bloom      preview=164.1ms full=580.3ms 3840x2160
+render 4k script grain      preview=142.5ms full=899.3ms 3840x2160
+render 4k script vignette   preview=140.3ms full=652.8ms 3840x2160
+render 4k script duotone    preview=158.2ms full=674.4ms 3840x2160
+render 4k script posterize  preview=136.9ms full=487.6ms 3840x2160
+render 4k script edges      preview=105.4ms full=426.4ms 3840x2160
+render 4k script sketch     preview=164.7ms full=659.8ms 3840x2160
+render 4k script oil        preview=1606.8ms full=8787.7ms 3840x2160
+render 4k script emboss     preview=227.6ms full=840.6ms 3840x2160
+render 4k script blur       preview=193.5ms full=1652.7ms 3840x2160
+render 4k script sharpen    preview=531.7ms full=951.4ms 3840x2160
+render 4k script invert     preview=135.1ms full=545.8ms 3840x2160
+render 4k script sepia      preview=130.6ms full=985.8ms 3840x2160
+render 4k script thermal    preview=162.1ms full=827.3ms 3840x2160
+render 4k script matrix     preview=145.4ms full=748.5ms 3840x2160
+render 4k script retro      preview=304ms full=1774.1ms 3840x2160
+render 4k dither halftone   preview=665.4ms full=1814ms 3840x2160
+render 4k dither crt        preview=347.6ms full=1613ms 3840x2160
+render 4k dither glitch     preview=618.4ms full=1638.6ms 3840x2160
+render 4k dither vhs        preview=352.6ms full=1815.6ms 3840x2160
+render 4k dither pixelate   preview=348.1ms full=3271.6ms 3840x2160
+render 4k dither pixelsort  preview=358.4ms full=1495.9ms 3840x2160
+render 4k dither bloom      preview=639ms full=2208.2ms 3840x2160
+render 4k dither grain      preview=302.2ms full=2260.7ms 3840x2160
+render 4k dither vignette   preview=282.9ms full=1692.3ms 3840x2160
+render 4k dither duotone    preview=331.8ms full=2058.9ms 3840x2160
+render 4k dither posterize  preview=363.1ms full=1708.6ms 3840x2160
+render 4k dither edges      preview=316.7ms full=2032.9ms 3840x2160
+render 4k dither sketch     preview=354.4ms full=1777.6ms 3840x2160
+render 4k dither oil        preview=2138.8ms full=11014.4ms 3840x2160
+render 4k dither emboss     preview=402.1ms full=2453.6ms 3840x2160
+render 4k dither blur       preview=370.6ms full=2073ms 3840x2160
+render 4k dither sharpen    preview=450.5ms full=2157.6ms 3840x2160
+render 4k dither invert     preview=438.8ms full=3180.2ms 3840x2160
+render 4k dither sepia      preview=510.1ms full=2470.6ms 3840x2160
+render 4k dither thermal    preview=486.3ms full=3390.7ms 3840x2160
+render 4k dither matrix     preview=413.3ms full=2155.7ms 3840x2160
+render 4k dither retro      preview=497.5ms full=3971.8ms 3840x2160
+render 4k effects halftone   preview=118.3ms full=628.7ms 3840x2160
+render 4k effects crt        preview=95ms full=727.9ms 3840x2160
+render 4k effects glitch     preview=169.6ms full=697.7ms 3840x2160
+render 4k effects vhs        preview=85ms full=433.5ms 3840x2160
+render 4k effects pixelate   preview=18.7ms full=65.5ms 3840x2160
+render 4k effects pixelsort  preview=101.6ms full=372.3ms 3840x2160
+render 4k effects bloom      preview=96.1ms full=665.3ms 3840x2160
+render 4k effects grain      preview=79.6ms full=315.4ms 3840x2160
+render 4k effects vignette   preview=42.9ms full=144.3ms 3840x2160
+render 4k effects duotone    preview=54.9ms full=317ms 3840x2160
+render 4k effects posterize  preview=43.2ms full=221.8ms 3840x2160
+render 4k effects edges      preview=95.7ms full=475.7ms 3840x2160
+render 4k effects sketch     preview=104.3ms full=425.8ms 3840x2160
+render 4k effects oil        preview=2469.4ms full=13136.3ms 3840x2160
+render 4k effects emboss     preview=147.8ms full=590.2ms 3840x2160
+render 4k effects blur       preview=71.5ms full=369.6ms 3840x2160
+render 4k effects sharpen    preview=128.4ms full=559.6ms 3840x2160
+render 4k effects invert     preview=33.8ms full=146.9ms 3840x2160
+render 4k effects sepia      preview=49.7ms full=262.2ms 3840x2160
+render 4k effects thermal    preview=74.1ms full=303.5ms 3840x2160
+render 4k effects matrix     preview=13.9ms full=57ms 3840x2160
+render 4k effects retro      preview=259.7ms full=373.8ms 3840x2160
+wrote docs/evidence/p2-3/baseline.json
+=== stacks ===
+stack 1080p script  1 effects median=162.8ms p95=248.7
+stack 1080p script  3 effects median=226ms p95=259.8
+stack 1080p script  6 effects median=319ms p95=435.9
+stack 1080p script 12 effects median=763.9ms p95=939
+stack 1080p dither  1 effects median=324.1ms p95=486.6
+stack 1080p dither  3 effects median=384.3ms p95=388.9
+stack 1080p dither  6 effects median=436.3ms p95=441.3
+stack 1080p dither 12 effects median=950.4ms p95=1034.2
+stack 1080p effects  1 effects median=73.8ms p95=80.6
+stack 1080p effects  3 effects median=133.3ms p95=200
+stack 1080p effects  6 effects median=203.7ms p95=217.2
+stack 1080p effects 12 effects median=698.2ms p95=731.9
+stack 4k script  1 effects median=167.3ms p95=197.1
+stack 4k script  3 effects median=222.8ms p95=366
+stack 4k script  6 effects median=302.8ms p95=401.2
+stack 4k script 12 effects median=646.9ms p95=975.1
+stack 4k dither  1 effects median=329.9ms p95=403.7
+stack 4k dither  3 effects median=383.9ms p95=442.9
+stack 4k dither  6 effects median=454.3ms p95=462.6
+stack 4k dither 12 effects median=859.3ms p95=1110.8
+stack 4k effects  1 effects median=74.6ms p95=111.2
+stack 4k effects  3 effects median=126ms p95=210.1
+stack 4k effects  6 effects median=207.6ms p95=224.7
+stack 4k effects 12 effects median=685.4ms p95=717.5
+wrote docs/evidence/p2-3/baseline.json
+=== drag ===
+drag window 1: sync rAF med=83.3 render med=60.9 | worker rAF med=16.7 render med=0.4
+drag window 2: sync rAF med=83.3 render med=63.2 | worker rAF med=16.7 render med=0.3
+drag window 3: sync rAF med=83.3 render med=64.6 | worker rAF med=16.7 render med=0.2
+drag window 4: sync rAF med=83.3 render med=66.6 | worker rAF med=16.7 render med=0.2
+drag window 5: sync rAF med=83.3 render med=64.9 | worker rAF med=16.7 render med=0.4
+wrote docs/evidence/p2-3/baseline.json
+=== video ===
+video 1080p 0 effects median=16.7ms
+video 1080p 3 effects median=16.7ms
+video 1080p 6 effects median=16.7ms
+video 4k 0 effects median=16.7ms
+video 4k 3 effects median=16.7ms
+video 4k 6 effects median=16.7ms
+wrote docs/evidence/p2-3/baseline.json
+=== export ===
+export 4.95s for 1 s of video, peak heap 33.1 MB, output 1280x720
+wrote docs/evidence/p2-3/baseline.json
+=== idle ===
+idle CPU 3.02% of one core
+wrote docs/evidence/p2-3/baseline.json
+=== heap ===
+heap 2.6 -> 2.6 MB over 200 renders
+wrote docs/evidence/p2-3/baseline.json
+=== bundle ===
+wrote docs/evidence/p2-3/baseline.json
+BASELINE WRITTEN /home/mustafa/glyphcraft/docs/evidence/p2-3/baseline.json
+EXIT=0

@@ -1,0 +1,3831 @@
+{
+  "meta": {
+    "task": "P2-3 A3 golden outputs",
+    "when": "2026-11-10T02:50:30+00:00",
+    "platform": "Linux-7.3.3-1-cachyos-x86_64-with-glibc2.44",
+    "chromium": "156.0.8078.4",
+    "seed": 1592594996,
+    "viewport": [
+      1440,
+      1000
+    ],
+    "canvas": "preview (1600x900 clamp) for every mode, plus native-size Effects Only for all 22 effects; same prepareBase/renderToContext path as export",
+    "seeded_random_effects": [
+      "glitch",
+      "vhs",
+      "pixelsort",
+      "grain",
+      "matrix"
+    ],
+    "excluded": [],
+    "case_count": 200
+  },
+  "cases": [
+    {
+      "id": "1080p-script-halftone",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 845865483,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-crt",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "crt"
+      ],
+      "params": {
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        }
+      },
+      "hash": 3496899464,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-glitch",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "glitch"
+      ],
+      "params": {
+        "glitch": {
+          "shift": 20,
+          "slices": 20
+        }
+      },
+      "hash": 3119826157,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-vhs",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "vhs"
+      ],
+      "params": {
+        "vhs": {
+          "bleed": 50,
+          "noise": 50
+        }
+      },
+      "hash": 1609113884,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-pixelate",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "pixelate"
+      ],
+      "params": {
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 193411447,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-pixelsort",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "pixelsort"
+      ],
+      "params": {
+        "pixelsort": {
+          "threshold": 50,
+          "amount": 50
+        }
+      },
+      "hash": 3590031594,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-bloom",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "bloom"
+      ],
+      "params": {
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        }
+      },
+      "hash": 3889513820,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-grain",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "grain"
+      ],
+      "params": {
+        "grain": {
+          "amount": 50
+        }
+      },
+      "hash": 1789908033,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-vignette",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "vignette"
+      ],
+      "params": {
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        }
+      },
+      "hash": 3731840632,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-duotone",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "duotone"
+      ],
+      "params": {
+        "duotone": {
+          "dark": "#0a1a10",
+          "light": "#8dffa8"
+        }
+      },
+      "hash": 3381811266,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-posterize",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "posterize"
+      ],
+      "params": {
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 134071188,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-edges",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "edges"
+      ],
+      "params": {
+        "edges": {
+          "amount": 50
+        }
+      },
+      "hash": 3712182663,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-sketch",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "sketch"
+      ],
+      "params": {
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        }
+      },
+      "hash": 1054844711,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-oil",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "oil"
+      ],
+      "params": {
+        "oil": {
+          "radius": 2
+        }
+      },
+      "hash": 9574840,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-emboss",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "emboss"
+      ],
+      "params": {
+        "emboss": {
+          "amount": 50
+        }
+      },
+      "hash": 3923075668,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-blur",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "blur"
+      ],
+      "params": {
+        "blur": {
+          "radius": 10
+        }
+      },
+      "hash": 3461608091,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-sharpen",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "sharpen"
+      ],
+      "params": {
+        "sharpen": {
+          "amount": 50
+        }
+      },
+      "hash": 2892212383,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-invert",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "invert"
+      ],
+      "params": {
+        "invert": {}
+      },
+      "hash": 140405683,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-sepia",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "sepia"
+      ],
+      "params": {
+        "sepia": {
+          "amount": 50
+        }
+      },
+      "hash": 942626346,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-thermal",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "thermal"
+      ],
+      "params": {
+        "thermal": {
+          "amount": 50
+        }
+      },
+      "hash": 3973976499,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-matrix",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "matrix"
+      ],
+      "params": {
+        "matrix": {
+          "density": 55,
+          "amount": 50
+        }
+      },
+      "hash": 2193136581,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-retro",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "retro"
+      ],
+      "params": {
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 2454325951,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-stack1",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 845865483,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-stack3",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 4034968747,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-stack6",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 488210188,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-script-stack12",
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        },
+        "edges": {
+          "amount": 50
+        },
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        },
+        "emboss": {
+          "amount": 50
+        },
+        "blur": {
+          "radius": 10
+        },
+        "thermal": {
+          "amount": 50
+        },
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 4226268613,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-halftone",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 3410679474,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-crt",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "crt"
+      ],
+      "params": {
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        }
+      },
+      "hash": 3426090966,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-glitch",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "glitch"
+      ],
+      "params": {
+        "glitch": {
+          "shift": 20,
+          "slices": 20
+        }
+      },
+      "hash": 2824044646,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-vhs",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "vhs"
+      ],
+      "params": {
+        "vhs": {
+          "bleed": 50,
+          "noise": 50
+        }
+      },
+      "hash": 862340136,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-pixelate",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "pixelate"
+      ],
+      "params": {
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 2170339708,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-pixelsort",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "pixelsort"
+      ],
+      "params": {
+        "pixelsort": {
+          "threshold": 50,
+          "amount": 50
+        }
+      },
+      "hash": 519395085,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-bloom",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "bloom"
+      ],
+      "params": {
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        }
+      },
+      "hash": 3383400326,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-grain",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "grain"
+      ],
+      "params": {
+        "grain": {
+          "amount": 50
+        }
+      },
+      "hash": 3496383857,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-vignette",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "vignette"
+      ],
+      "params": {
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        }
+      },
+      "hash": 4091449397,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-duotone",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "duotone"
+      ],
+      "params": {
+        "duotone": {
+          "dark": "#0a1a10",
+          "light": "#8dffa8"
+        }
+      },
+      "hash": 1520654448,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-posterize",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "posterize"
+      ],
+      "params": {
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 2569172946,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-edges",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "edges"
+      ],
+      "params": {
+        "edges": {
+          "amount": 50
+        }
+      },
+      "hash": 2594771511,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-sketch",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "sketch"
+      ],
+      "params": {
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        }
+      },
+      "hash": 1383957778,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-oil",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "oil"
+      ],
+      "params": {
+        "oil": {
+          "radius": 2
+        }
+      },
+      "hash": 3409096701,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-emboss",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "emboss"
+      ],
+      "params": {
+        "emboss": {
+          "amount": 50
+        }
+      },
+      "hash": 3917408329,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-blur",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "blur"
+      ],
+      "params": {
+        "blur": {
+          "radius": 10
+        }
+      },
+      "hash": 3501640285,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-sharpen",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "sharpen"
+      ],
+      "params": {
+        "sharpen": {
+          "amount": 50
+        }
+      },
+      "hash": 1258656355,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-invert",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "invert"
+      ],
+      "params": {
+        "invert": {}
+      },
+      "hash": 207026644,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-sepia",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "sepia"
+      ],
+      "params": {
+        "sepia": {
+          "amount": 50
+        }
+      },
+      "hash": 351674060,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-thermal",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "thermal"
+      ],
+      "params": {
+        "thermal": {
+          "amount": 50
+        }
+      },
+      "hash": 3280756920,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-matrix",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "matrix"
+      ],
+      "params": {
+        "matrix": {
+          "density": 55,
+          "amount": 50
+        }
+      },
+      "hash": 557999936,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-retro",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "retro"
+      ],
+      "params": {
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 2870267574,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-stack1",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 3410679474,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-stack3",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 457598691,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-stack6",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 3972738599,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-dither-stack12",
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        },
+        "edges": {
+          "amount": 50
+        },
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        },
+        "emboss": {
+          "amount": 50
+        },
+        "blur": {
+          "radius": 10
+        },
+        "thermal": {
+          "amount": 50
+        },
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 2656290245,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-halftone",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 1456406746,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-crt",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "crt"
+      ],
+      "params": {
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        }
+      },
+      "hash": 2042849657,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-glitch",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "glitch"
+      ],
+      "params": {
+        "glitch": {
+          "shift": 20,
+          "slices": 20
+        }
+      },
+      "hash": 3524692952,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-vhs",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "vhs"
+      ],
+      "params": {
+        "vhs": {
+          "bleed": 50,
+          "noise": 50
+        }
+      },
+      "hash": 78657941,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-pixelate",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "pixelate"
+      ],
+      "params": {
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 2496559986,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-pixelsort",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "pixelsort"
+      ],
+      "params": {
+        "pixelsort": {
+          "threshold": 50,
+          "amount": 50
+        }
+      },
+      "hash": 4082352110,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-bloom",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "bloom"
+      ],
+      "params": {
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        }
+      },
+      "hash": 783268194,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-grain",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "grain"
+      ],
+      "params": {
+        "grain": {
+          "amount": 50
+        }
+      },
+      "hash": 4281060056,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-vignette",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "vignette"
+      ],
+      "params": {
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        }
+      },
+      "hash": 2499895849,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-duotone",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "duotone"
+      ],
+      "params": {
+        "duotone": {
+          "dark": "#0a1a10",
+          "light": "#8dffa8"
+        }
+      },
+      "hash": 485432027,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-posterize",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "posterize"
+      ],
+      "params": {
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 3692469362,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-edges",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "edges"
+      ],
+      "params": {
+        "edges": {
+          "amount": 50
+        }
+      },
+      "hash": 489889913,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-sketch",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "sketch"
+      ],
+      "params": {
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        }
+      },
+      "hash": 3036026261,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-oil",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "oil"
+      ],
+      "params": {
+        "oil": {
+          "radius": 2
+        }
+      },
+      "hash": 4192098609,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-emboss",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "emboss"
+      ],
+      "params": {
+        "emboss": {
+          "amount": 50
+        }
+      },
+      "hash": 2757016912,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-blur",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "blur"
+      ],
+      "params": {
+        "blur": {
+          "radius": 10
+        }
+      },
+      "hash": 2388125577,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-sharpen",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "sharpen"
+      ],
+      "params": {
+        "sharpen": {
+          "amount": 50
+        }
+      },
+      "hash": 2113848881,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-invert",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "invert"
+      ],
+      "params": {
+        "invert": {}
+      },
+      "hash": 2633987062,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-sepia",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "sepia"
+      ],
+      "params": {
+        "sepia": {
+          "amount": 50
+        }
+      },
+      "hash": 252863832,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-thermal",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "thermal"
+      ],
+      "params": {
+        "thermal": {
+          "amount": 50
+        }
+      },
+      "hash": 3311795191,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-matrix",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "matrix"
+      ],
+      "params": {
+        "matrix": {
+          "density": 55,
+          "amount": 50
+        }
+      },
+      "hash": 118236855,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-retro",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "retro"
+      ],
+      "params": {
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 2870267574,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-stack1",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 1456406746,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-stack3",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 728195705,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-stack6",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 4261196161,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-effects-stack12",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        },
+        "edges": {
+          "amount": 50
+        },
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        },
+        "emboss": {
+          "amount": 50
+        },
+        "blur": {
+          "radius": 10
+        },
+        "thermal": {
+          "amount": 50
+        },
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 2656290245,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "1080p-native-effects-halftone",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "full": true,
+      "hash": 4221592490,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-crt",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "crt"
+      ],
+      "params": {
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        }
+      },
+      "full": true,
+      "hash": 1107866981,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-glitch",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "glitch"
+      ],
+      "params": {
+        "glitch": {
+          "shift": 20,
+          "slices": 20
+        }
+      },
+      "full": true,
+      "hash": 2485029992,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-vhs",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "vhs"
+      ],
+      "params": {
+        "vhs": {
+          "bleed": 50,
+          "noise": 50
+        }
+      },
+      "full": true,
+      "hash": 347331211,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-pixelate",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "pixelate"
+      ],
+      "params": {
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "full": true,
+      "hash": 367279107,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-pixelsort",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "pixelsort"
+      ],
+      "params": {
+        "pixelsort": {
+          "threshold": 50,
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 1343315856,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-bloom",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "bloom"
+      ],
+      "params": {
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 1890508664,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-grain",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "grain"
+      ],
+      "params": {
+        "grain": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 807515307,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-vignette",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "vignette"
+      ],
+      "params": {
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        }
+      },
+      "full": true,
+      "hash": 3092000188,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-duotone",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "duotone"
+      ],
+      "params": {
+        "duotone": {
+          "dark": "#0a1a10",
+          "light": "#8dffa8"
+        }
+      },
+      "full": true,
+      "hash": 2650268420,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-posterize",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "posterize"
+      ],
+      "params": {
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "full": true,
+      "hash": 1977219873,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-edges",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "edges"
+      ],
+      "params": {
+        "edges": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 1434404896,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-sketch",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "sketch"
+      ],
+      "params": {
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        }
+      },
+      "full": true,
+      "hash": 3639217977,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-oil",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "oil"
+      ],
+      "params": {
+        "oil": {
+          "radius": 2
+        }
+      },
+      "full": true,
+      "hash": 1294256141,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-emboss",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "emboss"
+      ],
+      "params": {
+        "emboss": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 4257131646,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-blur",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "blur"
+      ],
+      "params": {
+        "blur": {
+          "radius": 10
+        }
+      },
+      "full": true,
+      "hash": 1698633539,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-sharpen",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "sharpen"
+      ],
+      "params": {
+        "sharpen": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 2799509415,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-invert",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "invert"
+      ],
+      "params": {
+        "invert": {}
+      },
+      "full": true,
+      "hash": 1273122412,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-sepia",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "sepia"
+      ],
+      "params": {
+        "sepia": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 3673464097,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-thermal",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "thermal"
+      ],
+      "params": {
+        "thermal": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 3862746807,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-matrix",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "matrix"
+      ],
+      "params": {
+        "matrix": {
+          "density": 55,
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 2553575099,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "1080p-native-effects-retro",
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "retro"
+      ],
+      "params": {
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "full": true,
+      "hash": 336648185,
+      "w": 1920,
+      "h": 1080
+    },
+    {
+      "id": "4k-script-halftone",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 50874069,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-crt",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "crt"
+      ],
+      "params": {
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        }
+      },
+      "hash": 2223668567,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-glitch",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "glitch"
+      ],
+      "params": {
+        "glitch": {
+          "shift": 20,
+          "slices": 20
+        }
+      },
+      "hash": 218385513,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-vhs",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "vhs"
+      ],
+      "params": {
+        "vhs": {
+          "bleed": 50,
+          "noise": 50
+        }
+      },
+      "hash": 1535574189,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-pixelate",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "pixelate"
+      ],
+      "params": {
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 1236412868,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-pixelsort",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "pixelsort"
+      ],
+      "params": {
+        "pixelsort": {
+          "threshold": 50,
+          "amount": 50
+        }
+      },
+      "hash": 534313332,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-bloom",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "bloom"
+      ],
+      "params": {
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        }
+      },
+      "hash": 2453130990,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-grain",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "grain"
+      ],
+      "params": {
+        "grain": {
+          "amount": 50
+        }
+      },
+      "hash": 1540187829,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-vignette",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "vignette"
+      ],
+      "params": {
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        }
+      },
+      "hash": 2413639508,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-duotone",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "duotone"
+      ],
+      "params": {
+        "duotone": {
+          "dark": "#0a1a10",
+          "light": "#8dffa8"
+        }
+      },
+      "hash": 3781398413,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-posterize",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "posterize"
+      ],
+      "params": {
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 2386193651,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-edges",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "edges"
+      ],
+      "params": {
+        "edges": {
+          "amount": 50
+        }
+      },
+      "hash": 684199182,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-sketch",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "sketch"
+      ],
+      "params": {
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        }
+      },
+      "hash": 3474353228,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-oil",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "oil"
+      ],
+      "params": {
+        "oil": {
+          "radius": 2
+        }
+      },
+      "hash": 2573565064,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-emboss",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "emboss"
+      ],
+      "params": {
+        "emboss": {
+          "amount": 50
+        }
+      },
+      "hash": 2494822797,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-blur",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "blur"
+      ],
+      "params": {
+        "blur": {
+          "radius": 10
+        }
+      },
+      "hash": 2782304727,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-sharpen",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "sharpen"
+      ],
+      "params": {
+        "sharpen": {
+          "amount": 50
+        }
+      },
+      "hash": 2371435496,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-invert",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "invert"
+      ],
+      "params": {
+        "invert": {}
+      },
+      "hash": 2309455417,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-sepia",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "sepia"
+      ],
+      "params": {
+        "sepia": {
+          "amount": 50
+        }
+      },
+      "hash": 3283099055,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-thermal",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "thermal"
+      ],
+      "params": {
+        "thermal": {
+          "amount": 50
+        }
+      },
+      "hash": 1686073893,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-matrix",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "matrix"
+      ],
+      "params": {
+        "matrix": {
+          "density": 55,
+          "amount": 50
+        }
+      },
+      "hash": 4224903482,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-retro",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "retro"
+      ],
+      "params": {
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 3637593713,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-stack1",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 50874069,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-stack3",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 1408946158,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-stack6",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 3281356755,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-script-stack12",
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        },
+        "edges": {
+          "amount": 50
+        },
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        },
+        "emboss": {
+          "amount": 50
+        },
+        "blur": {
+          "radius": 10
+        },
+        "thermal": {
+          "amount": 50
+        },
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 4226268613,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-halftone",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 53806021,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-crt",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "crt"
+      ],
+      "params": {
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        }
+      },
+      "hash": 2688284855,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-glitch",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "glitch"
+      ],
+      "params": {
+        "glitch": {
+          "shift": 20,
+          "slices": 20
+        }
+      },
+      "hash": 3380805819,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-vhs",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "vhs"
+      ],
+      "params": {
+        "vhs": {
+          "bleed": 50,
+          "noise": 50
+        }
+      },
+      "hash": 1630118354,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-pixelate",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "pixelate"
+      ],
+      "params": {
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 4225527763,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-pixelsort",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "pixelsort"
+      ],
+      "params": {
+        "pixelsort": {
+          "threshold": 50,
+          "amount": 50
+        }
+      },
+      "hash": 950240325,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-bloom",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "bloom"
+      ],
+      "params": {
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        }
+      },
+      "hash": 2806306540,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-grain",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "grain"
+      ],
+      "params": {
+        "grain": {
+          "amount": 50
+        }
+      },
+      "hash": 3825338208,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-vignette",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "vignette"
+      ],
+      "params": {
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        }
+      },
+      "hash": 2916387163,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-duotone",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "duotone"
+      ],
+      "params": {
+        "duotone": {
+          "dark": "#0a1a10",
+          "light": "#8dffa8"
+        }
+      },
+      "hash": 1817930575,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-posterize",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "posterize"
+      ],
+      "params": {
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 3466808970,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-edges",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "edges"
+      ],
+      "params": {
+        "edges": {
+          "amount": 50
+        }
+      },
+      "hash": 293507910,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-sketch",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "sketch"
+      ],
+      "params": {
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        }
+      },
+      "hash": 252742438,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-oil",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "oil"
+      ],
+      "params": {
+        "oil": {
+          "radius": 2
+        }
+      },
+      "hash": 796401872,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-emboss",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "emboss"
+      ],
+      "params": {
+        "emboss": {
+          "amount": 50
+        }
+      },
+      "hash": 2754570698,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-blur",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "blur"
+      ],
+      "params": {
+        "blur": {
+          "radius": 10
+        }
+      },
+      "hash": 494469346,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-sharpen",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "sharpen"
+      ],
+      "params": {
+        "sharpen": {
+          "amount": 50
+        }
+      },
+      "hash": 3432576834,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-invert",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "invert"
+      ],
+      "params": {
+        "invert": {}
+      },
+      "hash": 1027678519,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-sepia",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "sepia"
+      ],
+      "params": {
+        "sepia": {
+          "amount": 50
+        }
+      },
+      "hash": 2561305292,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-thermal",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "thermal"
+      ],
+      "params": {
+        "thermal": {
+          "amount": 50
+        }
+      },
+      "hash": 3700047581,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-matrix",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "matrix"
+      ],
+      "params": {
+        "matrix": {
+          "density": 55,
+          "amount": 50
+        }
+      },
+      "hash": 4133608769,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-retro",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "retro"
+      ],
+      "params": {
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 359173186,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-stack1",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 53806021,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-stack3",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 1404534254,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-stack6",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 1229015630,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-dither-stack12",
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        },
+        "edges": {
+          "amount": 50
+        },
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        },
+        "emboss": {
+          "amount": 50
+        },
+        "blur": {
+          "radius": 10
+        },
+        "thermal": {
+          "amount": 50
+        },
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 2656290245,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-halftone",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 1804164958,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-crt",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "crt"
+      ],
+      "params": {
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        }
+      },
+      "hash": 549806545,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-glitch",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "glitch"
+      ],
+      "params": {
+        "glitch": {
+          "shift": 20,
+          "slices": 20
+        }
+      },
+      "hash": 618862948,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-vhs",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "vhs"
+      ],
+      "params": {
+        "vhs": {
+          "bleed": 50,
+          "noise": 50
+        }
+      },
+      "hash": 3635534958,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-pixelate",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "pixelate"
+      ],
+      "params": {
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 2254183694,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-pixelsort",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "pixelsort"
+      ],
+      "params": {
+        "pixelsort": {
+          "threshold": 50,
+          "amount": 50
+        }
+      },
+      "hash": 2011441654,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-bloom",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "bloom"
+      ],
+      "params": {
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        }
+      },
+      "hash": 964092241,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-grain",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "grain"
+      ],
+      "params": {
+        "grain": {
+          "amount": 50
+        }
+      },
+      "hash": 3627467447,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-vignette",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "vignette"
+      ],
+      "params": {
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        }
+      },
+      "hash": 4054491622,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-duotone",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "duotone"
+      ],
+      "params": {
+        "duotone": {
+          "dark": "#0a1a10",
+          "light": "#8dffa8"
+        }
+      },
+      "hash": 615745849,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-posterize",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "posterize"
+      ],
+      "params": {
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 4266634613,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-edges",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "edges"
+      ],
+      "params": {
+        "edges": {
+          "amount": 50
+        }
+      },
+      "hash": 2840745556,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-sketch",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "sketch"
+      ],
+      "params": {
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        }
+      },
+      "hash": 3101768509,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-oil",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "oil"
+      ],
+      "params": {
+        "oil": {
+          "radius": 2
+        }
+      },
+      "hash": 2127752969,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-emboss",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "emboss"
+      ],
+      "params": {
+        "emboss": {
+          "amount": 50
+        }
+      },
+      "hash": 1903511038,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-blur",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "blur"
+      ],
+      "params": {
+        "blur": {
+          "radius": 10
+        }
+      },
+      "hash": 259270186,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-sharpen",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "sharpen"
+      ],
+      "params": {
+        "sharpen": {
+          "amount": 50
+        }
+      },
+      "hash": 1400131508,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-invert",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "invert"
+      ],
+      "params": {
+        "invert": {}
+      },
+      "hash": 3290420226,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-sepia",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "sepia"
+      ],
+      "params": {
+        "sepia": {
+          "amount": 50
+        }
+      },
+      "hash": 618405440,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-thermal",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "thermal"
+      ],
+      "params": {
+        "thermal": {
+          "amount": 50
+        }
+      },
+      "hash": 4216028153,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-matrix",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "matrix"
+      ],
+      "params": {
+        "matrix": {
+          "density": 55,
+          "amount": 50
+        }
+      },
+      "hash": 2827431353,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-retro",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "retro"
+      ],
+      "params": {
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 359173186,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-stack1",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "hash": 1804164958,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-stack3",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "hash": 782437455,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-stack6",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "hash": 3936952311,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-effects-stack12",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        },
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        },
+        "pixelate": {
+          "size": 21
+        },
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        },
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        },
+        "posterize": {
+          "levels": 9
+        },
+        "edges": {
+          "amount": 50
+        },
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        },
+        "emboss": {
+          "amount": 50
+        },
+        "blur": {
+          "radius": 10
+        },
+        "thermal": {
+          "amount": 50
+        },
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "hash": 2656290245,
+      "w": 1600,
+      "h": 900
+    },
+    {
+      "id": "4k-native-effects-halftone",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "halftone"
+      ],
+      "params": {
+        "halftone": {
+          "size": 8
+        }
+      },
+      "full": true,
+      "hash": 28930166,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-crt",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "crt"
+      ],
+      "params": {
+        "crt": {
+          "scan": 50,
+          "curve": 50,
+          "mask": 50
+        }
+      },
+      "full": true,
+      "hash": 2938560839,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-glitch",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "glitch"
+      ],
+      "params": {
+        "glitch": {
+          "shift": 20,
+          "slices": 20
+        }
+      },
+      "full": true,
+      "hash": 3347667332,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-vhs",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "vhs"
+      ],
+      "params": {
+        "vhs": {
+          "bleed": 50,
+          "noise": 50
+        }
+      },
+      "full": true,
+      "hash": 3724084815,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-pixelate",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "pixelate"
+      ],
+      "params": {
+        "pixelate": {
+          "size": 21
+        }
+      },
+      "full": true,
+      "hash": 2350463337,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-pixelsort",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "pixelsort"
+      ],
+      "params": {
+        "pixelsort": {
+          "threshold": 50,
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 952166250,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-bloom",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "bloom"
+      ],
+      "params": {
+        "bloom": {
+          "radius": 16,
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 4265603466,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-grain",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "grain"
+      ],
+      "params": {
+        "grain": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 1857622253,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-vignette",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "vignette"
+      ],
+      "params": {
+        "vignette": {
+          "amount": 50,
+          "size": 55
+        }
+      },
+      "full": true,
+      "hash": 3631972343,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-duotone",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "duotone"
+      ],
+      "params": {
+        "duotone": {
+          "dark": "#0a1a10",
+          "light": "#8dffa8"
+        }
+      },
+      "full": true,
+      "hash": 636347412,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-posterize",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "posterize"
+      ],
+      "params": {
+        "posterize": {
+          "levels": 9
+        }
+      },
+      "full": true,
+      "hash": 1646717278,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-edges",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "edges"
+      ],
+      "params": {
+        "edges": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 1330089424,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-sketch",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "sketch"
+      ],
+      "params": {
+        "sketch": {
+          "amount": 50,
+          "cross": 50
+        }
+      },
+      "full": true,
+      "hash": 2025908347,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-oil",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "oil"
+      ],
+      "params": {
+        "oil": {
+          "radius": 2
+        }
+      },
+      "full": true,
+      "hash": 98357396,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-emboss",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "emboss"
+      ],
+      "params": {
+        "emboss": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 2447555880,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-blur",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "blur"
+      ],
+      "params": {
+        "blur": {
+          "radius": 10
+        }
+      },
+      "full": true,
+      "hash": 1523542603,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-sharpen",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "sharpen"
+      ],
+      "params": {
+        "sharpen": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 1620742073,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-invert",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "invert"
+      ],
+      "params": {
+        "invert": {}
+      },
+      "full": true,
+      "hash": 3448467506,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-sepia",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "sepia"
+      ],
+      "params": {
+        "sepia": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 1300400888,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-thermal",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "thermal"
+      ],
+      "params": {
+        "thermal": {
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 2929183195,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-matrix",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "matrix"
+      ],
+      "params": {
+        "matrix": {
+          "density": 55,
+          "amount": 50
+        }
+      },
+      "full": true,
+      "hash": 1461991021,
+      "w": 3840,
+      "h": 2160
+    },
+    {
+      "id": "4k-native-effects-retro",
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "retro"
+      ],
+      "params": {
+        "retro": {
+          "palette": "cga"
+        }
+      },
+      "full": true,
+      "hash": 2504374414,
+      "w": 3840,
+      "h": 2160
+    }
+  ]
+}

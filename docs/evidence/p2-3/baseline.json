@@ -1,0 +1,6410 @@
+{
+  "meta": {
+    "task": "P2-3 A2 baseline",
+    "when": "2026-11-10T02:14:28+00:00",
+    "platform": "Linux-7.3.3-1-cachyos-x86_64-with-glibc2.44",
+    "python": "3.14.9",
+    "chromium": "156.0.8078.4",
+    "cpu": 4,
+    "viewport": [
+      1440,
+      1000
+    ],
+    "windows": 5,
+    "warmup": 2,
+    "seed": 1592594996,
+    "raster": "headless software raster (measurement floor, not a GPU claim)",
+    "fixtures": {
+      "1080p": "/tmp/glyphcraft_p2_3_1920x1080.png",
+      "4k": "/tmp/glyphcraft_p2_3_3840x2160.png"
+    },
+    "video_fixtures": {
+      "1080p": "/tmp/glyphcraft_p2_3_1920x1080.webm",
+      "4k": "/tmp/glyphcraft_p2_3_3840x2160.webm",
+      "export": "/tmp/glyphcraft_p2_3_export_1280x720.webm"
+    }
+  },
+  "startup": {
+    "firstPaint": 520,
+    "fcp": 520,
+    "dcl": 536.7,
+    "load": 800.4,
+    "appReady": 887.3,
+    "bytes": 316608,
+    "requests": 9,
+    "runs": [
+      {
+        "firstPaint": 520,
+        "fcp": 520,
+        "dcl": 536.6999999999534,
+        "load": 800.4000000000233,
+        "appReady": 887.2999999999302,
+        "bytes": 316608,
+        "requests": 9
+      },
+      {
+        "firstPaint": 544,
+        "fcp": 544,
+        "dcl": 611.8999999999069,
+        "load": 862.5,
+        "appReady": 1283.2999999999302,
+        "bytes": 316608,
+        "requests": 9
+      },
+      {
+        "firstPaint": 712,
+        "fcp": 712,
+        "dcl": 731.7999999999302,
+        "load": 924.8999999999069,
+        "appReady": 1101.3999999999069,
+        "bytes": 316608,
+        "requests": 9
+      },
+      {
+        "firstPaint": 460,
+        "fcp": 460,
+        "dcl": 508.5,
+        "load": 733.9000000000233,
+        "appReady": 811.4000000000233,
+        "bytes": 316608,
+        "requests": 9
+      },
+      {
+        "firstPaint": 384,
+        "fcp": 384,
+        "dcl": 403.80000000004657,
+        "load": 643,
+        "appReady": 745.5999999999767,
+        "bytes": 316608,
+        "requests": 9
+      }
+    ]
+  },
+  "section_seconds": {
+    "startup": 5.7,
+    "render": 1072.3,
+    "stacks": 177.4,
+    "drag": 126.7,
+    "video": 65.9,
+    "export": 7.6,
+    "idle": 14.3,
+    "heap": 40.8,
+    "bundle": 0.0
+  },
+  "render": [
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "halftone",
+      "preview": {
+        "values": [
+          241.8,
+          507.8,
+          606.4,
+          613,
+          491.9
+        ],
+        "median": 507.8,
+        "p95": 613,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1259.5,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "crt",
+      "preview": {
+        "values": [
+          254,
+          371.3,
+          397.8,
+          242.9,
+          334.3
+        ],
+        "median": 334.3,
+        "p95": 397.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 745.5,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "glitch",
+      "preview": {
+        "values": [
+          400.9,
+          315.1,
+          228.7,
+          204.1,
+          245.8
+        ],
+        "median": 245.8,
+        "p95": 400.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 311.4,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "vhs",
+      "preview": {
+        "values": [
+          436.4,
+          202.3,
+          276.5,
+          177.5,
+          174.2
+        ],
+        "median": 202.3,
+        "p95": 436.4,
+        "windows": 5
+      },
+      "full": {
+        "ms": 238.8,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "pixelate",
+      "preview": {
+        "values": [
+          143.4,
+          125.7,
+          108,
+          207,
+          158.5
+        ],
+        "median": 143.4,
+        "p95": 207,
+        "windows": 5
+      },
+      "full": {
+        "ms": 158.4,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "pixelsort",
+      "preview": {
+        "values": [
+          200.8,
+          377.1,
+          198.3,
+          181.8,
+          174.7
+        ],
+        "median": 198.3,
+        "p95": 377.1,
+        "windows": 5
+      },
+      "full": {
+        "ms": 212.6,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "bloom",
+      "preview": {
+        "values": [
+          169,
+          172.3,
+          169.3,
+          177.1,
+          173.3
+        ],
+        "median": 172.3,
+        "p95": 177.1,
+        "windows": 5
+      },
+      "full": {
+        "ms": 244.7,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "grain",
+      "preview": {
+        "values": [
+          200.3,
+          149.5,
+          147.4,
+          157.2,
+          163.2
+        ],
+        "median": 157.2,
+        "p95": 200.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 273.7,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "vignette",
+      "preview": {
+        "values": [
+          130.9,
+          143.5,
+          119.1,
+          121.3,
+          161.5
+        ],
+        "median": 130.9,
+        "p95": 161.5,
+        "windows": 5
+      },
+      "full": {
+        "ms": 265.1,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "duotone",
+      "preview": {
+        "values": [
+          146.5,
+          294.3,
+          188.7,
+          179.8,
+          151.2
+        ],
+        "median": 179.8,
+        "p95": 294.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 237.5,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "posterize",
+      "preview": {
+        "values": [
+          324.9,
+          148.5,
+          157.5,
+          255.6,
+          165.2
+        ],
+        "median": 165.2,
+        "p95": 324.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 292.8,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "edges",
+      "preview": {
+        "values": [
+          203.6,
+          134,
+          159.3,
+          130.8,
+          371.6
+        ],
+        "median": 159.3,
+        "p95": 371.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 349.5,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "sketch",
+      "preview": {
+        "values": [
+          490.9,
+          612.3,
+          368.4,
+          455.4,
+          430.3
+        ],
+        "median": 455.4,
+        "p95": 612.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 665.4,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "oil",
+      "preview": {
+        "values": [
+          3460.6,
+          2108.1,
+          1649.5,
+          1721.1,
+          1727.1
+        ],
+        "median": 1727.1,
+        "p95": 3460.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 3659.2,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "emboss",
+      "preview": {
+        "values": [
+          258.9,
+          223.5,
+          306.7,
+          286.9,
+          239.5
+        ],
+        "median": 258.9,
+        "p95": 306.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 253.8,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "blur",
+      "preview": {
+        "values": [
+          180,
+          172.1,
+          183.1,
+          168.8,
+          375.3
+        ],
+        "median": 180,
+        "p95": 375.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 382.3,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "sharpen",
+      "preview": {
+        "values": [
+          365.8,
+          226.1,
+          339.9,
+          286.1,
+          430.7
+        ],
+        "median": 339.9,
+        "p95": 430.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 760.8,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "invert",
+      "preview": {
+        "values": [
+          228.4,
+          652.5,
+          274.2,
+          226.4,
+          170.3
+        ],
+        "median": 228.4,
+        "p95": 652.5,
+        "windows": 5
+      },
+      "full": {
+        "ms": 173.1,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "sepia",
+      "preview": {
+        "values": [
+          167.6,
+          197,
+          215.5,
+          162.7,
+          203.3
+        ],
+        "median": 197,
+        "p95": 215.5,
+        "windows": 5
+      },
+      "full": {
+        "ms": 279.9,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "thermal",
+      "preview": {
+        "values": [
+          181.4,
+          179.3,
+          141.2,
+          131.6,
+          225.5
+        ],
+        "median": 179.3,
+        "p95": 225.5,
+        "windows": 5
+      },
+      "full": {
+        "ms": 291.1,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "matrix",
+      "preview": {
+        "values": [
+          121.1,
+          159.6,
+          100.9,
+          131,
+          99.3
+        ],
+        "median": 121.1,
+        "p95": 159.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 137.9,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effect": "retro",
+      "preview": {
+        "values": [
+          353.1,
+          327.4,
+          362.8,
+          183.1,
+          141.5
+        ],
+        "median": 327.4,
+        "p95": 362.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 182.1,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "halftone",
+      "preview": {
+        "values": [
+          338.4,
+          411.6,
+          316,
+          372.1,
+          318
+        ],
+        "median": 338.4,
+        "p95": 411.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 635.9,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "crt",
+      "preview": {
+        "values": [
+          314.2,
+          281.4,
+          331.1,
+          282.4,
+          470.4
+        ],
+        "median": 314.2,
+        "p95": 470.4,
+        "windows": 5
+      },
+      "full": {
+        "ms": 469.5,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "glitch",
+      "preview": {
+        "values": [
+          308.5,
+          321.9,
+          370.4,
+          349.3,
+          364.7
+        ],
+        "median": 349.3,
+        "p95": 370.4,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1546.4,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "vhs",
+      "preview": {
+        "values": [
+          302.7,
+          285.9,
+          324.6,
+          342.6,
+          322.4
+        ],
+        "median": 322.4,
+        "p95": 342.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 395.4,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "pixelate",
+      "preview": {
+        "values": [
+          274.6,
+          416.6,
+          293.4,
+          235.3,
+          243.3
+        ],
+        "median": 274.6,
+        "p95": 416.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 331.4,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "pixelsort",
+      "preview": {
+        "values": [
+          299.7,
+          436.6,
+          359.7,
+          369.6,
+          427
+        ],
+        "median": 369.6,
+        "p95": 436.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 516.6,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "bloom",
+      "preview": {
+        "values": [
+          350.5,
+          375.9,
+          412,
+          448.7,
+          344.9
+        ],
+        "median": 375.9,
+        "p95": 448.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 470.8,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "grain",
+      "preview": {
+        "values": [
+          400.7,
+          332.8,
+          313.9,
+          347.6,
+          282.5
+        ],
+        "median": 332.8,
+        "p95": 400.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 503.4,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "vignette",
+      "preview": {
+        "values": [
+          387.2,
+          368.7,
+          267.2,
+          244.9,
+          509.7
+        ],
+        "median": 368.7,
+        "p95": 509.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 366.3,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "duotone",
+      "preview": {
+        "values": [
+          345.9,
+          322.8,
+          285.3,
+          285.3,
+          258.5
+        ],
+        "median": 285.3,
+        "p95": 345.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 418.9,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "posterize",
+      "preview": {
+        "values": [
+          289.7,
+          292.8,
+          270.9,
+          284.3,
+          329.6
+        ],
+        "median": 289.7,
+        "p95": 329.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 420.2,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "edges",
+      "preview": {
+        "values": [
+          323.9,
+          418.1,
+          632.8,
+          339.3,
+          314.9
+        ],
+        "median": 339.3,
+        "p95": 632.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 542.5,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "sketch",
+      "preview": {
+        "values": [
+          356.3,
+          305.4,
+          295.7,
+          419.1,
+          300.5
+        ],
+        "median": 305.4,
+        "p95": 419.1,
+        "windows": 5
+      },
+      "full": {
+        "ms": 516.8,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "oil",
+      "preview": {
+        "values": [
+          1634,
+          1703.9,
+          1602.8,
+          1725.2,
+          1866.8
+        ],
+        "median": 1703.9,
+        "p95": 1866.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2486.2,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "emboss",
+      "preview": {
+        "values": [
+          383.2,
+          344,
+          324.4,
+          366.4,
+          348.3
+        ],
+        "median": 348.3,
+        "p95": 383.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 449.7,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "blur",
+      "preview": {
+        "values": [
+          285.6,
+          303.1,
+          451.9,
+          354.6,
+          309.2
+        ],
+        "median": 309.2,
+        "p95": 451.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1147.9,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "sharpen",
+      "preview": {
+        "values": [
+          968.2,
+          465.3,
+          477.7,
+          445.6,
+          380.5
+        ],
+        "median": 465.3,
+        "p95": 968.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 496.9,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "invert",
+      "preview": {
+        "values": [
+          269.7,
+          282,
+          295.4,
+          273.6,
+          318.8
+        ],
+        "median": 282,
+        "p95": 318.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 370.6,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "sepia",
+      "preview": {
+        "values": [
+          549,
+          298.7,
+          316.3,
+          453.2,
+          324
+        ],
+        "median": 324,
+        "p95": 549,
+        "windows": 5
+      },
+      "full": {
+        "ms": 749.7,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "thermal",
+      "preview": {
+        "values": [
+          337.3,
+          382.3,
+          313,
+          411.7,
+          374.3
+        ],
+        "median": 374.3,
+        "p95": 411.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 458.7,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "matrix",
+      "preview": {
+        "values": [
+          428,
+          286.3,
+          271.1,
+          268.2,
+          281.9
+        ],
+        "median": 281.9,
+        "p95": 428,
+        "windows": 5
+      },
+      "full": {
+        "ms": 607.9,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effect": "retro",
+      "preview": {
+        "values": [
+          338.8,
+          445.3,
+          451.7,
+          296.4,
+          572.1
+        ],
+        "median": 445.3,
+        "p95": 572.1,
+        "windows": 5
+      },
+      "full": {
+        "ms": 646.7,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "halftone",
+      "preview": {
+        "values": [
+          152,
+          95.8,
+          220.6,
+          91.8,
+          86.7
+        ],
+        "median": 95.8,
+        "p95": 220.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 105.8,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "crt",
+      "preview": {
+        "values": [
+          109,
+          64.9,
+          61.3,
+          152.3,
+          56.9
+        ],
+        "median": 64.9,
+        "p95": 152.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 82.4,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "glitch",
+      "preview": {
+        "values": [
+          137.9,
+          84.4,
+          83.7,
+          91.1,
+          81.9
+        ],
+        "median": 84.4,
+        "p95": 137.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 136.5,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "vhs",
+      "preview": {
+        "values": [
+          57,
+          120.7,
+          55.1,
+          69.3,
+          89.2
+        ],
+        "median": 69.3,
+        "p95": 120.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 70.4,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "pixelate",
+      "preview": {
+        "values": [
+          11.5,
+          42.8,
+          9.6,
+          12,
+          10
+        ],
+        "median": 11.5,
+        "p95": 42.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 10,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "pixelsort",
+      "preview": {
+        "values": [
+          66.9,
+          57.6,
+          54.1,
+          61.3,
+          56.8
+        ],
+        "median": 57.6,
+        "p95": 66.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 73.2,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "bloom",
+      "preview": {
+        "values": [
+          69.3,
+          72.9,
+          76.9,
+          60.3,
+          67.1
+        ],
+        "median": 69.3,
+        "p95": 76.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 75.6,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "grain",
+      "preview": {
+        "values": [
+          61.9,
+          44,
+          53.6,
+          46.9,
+          56
+        ],
+        "median": 53.6,
+        "p95": 61.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 60.2,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "vignette",
+      "preview": {
+        "values": [
+          18.4,
+          18.2,
+          20.9,
+          19.4,
+          16.1
+        ],
+        "median": 18.4,
+        "p95": 20.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 22,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "duotone",
+      "preview": {
+        "values": [
+          89.6,
+          41.4,
+          38.8,
+          34.7,
+          52
+        ],
+        "median": 41.4,
+        "p95": 89.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 56.7,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "posterize",
+      "preview": {
+        "values": [
+          29.8,
+          35.9,
+          46.3,
+          30.9,
+          60.2
+        ],
+        "median": 35.9,
+        "p95": 60.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 30.1,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "edges",
+      "preview": {
+        "values": [
+          63.4,
+          62.9,
+          61.4,
+          58.5,
+          82.6
+        ],
+        "median": 62.9,
+        "p95": 82.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 85.9,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "sketch",
+      "preview": {
+        "values": [
+          83.1,
+          71.1,
+          177.8,
+          88.7,
+          59.5
+        ],
+        "median": 83.1,
+        "p95": 177.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 80,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "oil",
+      "preview": {
+        "values": [
+          3104.3,
+          1608.9,
+          1785.2,
+          1505.4,
+          1658.5
+        ],
+        "median": 1658.5,
+        "p95": 3104.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2619.1,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "emboss",
+      "preview": {
+        "values": [
+          147.1,
+          102.8,
+          111.9,
+          131.8,
+          365.5
+        ],
+        "median": 131.8,
+        "p95": 365.5,
+        "windows": 5
+      },
+      "full": {
+        "ms": 143.3,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "blur",
+      "preview": {
+        "values": [
+          76.9,
+          62.3,
+          65.7,
+          60.5,
+          100
+        ],
+        "median": 65.7,
+        "p95": 100,
+        "windows": 5
+      },
+      "full": {
+        "ms": 174.4,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "sharpen",
+      "preview": {
+        "values": [
+          113.5,
+          130.9,
+          209.3,
+          179.4,
+          102.3
+        ],
+        "median": 130.9,
+        "p95": 209.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 145.2,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "invert",
+      "preview": {
+        "values": [
+          75.2,
+          23.9,
+          36.3,
+          24.7,
+          41.4
+        ],
+        "median": 36.3,
+        "p95": 75.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 52.1,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "sepia",
+      "preview": {
+        "values": [
+          50.4,
+          52.2,
+          47.3,
+          48.5,
+          114.7
+        ],
+        "median": 50.4,
+        "p95": 114.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 62.8,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "thermal",
+      "preview": {
+        "values": [
+          52.2,
+          54.3,
+          53.4,
+          53.7,
+          49.9
+        ],
+        "median": 53.4,
+        "p95": 54.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 69.7,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "matrix",
+      "preview": {
+        "values": [
+          13.6,
+          12.2,
+          14.4,
+          19.4,
+          10.2
+        ],
+        "median": 13.6,
+        "p95": 19.4,
+        "windows": 5
+      },
+      "full": {
+        "ms": 8.8,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effect": "retro",
+      "preview": {
+        "values": [
+          290.6,
+          102,
+          404.3,
+          88.9,
+          66.4
+        ],
+        "median": 102,
+        "p95": 404.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 250.5,
+        "w": 1920,
+        "h": 1080,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "halftone",
+      "preview": {
+        "values": [
+          197.4,
+          159.8,
+          180.8,
+          153.3,
+          168.6
+        ],
+        "median": 168.6,
+        "p95": 197.4,
+        "windows": 5
+      },
+      "full": {
+        "ms": 752.2,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "crt",
+      "preview": {
+        "values": [
+          136.7,
+          198.2,
+          208.1,
+          159.3,
+          166.9
+        ],
+        "median": 166.9,
+        "p95": 208.1,
+        "windows": 5
+      },
+      "full": {
+        "ms": 590.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "glitch",
+      "preview": {
+        "values": [
+          176.9,
+          313.1,
+          265.4,
+          191.2,
+          163.1
+        ],
+        "median": 191.2,
+        "p95": 313.1,
+        "windows": 5
+      },
+      "full": {
+        "ms": 824,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "vhs",
+      "preview": {
+        "values": [
+          228.6,
+          161.4,
+          144.7,
+          131.9,
+          153.6
+        ],
+        "median": 153.6,
+        "p95": 228.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 697.9,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "pixelate",
+      "preview": {
+        "values": [
+          107.4,
+          105.4,
+          90.7,
+          93.6,
+          128.3
+        ],
+        "median": 105.4,
+        "p95": 128.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 518.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "pixelsort",
+      "preview": {
+        "values": [
+          215.3,
+          179.9,
+          178.8,
+          166.1,
+          160.6
+        ],
+        "median": 178.8,
+        "p95": 215.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 711.8,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "bloom",
+      "preview": {
+        "values": [
+          165.2,
+          134,
+          164.1,
+          203.2,
+          156.6
+        ],
+        "median": 164.1,
+        "p95": 203.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 580.3,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "grain",
+      "preview": {
+        "values": [
+          142.5,
+          154.8,
+          142.2,
+          126.8,
+          180.9
+        ],
+        "median": 142.5,
+        "p95": 180.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 899.3,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "vignette",
+      "preview": {
+        "values": [
+          107.7,
+          104.4,
+          140.3,
+          170,
+          146.5
+        ],
+        "median": 140.3,
+        "p95": 170,
+        "windows": 5
+      },
+      "full": {
+        "ms": 652.8,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "duotone",
+      "preview": {
+        "values": [
+          172.7,
+          134,
+          158.2,
+          129.6,
+          187.7
+        ],
+        "median": 158.2,
+        "p95": 187.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 674.4,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "posterize",
+      "preview": {
+        "values": [
+          123.7,
+          166.9,
+          102.2,
+          136.9,
+          143.9
+        ],
+        "median": 136.9,
+        "p95": 166.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 487.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "edges",
+      "preview": {
+        "values": [
+          100.5,
+          192.2,
+          158.2,
+          98.7,
+          105.4
+        ],
+        "median": 105.4,
+        "p95": 192.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 426.4,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "sketch",
+      "preview": {
+        "values": [
+          168.6,
+          164.7,
+          157,
+          380.4,
+          163.2
+        ],
+        "median": 164.7,
+        "p95": 380.4,
+        "windows": 5
+      },
+      "full": {
+        "ms": 659.8,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "oil",
+      "preview": {
+        "values": [
+          1969.9,
+          1506.1,
+          1882.6,
+          1445.8,
+          1606.8
+        ],
+        "median": 1606.8,
+        "p95": 1969.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 8787.7,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "emboss",
+      "preview": {
+        "values": [
+          291.2,
+          203.7,
+          180.8,
+          231.9,
+          227.6
+        ],
+        "median": 227.6,
+        "p95": 291.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 840.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "blur",
+      "preview": {
+        "values": [
+          206.3,
+          169.6,
+          193.5,
+          147,
+          474.2
+        ],
+        "median": 193.5,
+        "p95": 474.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1652.7,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "sharpen",
+      "preview": {
+        "values": [
+          953.2,
+          531.7,
+          761.1,
+          525.2,
+          344.5
+        ],
+        "median": 531.7,
+        "p95": 953.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 951.4,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "invert",
+      "preview": {
+        "values": [
+          145.7,
+          117.8,
+          117.3,
+          264,
+          135.1
+        ],
+        "median": 135.1,
+        "p95": 264,
+        "windows": 5
+      },
+      "full": {
+        "ms": 545.8,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "sepia",
+      "preview": {
+        "values": [
+          157.8,
+          130.6,
+          216.8,
+          120.4,
+          126.4
+        ],
+        "median": 130.6,
+        "p95": 216.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 985.8,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "thermal",
+      "preview": {
+        "values": [
+          162.1,
+          186.7,
+          181.3,
+          144.3,
+          148.9
+        ],
+        "median": 162.1,
+        "p95": 186.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 827.3,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "matrix",
+      "preview": {
+        "values": [
+          110.5,
+          114.7,
+          145.4,
+          153.6,
+          154.2
+        ],
+        "median": 145.4,
+        "p95": 154.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 748.5,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effect": "retro",
+      "preview": {
+        "values": [
+          432.4,
+          304,
+          270.1,
+          183.9,
+          324
+        ],
+        "median": 304,
+        "p95": 432.4,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1774.1,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "halftone",
+      "preview": {
+        "values": [
+          822.5,
+          869.7,
+          665.4,
+          647.5,
+          559.8
+        ],
+        "median": 665.4,
+        "p95": 869.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1814,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "crt",
+      "preview": {
+        "values": [
+          382.2,
+          347.6,
+          363.4,
+          280.8,
+          292.2
+        ],
+        "median": 347.6,
+        "p95": 382.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1613,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "glitch",
+      "preview": {
+        "values": [
+          306.6,
+          618.4,
+          687.9,
+          721.3,
+          520.8
+        ],
+        "median": 618.4,
+        "p95": 721.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1638.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "vhs",
+      "preview": {
+        "values": [
+          344.9,
+          648.2,
+          428.9,
+          352.6,
+          321.5
+        ],
+        "median": 352.6,
+        "p95": 648.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1815.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "pixelate",
+      "preview": {
+        "values": [
+          285.6,
+          332.2,
+          348.1,
+          396,
+          476.7
+        ],
+        "median": 348.1,
+        "p95": 476.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 3271.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "pixelsort",
+      "preview": {
+        "values": [
+          398,
+          358.4,
+          291.4,
+          453.8,
+          269.4
+        ],
+        "median": 358.4,
+        "p95": 453.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1495.9,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "bloom",
+      "preview": {
+        "values": [
+          639,
+          764.2,
+          669.4,
+          394.3,
+          376.1
+        ],
+        "median": 639,
+        "p95": 764.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2208.2,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "grain",
+      "preview": {
+        "values": [
+          322.4,
+          366.7,
+          283.1,
+          282.7,
+          302.2
+        ],
+        "median": 302.2,
+        "p95": 366.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2260.7,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "vignette",
+      "preview": {
+        "values": [
+          279.4,
+          265.2,
+          282.9,
+          289.6,
+          322.6
+        ],
+        "median": 282.9,
+        "p95": 322.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1692.3,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "duotone",
+      "preview": {
+        "values": [
+          280.4,
+          331.8,
+          301.3,
+          371.2,
+          517.2
+        ],
+        "median": 331.8,
+        "p95": 517.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2058.9,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "posterize",
+      "preview": {
+        "values": [
+          437.3,
+          267.3,
+          248.1,
+          363.1,
+          391.4
+        ],
+        "median": 363.1,
+        "p95": 437.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1708.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "edges",
+      "preview": {
+        "values": [
+          316.7,
+          311.9,
+          320.6,
+          305.3,
+          395.2
+        ],
+        "median": 316.7,
+        "p95": 395.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2032.9,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "sketch",
+      "preview": {
+        "values": [
+          463.4,
+          292.7,
+          330.3,
+          487.9,
+          354.4
+        ],
+        "median": 354.4,
+        "p95": 487.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 1777.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "oil",
+      "preview": {
+        "values": [
+          2602.1,
+          2527.6,
+          2138.8,
+          2134.3,
+          1949.8
+        ],
+        "median": 2138.8,
+        "p95": 2602.1,
+        "windows": 5
+      },
+      "full": {
+        "ms": 11014.4,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "emboss",
+      "preview": {
+        "values": [
+          402.1,
+          426.6,
+          390.5,
+          399.3,
+          572.7
+        ],
+        "median": 402.1,
+        "p95": 572.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2453.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "blur",
+      "preview": {
+        "values": [
+          438.1,
+          366,
+          380.8,
+          356.1,
+          370.6
+        ],
+        "median": 370.6,
+        "p95": 438.1,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2073,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "sharpen",
+      "preview": {
+        "values": [
+          638.5,
+          580.3,
+          424.4,
+          389.3,
+          450.5
+        ],
+        "median": 450.5,
+        "p95": 638.5,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2157.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "invert",
+      "preview": {
+        "values": [
+          438.8,
+          317.4,
+          308.7,
+          804.9,
+          515.1
+        ],
+        "median": 438.8,
+        "p95": 804.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 3180.2,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "sepia",
+      "preview": {
+        "values": [
+          510.1,
+          534.9,
+          852.3,
+          473.9,
+          473.6
+        ],
+        "median": 510.1,
+        "p95": 852.3,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2470.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "thermal",
+      "preview": {
+        "values": [
+          497.3,
+          462.6,
+          438.2,
+          501.5,
+          486.3
+        ],
+        "median": 486.3,
+        "p95": 501.5,
+        "windows": 5
+      },
+      "full": {
+        "ms": 3390.7,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "matrix",
+      "preview": {
+        "values": [
+          413.3,
+          399,
+          646.6,
+          421.5,
+          403.8
+        ],
+        "median": 413.3,
+        "p95": 646.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 2155.7,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effect": "retro",
+      "preview": {
+        "values": [
+          476.2,
+          665.1,
+          497.5,
+          699.7,
+          467.3
+        ],
+        "median": 497.5,
+        "p95": 699.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 3971.8,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "halftone",
+      "preview": {
+        "values": [
+          123.6,
+          118.3,
+          115.7,
+          120.2,
+          112.2
+        ],
+        "median": 118.3,
+        "p95": 123.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 628.7,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "crt",
+      "preview": {
+        "values": [
+          118.9,
+          98.3,
+          92.3,
+          90.1,
+          95
+        ],
+        "median": 95,
+        "p95": 118.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 727.9,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "glitch",
+      "preview": {
+        "values": [
+          268.8,
+          157.9,
+          131.6,
+          169.6,
+          206.6
+        ],
+        "median": 169.6,
+        "p95": 268.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 697.7,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "vhs",
+      "preview": {
+        "values": [
+          107,
+          77.1,
+          89.8,
+          80,
+          85
+        ],
+        "median": 85,
+        "p95": 107,
+        "windows": 5
+      },
+      "full": {
+        "ms": 433.5,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "pixelate",
+      "preview": {
+        "values": [
+          18.7,
+          18.4,
+          20.6,
+          14.9,
+          20.5
+        ],
+        "median": 18.7,
+        "p95": 20.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 65.5,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "pixelsort",
+      "preview": {
+        "values": [
+          99.1,
+          93.7,
+          104.4,
+          101.6,
+          123.6
+        ],
+        "median": 101.6,
+        "p95": 123.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 372.3,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "bloom",
+      "preview": {
+        "values": [
+          96.1,
+          115.4,
+          107.1,
+          90.9,
+          75.5
+        ],
+        "median": 96.1,
+        "p95": 115.4,
+        "windows": 5
+      },
+      "full": {
+        "ms": 665.3,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "grain",
+      "preview": {
+        "values": [
+          90,
+          72.6,
+          74.4,
+          79.6,
+          93.6
+        ],
+        "median": 79.6,
+        "p95": 93.6,
+        "windows": 5
+      },
+      "full": {
+        "ms": 315.4,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "vignette",
+      "preview": {
+        "values": [
+          42.9,
+          34.3,
+          48.4,
+          44,
+          41.8
+        ],
+        "median": 42.9,
+        "p95": 48.4,
+        "windows": 5
+      },
+      "full": {
+        "ms": 144.3,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "duotone",
+      "preview": {
+        "values": [
+          59.5,
+          49.1,
+          46.2,
+          56.3,
+          54.9
+        ],
+        "median": 54.9,
+        "p95": 59.5,
+        "windows": 5
+      },
+      "full": {
+        "ms": 317,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "posterize",
+      "preview": {
+        "values": [
+          41.6,
+          43.2,
+          44.5,
+          41.8,
+          59.9
+        ],
+        "median": 43.2,
+        "p95": 59.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 221.8,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "edges",
+      "preview": {
+        "values": [
+          82.9,
+          175.9,
+          82.5,
+          102.7,
+          95.7
+        ],
+        "median": 95.7,
+        "p95": 175.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 475.7,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "sketch",
+      "preview": {
+        "values": [
+          104.3,
+          118,
+          87,
+          124,
+          95.7
+        ],
+        "median": 104.3,
+        "p95": 124,
+        "windows": 5
+      },
+      "full": {
+        "ms": 425.8,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "oil",
+      "preview": {
+        "values": [
+          2371.6,
+          2469.4,
+          3054.1,
+          2314,
+          3098.2
+        ],
+        "median": 2469.4,
+        "p95": 3098.2,
+        "windows": 5
+      },
+      "full": {
+        "ms": 13136.3,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "emboss",
+      "preview": {
+        "values": [
+          164.7,
+          147.8,
+          129.9,
+          118.8,
+          152.4
+        ],
+        "median": 147.8,
+        "p95": 164.7,
+        "windows": 5
+      },
+      "full": {
+        "ms": 590.2,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "blur",
+      "preview": {
+        "values": [
+          68.3,
+          107.1,
+          80.3,
+          71.5,
+          69.5
+        ],
+        "median": 71.5,
+        "p95": 107.1,
+        "windows": 5
+      },
+      "full": {
+        "ms": 369.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "sharpen",
+      "preview": {
+        "values": [
+          128.4,
+          128.3,
+          137.4,
+          144,
+          126.6
+        ],
+        "median": 128.4,
+        "p95": 144,
+        "windows": 5
+      },
+      "full": {
+        "ms": 559.6,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "invert",
+      "preview": {
+        "values": [
+          41.9,
+          30.1,
+          38.8,
+          33.8,
+          31.7
+        ],
+        "median": 33.8,
+        "p95": 41.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 146.9,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "sepia",
+      "preview": {
+        "values": [
+          63.4,
+          45.2,
+          49.7,
+          53.5,
+          44.4
+        ],
+        "median": 49.7,
+        "p95": 63.4,
+        "windows": 5
+      },
+      "full": {
+        "ms": 262.2,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "thermal",
+      "preview": {
+        "values": [
+          62.8,
+          114.8,
+          64.3,
+          74.1,
+          85.4
+        ],
+        "median": 74.1,
+        "p95": 114.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 303.5,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "matrix",
+      "preview": {
+        "values": [
+          13.7,
+          13.9,
+          17,
+          12.4,
+          20.8
+        ],
+        "median": 13.9,
+        "p95": 20.8,
+        "windows": 5
+      },
+      "full": {
+        "ms": 57,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effect": "retro",
+      "preview": {
+        "values": [
+          96.4,
+          397.9,
+          273.7,
+          259.7,
+          232.2
+        ],
+        "median": 259.7,
+        "p95": 397.9,
+        "windows": 5
+      },
+      "full": {
+        "ms": 373.8,
+        "w": 3840,
+        "h": 2160,
+        "windows": 1,
+        "note": "one forced-GC sample at native size; full 5-window cost is in stacks/export"
+      }
+    }
+  ],
+  "stacks": [
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "halftone"
+      ],
+      "count": 1,
+      "preview": {
+        "values": [
+          161.4,
+          248.7,
+          168.5,
+          162.8,
+          162.1
+        ],
+        "median": 162.8,
+        "p95": 248.7,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "count": 3,
+      "preview": {
+        "values": [
+          254.7,
+          259.8,
+          223.4,
+          214.1,
+          226
+        ],
+        "median": 226,
+        "p95": 259.8,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "count": 6,
+      "preview": {
+        "values": [
+          320.5,
+          303.3,
+          319,
+          315.9,
+          435.9
+        ],
+        "median": 319,
+        "p95": 435.9,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "count": 12,
+      "preview": {
+        "values": [
+          939,
+          896.1,
+          763.9,
+          670.2,
+          752.4
+        ],
+        "median": 763.9,
+        "p95": 939,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "halftone"
+      ],
+      "count": 1,
+      "preview": {
+        "values": [
+          486.6,
+          324.1,
+          317.9,
+          321.4,
+          324.3
+        ],
+        "median": 324.1,
+        "p95": 486.6,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "count": 3,
+      "preview": {
+        "values": [
+          386.9,
+          388.9,
+          369.3,
+          372.8,
+          384.3
+        ],
+        "median": 384.3,
+        "p95": 388.9,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "count": 6,
+      "preview": {
+        "values": [
+          435.5,
+          437.1,
+          441.3,
+          430.6,
+          436.3
+        ],
+        "median": 436.3,
+        "p95": 441.3,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "count": 12,
+      "preview": {
+        "values": [
+          968.7,
+          1034.2,
+          850.1,
+          822.4,
+          950.4
+        ],
+        "median": 950.4,
+        "p95": 1034.2,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "halftone"
+      ],
+      "count": 1,
+      "preview": {
+        "values": [
+          76.4,
+          80.6,
+          73.6,
+          73.8,
+          72.6
+        ],
+        "median": 73.8,
+        "p95": 80.6,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "count": 3,
+      "preview": {
+        "values": [
+          133.3,
+          128.6,
+          200,
+          133.9,
+          132.1
+        ],
+        "median": 133.3,
+        "p95": 200,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "count": 6,
+      "preview": {
+        "values": [
+          198.4,
+          203.5,
+          203.7,
+          206,
+          217.2
+        ],
+        "median": 203.7,
+        "p95": 217.2,
+        "windows": 5
+      }
+    },
+    {
+      "source": "1080p",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "count": 12,
+      "preview": {
+        "values": [
+          731.9,
+          730.8,
+          598.9,
+          612,
+          698.2
+        ],
+        "median": 698.2,
+        "p95": 731.9,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "halftone"
+      ],
+      "count": 1,
+      "preview": {
+        "values": [
+          167.3,
+          197.1,
+          162,
+          181,
+          155.4
+        ],
+        "median": 167.3,
+        "p95": 197.1,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "count": 3,
+      "preview": {
+        "values": [
+          263.6,
+          366,
+          222.7,
+          222.6,
+          222.8
+        ],
+        "median": 222.8,
+        "p95": 366,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "count": 6,
+      "preview": {
+        "values": [
+          302.8,
+          401.2,
+          302.1,
+          307.5,
+          296.2
+        ],
+        "median": 302.8,
+        "p95": 401.2,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "script",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "count": 12,
+      "preview": {
+        "values": [
+          975.1,
+          654.3,
+          642.8,
+          639.8,
+          646.9
+        ],
+        "median": 646.9,
+        "p95": 975.1,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "halftone"
+      ],
+      "count": 1,
+      "preview": {
+        "values": [
+          345.9,
+          403.7,
+          324.7,
+          317.8,
+          329.9
+        ],
+        "median": 329.9,
+        "p95": 403.7,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "count": 3,
+      "preview": {
+        "values": [
+          388.7,
+          383.9,
+          374.5,
+          376.8,
+          442.9
+        ],
+        "median": 383.9,
+        "p95": 442.9,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "count": 6,
+      "preview": {
+        "values": [
+          462.6,
+          454.3,
+          450.9,
+          455.4,
+          452.4
+        ],
+        "median": 454.3,
+        "p95": 462.6,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "dither",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "count": 12,
+      "preview": {
+        "values": [
+          984,
+          833.1,
+          847.1,
+          859.3,
+          1110.8
+        ],
+        "median": 859.3,
+        "p95": 1110.8,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "halftone"
+      ],
+      "count": 1,
+      "preview": {
+        "values": [
+          72.8,
+          111.2,
+          71.9,
+          74.6,
+          76.2
+        ],
+        "median": 74.6,
+        "p95": 111.2,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate"
+      ],
+      "count": 3,
+      "preview": {
+        "values": [
+          124.3,
+          126,
+          123.8,
+          130.9,
+          210.1
+        ],
+        "median": 126,
+        "p95": 210.1,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize"
+      ],
+      "count": 6,
+      "preview": {
+        "values": [
+          201.6,
+          207.6,
+          203,
+          224.7,
+          211.1
+        ],
+        "median": 207.6,
+        "p95": 224.7,
+        "windows": 5
+      }
+    },
+    {
+      "source": "4k",
+      "mode": "effects",
+      "effects": [
+        "halftone",
+        "crt",
+        "pixelate",
+        "bloom",
+        "vignette",
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "thermal",
+        "retro"
+      ],
+      "count": 12,
+      "preview": {
+        "values": [
+          716.8,
+          601,
+          717.5,
+          685.4,
+          598.4
+        ],
+        "median": 685.4,
+        "p95": 717.5,
+        "windows": 5
+      }
+    }
+  ],
+  "drag": {
+    "effects": [
+      "posterize",
+      "edges",
+      "sketch",
+      "emboss",
+      "blur",
+      "sharpen"
+    ],
+    "source": "4K still",
+    "windows": [
+      {
+        "sync": {
+          "frames": {
+            "median": 83.3,
+            "p95": 116.7,
+            "max": 183.3,
+            "n": 181
+          },
+          "renderMs": {
+            "median": 60.9,
+            "p95": 103.8,
+            "max": 164.2,
+            "n": 179
+          },
+          "longtasks": [
+            130,
+            75,
+            79,
+            106,
+            83,
+            140,
+            139,
+            98,
+            98,
+            88,
+            95,
+            98,
+            97,
+            99,
+            104,
+            94,
+            97,
+            103,
+            91,
+            88,
+            86,
+            81,
+            76,
+            76,
+            68,
+            65,
+            68,
+            62,
+            62,
+            62,
+            59,
+            53,
+            50,
+            51,
+            53,
+            50,
+            50,
+            50,
+            51,
+            50,
+            50,
+            53,
+            61,
+            55,
+            56,
+            60,
+            63,
+            65,
+            67,
+            77,
+            77,
+            71,
+            65,
+            72,
+            78,
+            75,
+            96,
+            142,
+            127,
+            87,
+            97,
+            91,
+            103,
+            99,
+            109,
+            95,
+            105,
+            95,
+            102,
+            92,
+            91,
+            81,
+            85,
+            76,
+            71,
+            72,
+            74,
+            63,
+            59,
+            59,
+            52,
+            60,
+            54,
+            50,
+            52,
+            52,
+            54,
+            50,
+            52,
+            55,
+            69,
+            59,
+            60,
+            62,
+            66,
+            79,
+            74,
+            81,
+            88,
+            82,
+            89,
+            95,
+            95,
+            160,
+            142,
+            117,
+            92,
+            101,
+            94,
+            107,
+            93,
+            90,
+            88,
+            83,
+            82,
+            89,
+            79,
+            73,
+            79,
+            66,
+            63,
+            59,
+            66,
+            54,
+            55,
+            52,
+            50,
+            50,
+            57,
+            50,
+            50,
+            50,
+            54,
+            62,
+            58,
+            61,
+            60,
+            72,
+            79,
+            73,
+            71,
+            84,
+            82,
+            89,
+            96,
+            88,
+            103,
+            93,
+            101,
+            98,
+            109,
+            172,
+            134,
+            97,
+            97,
+            86,
+            87,
+            78,
+            77,
+            78,
+            67,
+            65,
+            70,
+            59,
+            61,
+            58,
+            57,
+            52,
+            57,
+            50,
+            50,
+            52,
+            59,
+            53,
+            53,
+            53,
+            58,
+            62,
+            58,
+            74,
+            72,
+            70,
+            75,
+            87,
+            82,
+            80,
+            99,
+            92,
+            107
+          ]
+        },
+        "worker": {
+          "frames": {
+            "median": 16.7,
+            "p95": 16.8,
+            "max": 16.8,
+            "n": 181
+          },
+          "renderMs": {
+            "median": 0.4,
+            "p95": 0.9,
+            "max": 2.3,
+            "n": 181
+          },
+          "longtasks": []
+        }
+      },
+      {
+        "sync": {
+          "frames": {
+            "median": 83.3,
+            "p95": 116.7,
+            "max": 200,
+            "n": 181
+          },
+          "renderMs": {
+            "median": 63.2,
+            "p95": 104.1,
+            "max": 166.2,
+            "n": 177
+          },
+          "longtasks": [
+            91,
+            85,
+            92,
+            92,
+            102,
+            116,
+            101,
+            120,
+            106,
+            129,
+            103,
+            109,
+            100,
+            108,
+            111,
+            168,
+            148,
+            121,
+            97,
+            103,
+            89,
+            92,
+            78,
+            76,
+            80,
+            69,
+            66,
+            57,
+            69,
+            58,
+            56,
+            54,
+            50,
+            50,
+            55,
+            52,
+            55,
+            54,
+            52,
+            50,
+            55,
+            63,
+            56,
+            58,
+            57,
+            59,
+            71,
+            76,
+            72,
+            73,
+            59,
+            65,
+            71,
+            73,
+            88,
+            82,
+            84,
+            93,
+            92,
+            104,
+            95,
+            98,
+            99,
+            109,
+            94,
+            153,
+            172,
+            110,
+            89,
+            92,
+            93,
+            81,
+            79,
+            70,
+            70,
+            75,
+            70,
+            65,
+            59,
+            60,
+            56,
+            55,
+            53,
+            58,
+            54,
+            53,
+            53,
+            52,
+            52,
+            51,
+            66,
+            55,
+            58,
+            62,
+            66,
+            68,
+            76,
+            74,
+            105,
+            90,
+            87,
+            91,
+            100,
+            96,
+            95,
+            97,
+            114,
+            96,
+            97,
+            102,
+            93,
+            99,
+            126,
+            146,
+            108,
+            91,
+            93,
+            99,
+            82,
+            73,
+            66,
+            66,
+            76,
+            91,
+            61,
+            54,
+            52,
+            50,
+            53,
+            52,
+            50,
+            51,
+            55,
+            52,
+            53,
+            51,
+            54,
+            57,
+            60,
+            68,
+            63,
+            66,
+            67,
+            72,
+            78,
+            81,
+            93,
+            88,
+            87,
+            90,
+            107,
+            94,
+            93,
+            107,
+            97,
+            98,
+            104,
+            93,
+            91,
+            95,
+            91,
+            80,
+            139,
+            98,
+            95,
+            84,
+            66,
+            65,
+            63,
+            58,
+            55,
+            52,
+            53,
+            62,
+            50,
+            50,
+            57,
+            53,
+            50,
+            50,
+            52,
+            56,
+            66,
+            58,
+            60,
+            57,
+            65,
+            64,
+            71,
+            75,
+            85,
+            82,
+            84,
+            88,
+            96,
+            94,
+            93
+          ]
+        },
+        "worker": {
+          "frames": {
+            "median": 16.7,
+            "p95": 16.8,
+            "max": 16.8,
+            "n": 181
+          },
+          "renderMs": {
+            "median": 0.3,
+            "p95": 1,
+            "max": 2.5,
+            "n": 181
+          },
+          "longtasks": []
+        }
+      },
+      {
+        "sync": {
+          "frames": {
+            "median": 83.3,
+            "p95": 116.7,
+            "max": 150,
+            "n": 181
+          },
+          "renderMs": {
+            "median": 64.6,
+            "p95": 99,
+            "max": 126.7,
+            "n": 180
+          },
+          "longtasks": [
+            96,
+            78,
+            93,
+            81,
+            92,
+            117,
+            114,
+            103,
+            102,
+            101,
+            99,
+            101,
+            102,
+            107,
+            94,
+            97,
+            108,
+            94,
+            85,
+            87,
+            86,
+            82,
+            75,
+            118,
+            106,
+            105,
+            73,
+            65,
+            63,
+            59,
+            58,
+            56,
+            52,
+            61,
+            52,
+            50,
+            53,
+            54,
+            50,
+            51,
+            55,
+            54,
+            66,
+            55,
+            63,
+            63,
+            65,
+            68,
+            72,
+            72,
+            71,
+            66,
+            69,
+            72,
+            77,
+            81,
+            90,
+            89,
+            85,
+            89,
+            101,
+            90,
+            94,
+            106,
+            94,
+            101,
+            122,
+            95,
+            92,
+            90,
+            91,
+            83,
+            84,
+            106,
+            130,
+            101,
+            81,
+            66,
+            61,
+            62,
+            55,
+            53,
+            54,
+            58,
+            50,
+            50,
+            51,
+            50,
+            50,
+            54,
+            60,
+            53,
+            57,
+            60,
+            61,
+            65,
+            64,
+            73,
+            82,
+            78,
+            81,
+            85,
+            90,
+            104,
+            95,
+            95,
+            94,
+            102,
+            93,
+            94,
+            101,
+            96,
+            95,
+            93,
+            89,
+            89,
+            82,
+            85,
+            74,
+            74,
+            74,
+            65,
+            60,
+            88,
+            119,
+            77,
+            63,
+            59,
+            57,
+            51,
+            55,
+            55,
+            54,
+            51,
+            54,
+            49,
+            52,
+            51,
+            51,
+            56,
+            60,
+            68,
+            61,
+            68,
+            71,
+            75,
+            75,
+            82,
+            91,
+            86,
+            88,
+            89,
+            104,
+            93,
+            99,
+            100,
+            94,
+            94,
+            106,
+            95,
+            88,
+            91,
+            93,
+            81,
+            80,
+            69,
+            70,
+            74,
+            65,
+            61,
+            60,
+            57,
+            57,
+            53,
+            53,
+            59,
+            50,
+            62,
+            80,
+            74,
+            68,
+            70,
+            51,
+            57,
+            54,
+            50,
+            50,
+            50,
+            50,
+            51,
+            52,
+            54,
+            68,
+            56,
+            58,
+            61,
+            64,
+            69,
+            71,
+            75,
+            86,
+            85,
+            83,
+            91,
+            99,
+            101
+          ]
+        },
+        "worker": {
+          "frames": {
+            "median": 16.7,
+            "p95": 16.8,
+            "max": 16.8,
+            "n": 181
+          },
+          "renderMs": {
+            "median": 0.2,
+            "p95": 0.6,
+            "max": 2.5,
+            "n": 181
+          },
+          "longtasks": []
+        }
+      },
+      {
+        "sync": {
+          "frames": {
+            "median": 83.3,
+            "p95": 116.7,
+            "max": 133.3,
+            "n": 181
+          },
+          "renderMs": {
+            "median": 66.6,
+            "p95": 99.7,
+            "max": 106.8,
+            "n": 177
+          },
+          "longtasks": [
+            83,
+            91,
+            92,
+            85,
+            101,
+            117,
+            116,
+            99,
+            96,
+            107,
+            98,
+            96,
+            99,
+            108,
+            101,
+            103,
+            110,
+            96,
+            91,
+            91,
+            95,
+            81,
+            77,
+            70,
+            69,
+            76,
+            68,
+            62,
+            57,
+            57,
+            56,
+            55,
+            54,
+            61,
+            53,
+            85,
+            88,
+            71,
+            62,
+            56,
+            52,
+            54,
+            52,
+            51,
+            50,
+            53,
+            53,
+            67,
+            61,
+            63,
+            62,
+            66,
+            68,
+            75,
+            78,
+            73,
+            68,
+            71,
+            71,
+            75,
+            81,
+            97,
+            93,
+            89,
+            89,
+            105,
+            99,
+            99,
+            107,
+            94,
+            98,
+            103,
+            96,
+            90,
+            91,
+            91,
+            78,
+            79,
+            72,
+            69,
+            77,
+            65,
+            60,
+            59,
+            54,
+            53,
+            52,
+            52,
+            61,
+            50,
+            63,
+            86,
+            66,
+            64,
+            57,
+            54,
+            57,
+            53,
+            52,
+            50,
+            52,
+            53,
+            63,
+            59,
+            61,
+            65,
+            66,
+            70,
+            73,
+            77,
+            90,
+            82,
+            84,
+            90,
+            100,
+            99,
+            94,
+            94,
+            102,
+            98,
+            99,
+            106,
+            97,
+            96,
+            97,
+            92,
+            88,
+            84,
+            88,
+            74,
+            74,
+            70,
+            69,
+            63,
+            68,
+            56,
+            70,
+            53,
+            53,
+            51,
+            50,
+            50,
+            52,
+            54,
+            61,
+            93,
+            85,
+            82,
+            66,
+            52,
+            59,
+            57,
+            57,
+            59,
+            62,
+            73,
+            64,
+            68,
+            73,
+            76,
+            77,
+            81,
+            91,
+            85,
+            89,
+            90,
+            105,
+            94,
+            100,
+            105,
+            95,
+            98,
+            105,
+            93,
+            88,
+            89,
+            92,
+            83,
+            81,
+            85,
+            71,
+            69,
+            63,
+            63,
+            59,
+            55,
+            58,
+            64,
+            55,
+            51,
+            52,
+            52,
+            50,
+            60,
+            80,
+            114,
+            67,
+            74,
+            66,
+            66,
+            68,
+            81,
+            70,
+            76,
+            77,
+            83,
+            84,
+            88,
+            89,
+            111
+          ]
+        },
+        "worker": {
+          "frames": {
+            "median": 16.7,
+            "p95": 16.7,
+            "max": 16.8,
+            "n": 181
+          },
+          "renderMs": {
+            "median": 0.2,
+            "p95": 0.7,
+            "max": 1.9,
+            "n": 180
+          },
+          "longtasks": []
+        }
+      },
+      {
+        "sync": {
+          "frames": {
+            "median": 83.3,
+            "p95": 116.7,
+            "max": 200,
+            "n": 181
+          },
+          "renderMs": {
+            "median": 64.9,
+            "p95": 103.6,
+            "max": 170.6,
+            "n": 179
+          },
+          "longtasks": [
+            84,
+            89,
+            86,
+            89,
+            98,
+            103,
+            100,
+            98,
+            96,
+            97,
+            95,
+            99,
+            98,
+            99,
+            99,
+            97,
+            97,
+            93,
+            87,
+            86,
+            82,
+            92,
+            78,
+            77,
+            69,
+            68,
+            64,
+            63,
+            60,
+            68,
+            55,
+            53,
+            50,
+            50,
+            51,
+            51,
+            52,
+            51,
+            55,
+            54,
+            55,
+            52,
+            55,
+            105,
+            93,
+            89,
+            85,
+            72,
+            73,
+            76,
+            67,
+            67,
+            70,
+            71,
+            88,
+            84,
+            82,
+            87,
+            88,
+            89,
+            91,
+            97,
+            108,
+            95,
+            94,
+            97,
+            95,
+            98,
+            90,
+            97,
+            83,
+            80,
+            81,
+            73,
+            72,
+            70,
+            67,
+            70,
+            59,
+            60,
+            53,
+            53,
+            51,
+            50,
+            57,
+            50,
+            60,
+            50,
+            51,
+            54,
+            67,
+            108,
+            110,
+            99,
+            80,
+            76,
+            77,
+            81,
+            91,
+            83,
+            97,
+            91,
+            94,
+            97,
+            99,
+            97,
+            109,
+            90,
+            98,
+            97,
+            95,
+            90,
+            89,
+            97,
+            83,
+            79,
+            76,
+            69,
+            67,
+            68,
+            62,
+            68,
+            59,
+            60,
+            53,
+            51,
+            52,
+            50,
+            58,
+            50,
+            59,
+            50,
+            51,
+            52,
+            51,
+            56,
+            56,
+            58,
+            70,
+            63,
+            67,
+            68,
+            112,
+            128,
+            98,
+            89,
+            104,
+            91,
+            97,
+            95,
+            98,
+            99,
+            97,
+            106,
+            96,
+            94,
+            98,
+            91,
+            85,
+            84,
+            83,
+            89,
+            75,
+            71,
+            67,
+            63,
+            63,
+            58,
+            56,
+            65,
+            55,
+            54,
+            50,
+            51,
+            50,
+            50,
+            55,
+            55,
+            50,
+            49,
+            62,
+            54,
+            52,
+            55,
+            56,
+            57,
+            74,
+            63,
+            73,
+            74,
+            72,
+            75,
+            80,
+            79,
+            81,
+            145,
+            173,
+            125
+          ]
+        },
+        "worker": {
+          "frames": {
+            "median": 16.7,
+            "p95": 16.7,
+            "max": 16.8,
+            "n": 181
+          },
+          "renderMs": {
+            "median": 0.4,
+            "p95": 0.7,
+            "max": 1.3,
+            "n": 181
+          },
+          "longtasks": []
+        }
+      }
+    ],
+    "summary": {
+      "sync": {
+        "raf": {
+          "median": 83.3,
+          "p95": 83.3,
+          "max": 83.3,
+          "n": 5
+        },
+        "render": {
+          "median": 64.6,
+          "p95": 66.6,
+          "max": 66.6,
+          "n": 5
+        },
+        "longtasks": [
+          130,
+          75,
+          79,
+          106,
+          83,
+          140,
+          139,
+          98,
+          98,
+          88,
+          95,
+          98,
+          97,
+          99,
+          104,
+          94,
+          97,
+          103,
+          91,
+          88,
+          86,
+          81,
+          76,
+          76,
+          68,
+          65,
+          68,
+          62,
+          62,
+          62,
+          59,
+          53,
+          50,
+          51,
+          53,
+          50,
+          50,
+          50,
+          51,
+          50,
+          50,
+          53,
+          61,
+          55,
+          56,
+          60,
+          63,
+          65,
+          67,
+          77,
+          77,
+          71,
+          65,
+          72,
+          78,
+          75,
+          96,
+          142,
+          127,
+          87,
+          97,
+          91,
+          103,
+          99,
+          109,
+          95,
+          105,
+          95,
+          102,
+          92,
+          91,
+          81,
+          85,
+          76,
+          71,
+          72,
+          74,
+          63,
+          59,
+          59,
+          52,
+          60,
+          54,
+          50,
+          52,
+          52,
+          54,
+          50,
+          52,
+          55,
+          69,
+          59,
+          60,
+          62,
+          66,
+          79,
+          74,
+          81,
+          88,
+          82,
+          89,
+          95,
+          95,
+          160,
+          142,
+          117,
+          92,
+          101,
+          94,
+          107,
+          93,
+          90,
+          88,
+          83,
+          82,
+          89,
+          79,
+          73,
+          79,
+          66,
+          63,
+          59,
+          66,
+          54,
+          55,
+          52,
+          50,
+          50,
+          57,
+          50,
+          50,
+          50,
+          54,
+          62,
+          58,
+          61,
+          60,
+          72,
+          79,
+          73,
+          71,
+          84,
+          82,
+          89,
+          96,
+          88,
+          103,
+          93,
+          101,
+          98,
+          109,
+          172,
+          134,
+          97,
+          97,
+          86,
+          87,
+          78,
+          77,
+          78,
+          67,
+          65,
+          70,
+          59,
+          61,
+          58,
+          57,
+          52,
+          57,
+          50,
+          50,
+          52,
+          59,
+          53,
+          53,
+          53,
+          58,
+          62,
+          58,
+          74,
+          72,
+          70,
+          75,
+          87,
+          82,
+          80,
+          99,
+          92,
+          107,
+          91,
+          85,
+          92,
+          92,
+          102,
+          116,
+          101,
+          120,
+          106,
+          129,
+          103,
+          109,
+          100,
+          108,
+          111,
+          168,
+          148,
+          121,
+          97,
+          103,
+          89,
+          92,
+          78,
+          76,
+          80,
+          69,
+          66,
+          57,
+          69,
+          58,
+          56,
+          54,
+          50,
+          50,
+          55,
+          52,
+          55,
+          54,
+          52,
+          50,
+          55,
+          63,
+          56,
+          58,
+          57,
+          59,
+          71,
+          76,
+          72,
+          73,
+          59,
+          65,
+          71,
+          73,
+          88,
+          82,
+          84,
+          93,
+          92,
+          104,
+          95,
+          98,
+          99,
+          109,
+          94,
+          153,
+          172,
+          110,
+          89,
+          92,
+          93,
+          81,
+          79,
+          70,
+          70,
+          75,
+          70,
+          65,
+          59,
+          60,
+          56,
+          55,
+          53,
+          58,
+          54,
+          53,
+          53,
+          52,
+          52,
+          51,
+          66,
+          55,
+          58,
+          62,
+          66,
+          68,
+          76,
+          74,
+          105,
+          90,
+          87,
+          91,
+          100,
+          96,
+          95,
+          97,
+          114,
+          96,
+          97,
+          102,
+          93,
+          99,
+          126,
+          146,
+          108,
+          91,
+          93,
+          99,
+          82,
+          73,
+          66,
+          66,
+          76,
+          91,
+          61,
+          54,
+          52,
+          50,
+          53,
+          52,
+          50,
+          51,
+          55,
+          52,
+          53,
+          51,
+          54,
+          57,
+          60,
+          68,
+          63,
+          66,
+          67,
+          72,
+          78,
+          81,
+          93,
+          88,
+          87,
+          90,
+          107,
+          94,
+          93,
+          107,
+          97,
+          98,
+          104,
+          93,
+          91,
+          95,
+          91,
+          80,
+          139,
+          98,
+          95,
+          84,
+          66,
+          65,
+          63,
+          58,
+          55,
+          52,
+          53,
+          62,
+          50,
+          50,
+          57,
+          53,
+          50,
+          50,
+          52,
+          56,
+          66,
+          58,
+          60,
+          57,
+          65,
+          64,
+          71,
+          75,
+          85,
+          82,
+          84,
+          88,
+          96,
+          94,
+          93,
+          96,
+          78,
+          93,
+          81,
+          92,
+          117,
+          114,
+          103,
+          102,
+          101,
+          99,
+          101,
+          102,
+          107,
+          94,
+          97,
+          108,
+          94,
+          85,
+          87,
+          86,
+          82,
+          75,
+          118,
+          106,
+          105,
+          73,
+          65,
+          63,
+          59,
+          58,
+          56,
+          52,
+          61,
+          52,
+          50,
+          53,
+          54,
+          50,
+          51,
+          55,
+          54,
+          66,
+          55,
+          63,
+          63,
+          65,
+          68,
+          72,
+          72,
+          71,
+          66,
+          69,
+          72,
+          77,
+          81,
+          90,
+          89,
+          85,
+          89,
+          101,
+          90,
+          94,
+          106,
+          94,
+          101,
+          122,
+          95,
+          92,
+          90,
+          91,
+          83,
+          84,
+          106,
+          130,
+          101,
+          81,
+          66,
+          61,
+          62,
+          55,
+          53,
+          54,
+          58,
+          50,
+          50,
+          51,
+          50,
+          50,
+          54,
+          60,
+          53,
+          57,
+          60,
+          61,
+          65,
+          64,
+          73,
+          82,
+          78,
+          81,
+          85,
+          90,
+          104,
+          95,
+          95,
+          94,
+          102,
+          93,
+          94,
+          101,
+          96,
+          95,
+          93,
+          89,
+          89,
+          82,
+          85,
+          74,
+          74,
+          74,
+          65,
+          60,
+          88,
+          119,
+          77,
+          63,
+          59,
+          57,
+          51,
+          55,
+          55,
+          54,
+          51,
+          54,
+          49,
+          52,
+          51,
+          51,
+          56,
+          60,
+          68,
+          61,
+          68,
+          71,
+          75,
+          75,
+          82,
+          91,
+          86,
+          88,
+          89,
+          104,
+          93,
+          99,
+          100,
+          94,
+          94,
+          106,
+          95,
+          88,
+          91,
+          93,
+          81,
+          80,
+          69,
+          70,
+          74,
+          65,
+          61,
+          60,
+          57,
+          57,
+          53,
+          53,
+          59,
+          50,
+          62,
+          80,
+          74,
+          68,
+          70,
+          51,
+          57,
+          54,
+          50,
+          50,
+          50,
+          50,
+          51,
+          52,
+          54,
+          68,
+          56,
+          58,
+          61,
+          64,
+          69,
+          71,
+          75,
+          86,
+          85,
+          83,
+          91,
+          99,
+          101,
+          83,
+          91,
+          92,
+          85,
+          101,
+          117,
+          116,
+          99,
+          96,
+          107,
+          98,
+          96,
+          99,
+          108,
+          101,
+          103,
+          110,
+          96,
+          91,
+          91,
+          95,
+          81,
+          77,
+          70,
+          69,
+          76,
+          68,
+          62,
+          57,
+          57,
+          56,
+          55,
+          54,
+          61,
+          53,
+          85,
+          88,
+          71,
+          62,
+          56,
+          52,
+          54,
+          52,
+          51,
+          50,
+          53,
+          53,
+          67,
+          61,
+          63,
+          62,
+          66,
+          68,
+          75,
+          78,
+          73,
+          68,
+          71,
+          71,
+          75,
+          81,
+          97,
+          93,
+          89,
+          89,
+          105,
+          99,
+          99,
+          107,
+          94,
+          98,
+          103,
+          96,
+          90,
+          91,
+          91,
+          78,
+          79,
+          72,
+          69,
+          77,
+          65,
+          60,
+          59,
+          54,
+          53,
+          52,
+          52,
+          61,
+          50,
+          63,
+          86,
+          66,
+          64,
+          57,
+          54,
+          57,
+          53,
+          52,
+          50,
+          52,
+          53,
+          63,
+          59,
+          61,
+          65,
+          66,
+          70,
+          73,
+          77,
+          90,
+          82,
+          84,
+          90,
+          100,
+          99,
+          94,
+          94,
+          102,
+          98,
+          99,
+          106,
+          97,
+          96,
+          97,
+          92,
+          88,
+          84,
+          88,
+          74,
+          74,
+          70,
+          69,
+          63,
+          68,
+          56,
+          70,
+          53,
+          53,
+          51,
+          50,
+          50,
+          52,
+          54,
+          61,
+          93,
+          85,
+          82,
+          66,
+          52,
+          59,
+          57,
+          57,
+          59,
+          62,
+          73,
+          64,
+          68,
+          73,
+          76,
+          77,
+          81,
+          91,
+          85,
+          89,
+          90,
+          105,
+          94,
+          100,
+          105,
+          95,
+          98,
+          105,
+          93,
+          88,
+          89,
+          92,
+          83,
+          81,
+          85,
+          71,
+          69,
+          63,
+          63,
+          59,
+          55,
+          58,
+          64,
+          55,
+          51,
+          52,
+          52,
+          50,
+          60,
+          80,
+          114,
+          67,
+          74,
+          66,
+          66,
+          68,
+          81,
+          70,
+          76,
+          77,
+          83,
+          84,
+          88,
+          89,
+          111,
+          84,
+          89,
+          86,
+          89,
+          98,
+          103,
+          100,
+          98,
+          96,
+          97,
+          95,
+          99,
+          98,
+          99,
+          99,
+          97,
+          97,
+          93,
+          87,
+          86,
+          82,
+          92,
+          78,
+          77,
+          69,
+          68,
+          64,
+          63,
+          60,
+          68,
+          55,
+          53,
+          50,
+          50,
+          51,
+          51,
+          52,
+          51,
+          55,
+          54,
+          55,
+          52,
+          55,
+          105,
+          93,
+          89,
+          85,
+          72,
+          73,
+          76,
+          67,
+          67,
+          70,
+          71,
+          88,
+          84,
+          82,
+          87,
+          88,
+          89,
+          91,
+          97,
+          108,
+          95,
+          94,
+          97,
+          95,
+          98,
+          90,
+          97,
+          83,
+          80,
+          81,
+          73,
+          72,
+          70,
+          67,
+          70,
+          59,
+          60,
+          53,
+          53,
+          51,
+          50,
+          57,
+          50,
+          60,
+          50,
+          51,
+          54,
+          67,
+          108,
+          110,
+          99,
+          80,
+          76,
+          77,
+          81,
+          91,
+          83,
+          97,
+          91,
+          94,
+          97,
+          99,
+          97,
+          109,
+          90,
+          98,
+          97,
+          95,
+          90,
+          89,
+          97,
+          83,
+          79,
+          76,
+          69,
+          67,
+          68,
+          62,
+          68,
+          59,
+          60,
+          53,
+          51,
+          52,
+          50,
+          58,
+          50,
+          59,
+          50,
+          51,
+          52,
+          51,
+          56,
+          56,
+          58,
+          70,
+          63,
+          67,
+          68,
+          112,
+          128,
+          98,
+          89,
+          104,
+          91,
+          97,
+          95,
+          98,
+          99,
+          97,
+          106,
+          96,
+          94,
+          98,
+          91,
+          85,
+          84,
+          83,
+          89,
+          75,
+          71,
+          67,
+          63,
+          63,
+          58,
+          56,
+          65,
+          55,
+          54,
+          50,
+          51,
+          50,
+          50,
+          55,
+          55,
+          50,
+          49,
+          62,
+          54,
+          52,
+          55,
+          56,
+          57,
+          74,
+          63,
+          73,
+          74,
+          72,
+          75,
+          80,
+          79,
+          81,
+          145,
+          173,
+          125
+        ]
+      },
+      "worker": {
+        "raf": {
+          "median": 16.7,
+          "p95": 16.7,
+          "max": 16.7,
+          "n": 5
+        },
+        "render": {
+          "median": 0.3,
+          "p95": 0.4,
+          "max": 0.4,
+          "n": 5
+        },
+        "longtasks": []
+      }
+    }
+  },
+  "video": [
+    {
+      "source": "1080p",
+      "effects": [],
+      "count": 0,
+      "windows": [
+        {
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 33.3,
+          "n": 90
+        },
+        {
+          "median": 16.7,
+          "p95": 33.4,
+          "max": 50,
+          "n": 79
+        },
+        {
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 50,
+          "n": 85
+        },
+        {
+          "median": 16.7,
+          "p95": 33.4,
+          "max": 33.4,
+          "n": 78
+        },
+        {
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 33.4,
+          "n": 86
+        }
+      ],
+      "medianOfMedians": 16.7
+    },
+    {
+      "source": "1080p",
+      "effects": [
+        "posterize",
+        "edges",
+        "sketch"
+      ],
+      "count": 3,
+      "windows": [
+        {
+          "median": 16.7,
+          "p95": 33.4,
+          "max": 33.5,
+          "n": 82
+        },
+        {
+          "median": 16.7,
+          "p95": 33.3,
+          "max": 33.4,
+          "n": 81
+        },
+        {
+          "median": 16.7,
+          "p95": 33.3,
+          "max": 50.1,
+          "n": 82
+        },
+        {
+          "median": 16.7,
+          "p95": 33.4,
+          "max": 50,
+          "n": 78
+        },
+        {
+          "median": 16.7,
+          "p95": 33.4,
+          "max": 33.4,
+          "n": 81
+        }
+      ],
+      "medianOfMedians": 16.7
+    },
+    {
+      "source": "1080p",
+      "effects": [
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "sharpen"
+      ],
+      "count": 6,
+      "windows": [
+        {
+          "median": 16.7,
+          "p95": 33.4,
+          "max": 50,
+          "n": 74
+        },
+        {
+          "median": 16.7,
+          "p95": 33.3,
+          "max": 33.4,
+          "n": 84
+        },
+        {
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 83.2,
+          "n": 83
+        },
+        {
+          "median": 16.7,
+          "p95": 33.3,
+          "max": 49.9,
+          "n": 84
+        },
+        {
+          "median": 16.7,
+          "p95": 33.4,
+          "max": 100,
+          "n": 79
+        }
+      ],
+      "medianOfMedians": 16.7
+    },
+    {
+      "source": "4k",
+      "effects": [],
+      "count": 0,
+      "windows": [
+        {
+          "median": 16.7,
+          "p95": 50,
+          "max": 116.7,
+          "n": 63
+        },
+        {
+          "median": 16.7,
+          "p95": 50,
+          "max": 133.3,
+          "n": 62
+        },
+        {
+          "median": 16.7,
+          "p95": 116.7,
+          "max": 116.7,
+          "n": 56
+        },
+        {
+          "median": 16.7,
+          "p95": 33.4,
+          "max": 133.3,
+          "n": 69
+        },
+        {
+          "median": 16.7,
+          "p95": 50.1,
+          "max": 116.7,
+          "n": 60
+        }
+      ],
+      "medianOfMedians": 16.7
+    },
+    {
+      "source": "4k",
+      "effects": [
+        "posterize",
+        "edges",
+        "sketch"
+      ],
+      "count": 3,
+      "windows": [
+        {
+          "median": 16.7,
+          "p95": 50,
+          "max": 133.3,
+          "n": 62
+        },
+        {
+          "median": 16.7,
+          "p95": 50,
+          "max": 116.6,
+          "n": 63
+        },
+        {
+          "median": 16.7,
+          "p95": 50,
+          "max": 83.3,
+          "n": 66
+        },
+        {
+          "median": 16.7,
+          "p95": 50,
+          "max": 116.7,
+          "n": 65
+        },
+        {
+          "median": 16.7,
+          "p95": 33.4,
+          "max": 133.4,
+          "n": 67
+        }
+      ],
+      "medianOfMedians": 16.7
+    },
+    {
+      "source": "4k",
+      "effects": [
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "sharpen"
+      ],
+      "count": 6,
+      "windows": [
+        {
+          "median": 16.7,
+          "p95": 50.1,
+          "max": 100,
+          "n": 54
+        },
+        {
+          "median": 16.7,
+          "p95": 50,
+          "max": 83.3,
+          "n": 67
+        },
+        {
+          "median": 16.7,
+          "p95": 100,
+          "max": 233.3,
+          "n": 51
+        },
+        {
+          "median": 16.7,
+          "p95": 50,
+          "max": 83.4,
+          "n": 67
+        },
+        {
+          "median": 16.7,
+          "p95": 50,
+          "max": 99.9,
+          "n": 65
+        }
+      ],
+      "medianOfMedians": 16.7
+    }
+  ],
+  "export": {
+    "source": "/tmp/glyphcraft_p2_3_export_1280x720.webm",
+    "source_size": [
+      1280,
+      720
+    ],
+    "effects": [
+      "posterize",
+      "edges",
+      "sketch"
+    ],
+    "seconds_of_video": 1.0,
+    "wall_seconds": 4.95,
+    "seconds_per_exported_second": 4.95,
+    "peak_js_heap_bytes": 33100000,
+    "heap_before_bytes": 2448196,
+    "heap_after_gc_bytes": 2585568,
+    "output": {
+      "width": 1280,
+      "height": 720,
+      "duration": null,
+      "frames": null,
+      "bytes": 221263
+    },
+    "path": "/tmp/glyphcraft_p2_3_downloads/glyphcraft.webm"
+  },
+  "idle": {
+    "source": "4K still + 6 effects",
+    "windows": [
+      {
+        "task_ms": 61.6,
+        "window_ms": 2000,
+        "cpu_percent": 3.08,
+        "raf": 121
+      },
+      {
+        "task_ms": 55.4,
+        "window_ms": 2000,
+        "cpu_percent": 2.77,
+        "raf": 120
+      },
+      {
+        "task_ms": 61.4,
+        "window_ms": 2000,
+        "cpu_percent": 3.07,
+        "raf": 121
+      },
+      {
+        "task_ms": 56.0,
+        "window_ms": 2000,
+        "cpu_percent": 2.8,
+        "raf": 121
+      },
+      {
+        "task_ms": 60.5,
+        "window_ms": 2000,
+        "cpu_percent": 3.02,
+        "raf": 121
+      }
+    ],
+    "median_cpu_percent": 3.02
+  },
+  "heap": {
+    "source": "1080p still, preview, 3 effects",
+    "renders": 200,
+    "wall_seconds": 36.88,
+    "before_bytes": 2556824,
+    "after_gc_bytes": 2610176,
+    "growth_bytes": 53352,
+    "growth_per_render_bytes": 266.8
+  },
+  "bundle": {
+    "source_bytes": {
+      "index.html": 31750,
+      "style.css": 46878,
+      "engine.js": 35896,
+      "effects.js": 30376,
+      "reorder.js": 9972,
+      "app.js": 123814,
+      "render-worker.js": 2662
+    },
+    "source_total_bytes": 281348,
+    "dist_bytes": {
+      "dist/app.min.js": 113491,
+      "dist/effects.min.js": 27947,
+      "dist/engine.min.js": 32999,
+      "dist/index.html": 31770,
+      "dist/render-worker.min.js": 2514,
+      "dist/reorder.min.js": 8376,
+      "dist/style.min.css": 42844
+    },
+    "dist_total_bytes": 259941
+  }
+}

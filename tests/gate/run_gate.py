@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Glyphcraft gate: G1-G19.
+"""Glyphcraft gate: G1-G20.
 
 Run with `npm run gate` (which calls this file). The gate is intentionally
 strict: it uses a real Chromium page and reports file:line or selector evidence
@@ -2620,6 +2620,32 @@ def g19_worker() -> tuple[bool, list[str], str]:
     return not problems, problems, detail
 
 
+def g20_golden() -> tuple[bool, list[str], str]:
+    started = time.time()
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(ROOT / "tests" / "gate" / "golden_check.py")],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=2400,
+        )
+    except subprocess.TimeoutExpired:
+        return False, ["tests/gate/golden_check.py: timed out after 2400s"], ""
+    output = (proc.stdout or "") + (proc.stderr or "")
+    lines = output.splitlines()
+    summary = next((line for line in reversed(lines) if line.startswith("GOLDEN CHECK ")), "")
+    problems = [line.strip() for line in lines if line.strip().startswith("FAIL ")]
+    if proc.returncode != 0:
+        problems.insert(0, f"tests/gate/golden_check.py exited {proc.returncode}")
+    match = re.search(r"GOLDEN CHECK (\d+) cases", summary)
+    checks = int(match.group(1)) if match else 0
+    if checks < 200:
+        problems.append(f"golden check ran only {checks} cases")
+    if "GOLDEN PASS" not in output:
+        problems.append("golden check did not report PASS")
+    elapsed = time.time() - started
+    detail = f"{summary or 'no summary'} ({elapsed:.1f}s)"
+    return not problems, problems, detail
+
+
 def main() -> int:
     global BASE_URL
     ensure_fixtures()
@@ -2748,11 +2774,17 @@ def main() -> int:
         for problem in g19_problems[:40]:
             print("  " + problem)
         results["G19"] = {"pass": g19_ok, "problems": g19_problems}
+
+        g20_ok, g20_problems, g20_detail = g20_golden()
+        print(("G20 PASS" if g20_ok else "G20 FAIL") + " golden outputs: " + g20_detail)
+        for problem in g20_problems[:40]:
+            print("  " + problem)
+        results["G20"] = {"pass": g20_ok, "problems": g20_problems}
     finally:
         httpd.shutdown()
         httpd.server_close()
 
-    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14", "G15", "G16", "G17", "G18", "G19") if not results.get(name, {}).get("pass")]
+    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14", "G15", "G16", "G17", "G18", "G19", "G20") if not results.get(name, {}).get("pass")]
     print("")
     print("GATE " + ("PASS" if not failed else "FAIL") + " " + ", ".join(failed))
     return 0 if not failed else 1
