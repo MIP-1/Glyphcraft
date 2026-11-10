@@ -892,6 +892,11 @@ with sync_playwright() as p:
     record("touch targets >= 44px", len(small_targets) == 0, json.dumps(small_targets[:8]))
 
     # Round 1 Task 8: real phone list, swatches, collapsed view, keyboard picker.
+    # Video sources intentionally disable the size controls (P2-3 B), so restore
+    # an image source before exercising the picker itself.
+    page.set_input_files("#file-input", TEST_IMG)
+    page.wait_for_function("() => state.sourceType === 'image'", timeout=30000)
+    page.wait_for_timeout(600)
     set_theme(True)
     page.locator("#output-preset-trigger").scroll_into_view_if_needed()
     page.wait_for_timeout(200)

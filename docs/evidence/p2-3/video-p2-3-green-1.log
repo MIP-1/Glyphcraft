@@ -1,0 +1,3 @@
+25 checks, 1 failure(s)
+VIDEO P2-3 FAIL
+FAIL video size controls stay visible: [True, False, False, True, True]

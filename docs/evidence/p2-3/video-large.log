@@ -1,0 +1,11 @@
+fixture /tmp/opencode/glyphcraft_p2_3_large/large-840mb.webm 878759144 bytes (838.1 MB)
+PASS 840 MB video loads: 0.70s, 3840x2160, duration=2.75s
+PASS whole file is not read by JS: []
+PASS peak JS heap during load is bounded: before=10.0MB peak=10.0MB delta=0.0MB
+PASS 840 MB video plays with 3 effects: 101 frames in 2.01s (50.3 fps)
+PASS seek works on the large video: target=1.50s current=1.50s
+PASS large export keeps native resolution: 3840x2160, preset=320x180, 107.9s, 2.2MB
+PASS no page or console errors: []
+7 checks, 0 failure(s)
+VIDEO LARGE PASS
+EXIT=0

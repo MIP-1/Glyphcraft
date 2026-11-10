@@ -299,6 +299,7 @@ function initEls() {
   els.outputCustomRow = $("output-custom-row");
   els.outputLockRatio = $("output-lock-ratio");
   els.outputWarn = $("output-warn");
+  els.outputVideoNote = $("output-video-note");
   els.ditherSerpentine = $("dither-serpentine");
   els.customPaletteBuilder = $("custom-palette-builder");
   els.paletteBuilder = $("palette-builder");
@@ -1164,6 +1165,16 @@ function outputMeta() {
   return { full, pv };
 }
 
+function syncOutputControls() {
+  const isVideo = !!state.source && state.sourceType === "video";
+  [els.outputPreset, els.outputWidth, els.outputHeight, els.outputFit,
+   els.outputLockRatio, els.outputPresetTrigger].forEach(el => {
+    if (el) el.disabled = isVideo;
+  });
+  if (els.outputVideoNote) els.outputVideoNote.hidden = !isVideo;
+  if (isVideo) closePresetPicker(false);
+}
+
 function zoomForScale(scale) {
   const { full, pv } = outputMeta();
   if (!full.w || !pv.w) return scale;
@@ -1378,7 +1389,48 @@ function handlePointerUp(e) {
   }
 }
 
-const MAX_FILE_BYTES = 40 * 1024 * 1024;
+const IMAGE_MAX_FILE_BYTES = 40 * 1024 * 1024;
+const VIDEO_MAX_FILE_BYTES = 850 * 1024 * 1024;
+const MAX_CANVAS_SIDE = 65535;
+const MAX_CANVAS_PIXELS = 268435456;
+
+function formatLimitBytes(bytes) {
+  const mb = bytes / (1024 * 1024);
+  return `${Number.isInteger(mb) ? mb : mb.toFixed(1)} MB`;
+}
+
+function fileSizeError(file) {
+  if (!file) return "";
+  if (!file.size) return "This file is empty. Choose a file with content.";
+  const type = file.type || "";
+  const limit = type.startsWith("video/") ? VIDEO_MAX_FILE_BYTES : IMAGE_MAX_FILE_BYTES;
+  if (file.size > limit) {
+    return `This file is too large (${formatBytes(file.size)}). Try a smaller file (under ${formatLimitBytes(limit)}).`;
+  }
+  return "";
+}
+
+function videoExportSizeError(w, h) {
+  if (!w || !h) {
+    return "This video has no readable frame size, so it cannot be exported.";
+  }
+  if (w > MAX_CANVAS_SIDE || h > MAX_CANVAS_SIDE || w * h > MAX_CANVAS_PIXELS) {
+    return `This video is ${w}×${h}. That is larger than the browser canvas limit, so it cannot be exported at its original resolution.`;
+  }
+  const probe = document.createElement("canvas");
+  let ok = false;
+  try {
+    probe.width = w; probe.height = h;
+    ok = !!probe.getContext("2d");
+  } catch (err) {
+    ok = false;
+  }
+  probe.width = 0; probe.height = 0;
+  if (!ok) {
+    return `This video is ${w}×${h}. The browser cannot create a canvas that large, so it cannot be exported at its original resolution.`;
+  }
+  return "";
+}
 
 function setDropZoneState(stateName, detail) {
   if (!els.dropZone) return;
@@ -1407,8 +1459,9 @@ function loadFile(file) {
     showDropError("That file type is not supported. Try a PNG, JPG or WebP image, or a WebM/MP4 video.");
     return;
   }
-  if (file.size > MAX_FILE_BYTES) {
-    showDropError(`This file is too large (${formatBytes(file.size)}). Try a smaller file (under ${formatBytes(MAX_FILE_BYTES)}).`);
+  const sizeError = fileSizeError(file);
+  if (sizeError) {
+    showDropError(sizeError);
     return;
   }
   setDropZoneState("loading", { name: file.name });
@@ -1439,6 +1492,7 @@ function loadFile(file) {
       workerInvalidate();
       resetPlaybackScale();
       syncVideoControl();
+      syncOutputControls();
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       state.sourceUrl = url;
       els.canvasArea.classList.add("has-content");
@@ -1465,6 +1519,7 @@ function loadFile(file) {
       state.sourceType = "image";
       state.sourceW = img.naturalWidth;
       state.sourceH = img.naturalHeight;
+      syncOutputControls();
       state.sourceId++;
       clearStageCache();
       workerInvalidate();
@@ -1706,12 +1761,26 @@ function saveBlob(blob, filename) {
 
 async function exportVideo(full, opts) {
   if (!window.MediaRecorder) { alert("WebM export is not supported in this browser"); return; }
+  const video = state.video;
+  if (state.sourceType === "video") {
+    if (!video) { showToast("Load a video before exporting WebM."); return; }
+    full = { w: video.videoWidth, h: video.videoHeight };
+    const sizeError = videoExportSizeError(full.w, full.h);
+    if (sizeError) { showToast(sizeError, 6000); return; }
+  }
   state.videoExporting = true;
   state.exportProgress = { active: true, format: "webm", progress: 0, total: 0 };
   const canvas = document.createElement("canvas");
   canvas.width = full.w; canvas.height = full.h;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  const video = state.video;
+  if (!ctx || canvas.width !== full.w || canvas.height !== full.h) {
+    state.videoExporting = false;
+    state.exportProgress.active = false;
+    updateStatus();
+    updateExportButton();
+    showToast(`This video is ${full.w}×${full.h}. The browser cannot create a canvas that large, so it cannot be exported at its original resolution.`, 6000);
+    return;
+  }
   const fps = 24;
   const duration = video && isFinite(video.duration) ? Math.min(video.duration, 20) : 1;
   const total = Math.max(1, Math.ceil(duration * fps));
@@ -1900,6 +1969,7 @@ function syncUIFromState() {
   toggleModeSections();
   renderEffectsList();
   updatePaletteSwatches();
+  syncOutputControls();
 }
 
 function toggleModeSections() {

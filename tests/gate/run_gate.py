@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Glyphcraft gate: G1-G20.
+"""Glyphcraft gate: G1-G21.
 
 Run with `npm run gate` (which calls this file). The gate is intentionally
 strict: it uses a real Chromium page and reports file:line or selector evidence
@@ -2646,6 +2646,32 @@ def g20_golden() -> tuple[bool, list[str], str]:
     return not problems, problems, detail
 
 
+def g21_video_p2_3() -> tuple[bool, list[str], str]:
+    started = time.time()
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(ROOT / "tests" / "gate" / "video_p2_3_check.py")],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=1800,
+        )
+    except subprocess.TimeoutExpired:
+        return False, ["tests/gate/video_p2_3_check.py: timed out after 1800s"], ""
+    output = (proc.stdout or "") + (proc.stderr or "")
+    lines = output.splitlines()
+    summary = next((line for line in reversed(lines) if "checks," in line and "failure" in line), "")
+    problems = [line.strip() for line in lines if line.strip().startswith("FAIL ")]
+    if proc.returncode != 0:
+        problems.insert(0, f"tests/gate/video_p2_3_check.py exited {proc.returncode}")
+    match = re.search(r"(\d+) checks, (\d+) failure", summary)
+    checks = int(match.group(1)) if match else 0
+    if checks < 25:
+        problems.append(f"video P2-3 check ran only {checks} checks")
+    if "VIDEO P2-3 PASS" not in output:
+        problems.append("video P2-3 check did not report PASS")
+    elapsed = time.time() - started
+    detail = f"{summary or 'no summary'} ({elapsed:.1f}s)"
+    return not problems, problems[:40], detail
+
+
 def main() -> int:
     global BASE_URL
     ensure_fixtures()
@@ -2780,11 +2806,17 @@ def main() -> int:
         for problem in g20_problems[:40]:
             print("  " + problem)
         results["G20"] = {"pass": g20_ok, "problems": g20_problems}
+
+        g21_ok, g21_problems, g21_detail = g21_video_p2_3()
+        print(("G21 PASS" if g21_ok else "G21 FAIL") + " video P2-3: " + g21_detail)
+        for problem in g21_problems[:40]:
+            print("  " + problem)
+        results["G21"] = {"pass": g21_ok, "problems": g21_problems}
     finally:
         httpd.shutdown()
         httpd.server_close()
 
-    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14", "G15", "G16", "G17", "G18", "G19", "G20") if not results.get(name, {}).get("pass")]
+    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14", "G15", "G16", "G17", "G18", "G19", "G20", "G21") if not results.get(name, {}).get("pass")]
     print("")
     print("GATE " + ("PASS" if not failed else "FAIL") + " " + ", ".join(failed))
     return 0 if not failed else 1

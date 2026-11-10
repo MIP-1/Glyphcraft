@@ -13,11 +13,12 @@ writes an optional minified `dist/` for publishing.
 ## Status — 2026-11-10
 
 **Current status:** IN PROGRESS — P2-3 Step 3 (audit, baseline, golden outputs,
-decision table) is complete on branch `p2-3-work` and tagged `P2-3-A-pass`.
-Step 4 (video: 850 MB limit and native-resolution export) is next. Part 1,
-Part 1B, Part 1C, P2-1 and its post-PASS cleanup, Part M, and P2-2 remain
-complete and tagged. `npm run gate` was green three times in a row on the final
-P2-2 tree (`docs/evidence/p2-2/gate-run-1/2/3.log`).
+decision table) is complete and tagged `P2-3-A-pass`; Step 4 (video: 850 MB
+limit and native-resolution export) is complete and tagged `P2-3-B-pass`. Both
+are on branch `p2-3-work`. Step 5 (speed) is next. Part 1, Part 1B, Part 1C,
+P2-1 and its post-PASS cleanup, Part M, and P2-2 remain complete and tagged.
+`npm run gate` was green three times in a row on the final P2-2 tree
+(`docs/evidence/p2-2/gate-run-1/2/3.log`).
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -36,7 +37,7 @@ P2-2 tree (`docs/evidence/p2-2/gate-run-1/2/3.log`).
 | M1-1 mobile bottom sheet | PASS | Part M commit, tag `M1-1-pass` |
 | M1-2 single-row mobile top bar | PASS | same commit, tag `M1-2-pass` |
 | P2-2 Worker + OffscreenCanvas | PASS | tag `P2-2-pass`, gate runs 1–3, `docs/GATE.md` P2-2 |
-| P2-3 fast preview | IN PROGRESS | Step 3 (audit/baseline/golden/decisions) complete, tag `P2-3-A-pass` |
+| P2-3 fast preview | IN PROGRESS | Steps 3–4 complete, tags `P2-3-A-pass` and `P2-3-B-pass` |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
 | P2-5 before/after finish | NOT STARTED | |
 | P2-6 presets finish | NOT STARTED | |
@@ -70,7 +71,7 @@ P2-2 tree (`docs/evidence/p2-2/gate-run-1/2/3.log`).
   deterministic `tools/dist_smoke.py` (`4135467496`) are green; the full gate
   passed three times in a row.
 
-**P2-3 Step 3 (this step)**
+**P2-3 Step 3 (complete, tag `P2-3-A-pass`)**
 
 - Full audit of every source, tool and test file: `docs/evidence/p2-3/audit.md`.
 - Measured baseline on the unchanged tree: `docs/evidence/p2-3/baseline.json`
@@ -88,16 +89,38 @@ P2-2 tree (`docs/evidence/p2-2/gate-run-1/2/3.log`).
   `index.html`/`style.css` and the build are KEEP. See
   `docs/evidence/p2-3/decisions.md`.
 
+**P2-3 Step 4 (complete, tag `P2-3-B-pass`)**
+
+- Image and video limits are separate top-level constants:
+  `IMAGE_MAX_FILE_BYTES = 40 MB` (unchanged) and
+  `VIDEO_MAX_FILE_BYTES = 850 MB`. 850 MB exactly is accepted, +1 byte is
+  rejected with a message naming the correct limit, and a 0-byte file is
+  rejected as empty.
+- Video export always uses `video.videoWidth` × `video.videoHeight`. The size
+  preset, width, height, fit and lock controls stay visible but are disabled
+  for video, with an inline note; an image re-enables them. Frames, the 20 s
+  clamp, 24 fps and no audio are unchanged.
+- New permanent G21 (`tests/gate/video_p2_3_check.py`): 25 checks, 0 failures,
+  52.6 s standalone. It proves the split boundaries, a 0-byte rejection, zero
+  `FileReader`/`Blob`/`fetch` calls on a video load, the disabled-but-visible
+  controls, and ffprobe-equal native export for 1920x1080, 1280x720, 3840x2160,
+  1080x1920, 1002x562 and a rotated stream — all with the preset deliberately
+  set to `custom 320x180`.
+- Closeout on a real 838.1 MB 4K VP9 WebM: load 0.70 s, 0 JS heap growth,
+  50.3 fps playback with 3 effects, seek exact, native 3840x2160 export in
+  107.9 s. See `docs/evidence/p2-3/video-audit.md` and `video-large.log`.
+- 169 tests green, G20 golden 200/200 exact, existing video gate green, dist
+  smoke hash `4135467496`.
+
 **Next steps**
 
-1. P2-3 Step 4: split the 40 MB image limit from the new 850 MB video limit,
-   export video at the source's native resolution, and add the boundary,
-   whole-file-read and ffprobe checks (RED first).
-2. Then Step 5 speed work in the order in `decisions.md`, one change per commit,
-   with G20 exact and paired before/after numbers.
-3. Then the three full gate runs, break-it, docs, merge and `P2-3-pass`.
-4. After P2-3: P2-4 undo/redo/history, P2-5 before/after finish and P2-6 presets.
-5. Mobile landscape refinement (height <500 px): the sheet and controls work
+1. P2-3 Step 5 speed work in the order in `decisions.md`, one change per
+   commit, G20 exact and paired before/after numbers: `fxOil` allocations,
+   palette parsing, adjustment merge and diffusion reuse, 4K preview base
+   cache, render-key serialization and the B4 `filterControls()` fix.
+2. Then the three full gate runs, break-it, docs, merge and `P2-3-pass`.
+3. After P2-3: P2-4 undo/redo/history, P2-5 before/after finish and P2-6 presets.
+4. Mobile landscape refinement (height <500 px): the sheet and controls work
    today, but add a landscape-specific snap once real-device testing is available.
 
 **HUMAN-CHECK**
@@ -145,9 +168,11 @@ the render order.
 ## Home screen
 
 Drop a file, paste it (`Ctrl+V`) or press **Open file**. Images (PNG, JPG,
-WebP, GIF, BMP, AVIF, SVG) and videos (WebM, MP4, …) up to **40 MB** are
-accepted. If a file cannot be read, the drop area says why and what to try.
-The interface is English only.
+WebP, GIF, BMP, AVIF, SVG) up to **40 MB** and videos (WebM, MP4, …) up to
+**850 MB** are accepted. If a file cannot be read, the drop area says why and
+what to try. Video always exports at the source's original resolution; the
+size preset, width, height and fit controls stay visible but are disabled for
+video. The interface is English only.
 
 ## Keyboard
 
@@ -182,6 +207,8 @@ python tests/test_suite.py        # 169 checks, headless Chromium via Playwright
 python tests/test_contrast.py     # WCAG contrast audit, both themes, 2 widths
 python tests/gate/p2_2_check.py   # worker acceptance (also permanent G19)
 python tests/gate/golden_check.py # 200 effect/mode/input canvas hashes (also G20)
+python tests/gate/video_p2_3_check.py # 850 MB split, no whole-file read, native export (G21)
+python tests/gate/video_large.py  # closeout only: one real 838 MB 4K video load/play/export
 python tests/gate/p2_2_breakit.py # six hostile worker cases
 python tools/dist_smoke.py        # publish build renders the same canvas
 ```

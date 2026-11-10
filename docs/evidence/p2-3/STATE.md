@@ -24,5 +24,26 @@
   - A4 decisions complete: `docs/evidence/p2-3/decisions.md`; no rebuild
     candidate, no owner question needed
 - Tag: `P2-3-A-pass`
-- Next: Step 4 — Task B video (850 MB limit, native-resolution export),
-  checks RED first
+- Step 4 (Task B):
+  - split limits: `IMAGE_MAX_FILE_BYTES` 40 MB, `VIDEO_MAX_FILE_BYTES` 850 MB
+  - `fileSizeError()` with 850 MB exact accepted, +1 rejected, 0-byte rejected
+  - `videoExportSizeError()` canvas guard; native export via
+    `video.videoWidth` × `video.videoHeight`
+  - size controls visible but disabled for video, `#output-video-note` inline
+  - new `tests/gate/video_p2_3_check.py` (G21), 25 checks, RED then GREEN
+    (`video-p2-3-red.log` → `video-p2-3-green-3.log`)
+  - standalone G21 PASS 25 checks in 52.6 s (`g21-run.log`)
+  - 169 tests green (`test-suite-step4.log`); test suite now reloads an image
+    before the output picker because video disables those controls
+  - G20 200/200 exact after the app change (`golden-check-step4.log`)
+  - existing video gate 25/25 (`video-check-step4.log`)
+  - build + dist smoke PASS hash 4135467496 (`build-step4.log`)
+  - real 838.1 MB 4K VP9 closeout: 7/7 checks (`video-large.log`), fixture and
+    export deleted; 0.70 s load, 0 JS heap growth, 50.3 fps, native 3840x2160
+    export in 107.9 s
+  - `docs/evidence/p2-3/video-audit.md` records B1 flow, RED → GREEN and the
+    large-file results
+- Tag: `P2-3-B-pass`
+- Next: Step 5 speed work in the order in `decisions.md` — `fxOil`
+  allocations, palette parsing, adjustment merge + diffusion reuse, 4K preview
+  base cache, render-key serialization and the B4 `filterControls()` fix.

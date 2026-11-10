@@ -1198,6 +1198,7 @@ body.reorder-active * { cursor: grabbing !important; }
 .preset-phone-inner { overflow: hidden; min-height: 0; }
 
 .output-warning { color: var(--accent-text); font-size: 12px; }
+.output-note { color: var(--menu-muted); font-size: 12px; }
 
 /* Toast */
 .toast {

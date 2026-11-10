@@ -1,0 +1,28 @@
+PASS image limit is 40 MB: 41943040 bytes
+PASS video limit is a separate 850 MB: 891289600 bytes
+PASS video 850 MB exact accepted: ''
+PASS video 850 MB + 1 rejected: 'This file is too large (850.0 MB). Try a smaller file (under 850 MB).'
+PASS image 40 MB exact accepted: ''
+PASS image 40 MB + 1 rejected: 'This file is too large (40.0 MB). Try a smaller file (under 40 MB).'
+PASS 0-byte video rejected clearly: 'This file is empty. Choose a file with content.'
+PASS 0-byte image rejected clearly: 'This file is empty. Choose a file with content.'
+PASS canvas limit accepts 4K: ''
+PASS canvas limit rejects 70000 px side: 'This video is 70000×100. That is larger than the browser canvas limit, so it cannot be exported at its original resolution.'
+PASS canvas limit rejects 400 MP area: 'This video is 20000×20000. That is larger than the browser canvas limit, so it cannot be exported at its original resolution.'
+PASS canvas limit rejects zero dimension: 'This video has no readable frame size, so it cannot be exported.'
+PASS video load does not read the whole file: []
+PASS video size controls stay visible: [True, True, True, True, True]
+PASS video size controls are inert: [True, True, True, True, True]
+PASS video note is visible and explains native export: hidden=False text='Video exports at the original resolution. Size controls are disabled for video.'
+PASS image re-enables the size controls: [False, False, False, False, False]
+PASS image hides the video note: True
+PASS export 1080p equals native 1920x1080: ffprobe=1920x1080 preset=320x180
+PASS export 720p equals native 1280x720: ffprobe=1280x720 preset=320x180
+PASS export 4k equals native 3840x2160: ffprobe=3840x2160 preset=320x180
+PASS export portrait equals native 1080x1920: ffprobe=1080x1920 preset=320x180
+PASS export odd equals native 1002x562: ffprobe=1002x562 preset=320x180
+PASS export rotated video equals displayed native size: ffprobe=1920x1080 browser=1920x1080 rotation_seen=True
+PASS no page or console errors: []
+25 checks, 0 failure(s)
+VIDEO P2-3 PASS
+EXIT=0
