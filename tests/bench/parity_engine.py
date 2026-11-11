@@ -45,12 +45,49 @@ CASES.append({"mode": "effects", "colorMode": "palette", "palette": "Grayscale 1
               "ditherKernel": "floyd-steinberg",
               "effects": ["halftone", "posterize", "retro"]})
 
+# Adjustment parity. The golden set uses the default (zero) adjustments, so the
+# merged adjustment pass needs its own old-vs-new proof. Each profile isolates a
+# different part of the old multi-pass path: the three pixel passes, the canvas
+# filter pass, and each single-toggle case that used its own put/get round trip.
+ADJ_CASES = [
+    {"mode": "effects", "colorMode": "spectrum", "palette": "Grayscale 16",
+     "ditherKernel": "floyd-steinberg", "effects": [],
+     "adj": {"highlights": 60, "shadows": 60, "sharpen": 40, "invert": True, "sepia": True}},
+    {"mode": "effects", "colorMode": "spectrum", "palette": "Grayscale 16",
+     "ditherKernel": "floyd-steinberg", "effects": [],
+     "adj": {"highlights": 80, "shadows": -60, "sharpen": 100}},
+    {"mode": "effects", "colorMode": "spectrum", "palette": "Grayscale 16",
+     "ditherKernel": "floyd-steinberg", "effects": [],
+     "adj": {"brightness": 25, "contrast": 30, "saturation": -40, "hue": 45,
+             "blur": 2, "sharpen": 50, "invert": True}},
+    {"mode": "effects", "colorMode": "spectrum", "palette": "Grayscale 16",
+     "ditherKernel": "floyd-steinberg", "effects": [], "adj": {"invert": True}},
+    {"mode": "effects", "colorMode": "spectrum", "palette": "Grayscale 16",
+     "ditherKernel": "floyd-steinberg", "effects": [], "adj": {"sepia": True}},
+    {"mode": "script", "colorMode": "spectrum", "palette": "Grayscale 16",
+     "ditherKernel": "floyd-steinberg", "effects": [],
+     "adj": {"shadows": 70, "sharpen": 30, "sepia": True}},
+    {"mode": "dither", "colorMode": "palette", "palette": "Grayscale 16",
+     "ditherKernel": "floyd-steinberg", "effects": [],
+     "adj": {"invert": True}},
+    {"mode": "dither", "colorMode": "mono", "palette": "Grayscale 16",
+     "ditherKernel": "atkinson", "effects": [],
+     "adj": {"highlights": 50, "shadows": 50, "invert": True, "sepia": True}},
+    {"mode": "effects", "colorMode": "palette", "palette": "CGA",
+     "ditherKernel": "floyd-steinberg", "effects": ["halftone", "posterize"],
+     "adj": {"contrast": 20, "sharpen": 20, "sepia": True}},
+]
+CASES.extend(ADJ_CASES)
+
 
 def cfg_of(case: dict) -> dict:
-    return {"mode": case["mode"], "effects": case["effects"],
-            "params": {}, "full": False,
-            "colorMode": case["colorMode"], "palette": case["palette"],
-            "ditherKernel": case["ditherKernel"]}
+    cfg = {"mode": case["mode"], "effects": case["effects"],
+           "params": {}, "full": False,
+           "colorMode": case["colorMode"], "palette": case["palette"],
+           "ditherKernel": case["ditherKernel"]}
+    if case.get("adj"):
+        cfg["adj"] = case["adj"]
+    return cfg
 
 
 def main() -> int:

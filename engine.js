@@ -189,7 +189,12 @@ function applyAdjustments(ctx, w, h, adj) {
     ctx.drawImage(ctx.canvas, 0, 0, w, h);
     ctx.filter = "none";
   }
-  if (adj.highlights !== 0 || adj.shadows !== 0 || adj.sharpen > 0) {
+  if (adj.highlights !== 0 || adj.shadows !== 0 || adj.sharpen > 0 || adj.invert || adj.sepia) {
+    // One full-frame read and one write for the pixel adjustments. This used to
+    // be up to three getImageData/putImageData round trips: highlights/shadows/
+    // sharpen, then invert, then sepia. Every write stores into the same
+    // Uint8ClampedArray, so doing the passes back to back on one buffer gives
+    // the same bytes a put/get round trip would return.
     const imgData = ctx.getImageData(0, 0, w, h);
     const data = imgData.data;
     const hl = adj.highlights / 100;
@@ -233,26 +238,20 @@ function applyAdjustments(ctx, w, h, adj) {
         }
       }
     }
-    ctx.putImageData(imgData, 0, 0);
-  }
-  if (adj.invert) {
-    const imgData = ctx.getImageData(0, 0, w, h);
-    const data = imgData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      data[i] = 255 - data[i];
-      data[i+1] = 255 - data[i+1];
-      data[i+2] = 255 - data[i+2];
+    if (adj.invert) {
+      for (let i = 0; i < data.length; i += 4) {
+        data[i] = 255 - data[i];
+        data[i+1] = 255 - data[i+1];
+        data[i+2] = 255 - data[i+2];
+      }
     }
-    ctx.putImageData(imgData, 0, 0);
-  }
-  if (adj.sepia) {
-    const imgData = ctx.getImageData(0, 0, w, h);
-    const data = imgData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i], g = data[i+1], b = data[i+2];
-      data[i] = Math.min(255, 0.393*r + 0.769*g + 0.189*b);
-      data[i+1] = Math.min(255, 0.349*r + 0.686*g + 0.168*b);
-      data[i+2] = Math.min(255, 0.272*r + 0.534*g + 0.131*b);
+    if (adj.sepia) {
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i+1], b = data[i+2];
+        data[i] = Math.min(255, 0.393*r + 0.769*g + 0.189*b);
+        data[i+1] = Math.min(255, 0.349*r + 0.686*g + 0.168*b);
+        data[i+2] = Math.min(255, 0.272*r + 0.534*g + 0.131*b);
+      }
     }
     ctx.putImageData(imgData, 0, 0);
   }

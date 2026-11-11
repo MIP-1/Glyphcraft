@@ -80,6 +80,7 @@ BENCH_JS = r"""
     base.mode = cfg.mode;
     base.outputPreset = "original";
     base.adj = { ...DEFAULT_ADJ };
+    if (cfg.adj) Object.assign(base.adj, cfg.adj);
     base.autoLevels = true;
     base.usePalette = true;
     if (cfg.colorMode) base.colorMode = cfg.colorMode;

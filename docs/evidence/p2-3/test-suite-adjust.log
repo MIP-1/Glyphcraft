@@ -1,0 +1,182 @@
+PASS empty status No image loaded
+PASS drop zone visible 
+PASS light contrast AA {"#status-bar": 4.72, ".menu-btn": 13.86, ".section-title": 8.38, ".control-label": 13.86, ".checkbox": 13.86, ".effect-name": 14.85}
+PASS dark contrast AA {"#status-bar": 4.72, ".menu-btn": 13.86, ".section-title": 8.38, ".control-label": 13.86, ".checkbox": 13.86, ".effect-name": 14.85}
+PASS load status real size 100%
+900×600
+92ms
+PASS panel visible after load 
+PASS drop zone hidden after load 
+PASS 22 effects listed 22
+PASS File > Open Image menu 
+PASS wheel zoom 
+PASS space + drag pan 
+PASS F fit to window 
+PASS script: baseline render 500x340:439912300:227
+PASS script: effect halftone changed
+PASS script: effect crt changed
+PASS script: effect glitch changed
+PASS script: effect vhs changed
+PASS script: effect pixelate changed
+PASS script: effect pixelsort changed
+PASS script: effect bloom changed
+PASS script: effect grain changed
+PASS script: effect vignette changed
+PASS script: effect duotone changed
+PASS script: effect posterize changed
+PASS script: effect edges changed
+PASS script: effect sketch changed
+PASS script: effect oil changed
+PASS script: effect emboss changed
+PASS script: effect blur changed
+PASS script: effect sharpen changed
+PASS script: effect invert changed
+PASS script: effect sepia changed
+PASS script: effect thermal changed
+PASS script: effect matrix changed
+PASS script: effect retro changed
+PASS dither: baseline render 500x340:810785642:114
+PASS dither: effect halftone changed
+PASS dither: effect crt changed
+PASS dither: effect glitch changed
+PASS dither: effect vhs changed
+PASS dither: effect pixelate changed
+PASS dither: effect pixelsort changed
+PASS dither: effect bloom changed
+PASS dither: effect grain changed
+PASS dither: effect vignette changed
+PASS dither: effect duotone changed
+PASS dither: effect posterize changed
+PASS dither: effect edges changed
+PASS dither: effect sketch changed
+PASS dither: effect oil changed
+PASS dither: effect emboss changed
+PASS dither: effect blur changed
+PASS dither: effect sharpen changed
+PASS dither: effect invert changed
+PASS dither: effect sepia changed
+PASS dither: effect thermal changed
+PASS dither: effect matrix changed
+PASS dither: effect retro changed
+PASS effects: baseline render 500x340:811067948:133
+PASS effects: effect halftone changed
+PASS effects: effect crt changed
+PASS effects: effect glitch changed
+PASS effects: effect vhs changed
+PASS effects: effect pixelate changed
+PASS effects: effect pixelsort changed
+PASS effects: effect bloom changed
+PASS effects: effect grain changed
+PASS effects: effect vignette changed
+PASS effects: effect duotone changed
+PASS effects: effect posterize changed
+PASS effects: effect edges changed
+PASS effects: effect sketch changed
+PASS effects: effect oil changed
+PASS effects: effect emboss changed
+PASS effects: effect blur changed
+PASS effects: effect sharpen changed
+PASS effects: effect invert changed
+PASS effects: effect sepia changed
+PASS effects: effect thermal changed
+PASS effects: effect matrix changed
+PASS effects: effect retro changed
+PASS section reset clears effects 
+PASS effects stack 1 effect and 2 effects differ
+PASS effect slider sync + render (5 effects) sync=[True, True, True, True, True], render=[True, True, True, True, True]
+PASS effect number typing sync (5 effects) [True, True, True, True, True]
+PASS effect arrows exact one step (5 effects) [True, True, True, True, True]
+PASS effect hold repeats one step (5 effects) [True, True, True, True, True]
+PASS effect slider mouse drag sync (5 effects) [True, True, True, True, True]
+PASS effect wheel exact one step (5 effects) [True, True, True, True, True]
+PASS effect empty typing preserved (5 effects) [True, True, True, True, True]
+PASS effect clamp on blur (5 effects) [True, True, True, True, True]
+PASS all effect params exact up/down + clamp 28 numeric params; failures=[]
+PASS step precision snapping {"a": 0.3, "b": 1.1}
+PASS adjustment brightness canvas changed
+PASS adjustment sepia canvas changed
+PASS effect pointer reorder ['halftone', 'crt', 'glitch'] -> ['crt', 'halftone', 'glitch'], lifted=True
+PASS reorder cleans up ghost/placeholder 
+PASS reorder changes output 
+PASS effect keyboard reorder crt moved, order ['halftone', 'crt', 'glitch'], focus=crt
+PASS effect touch-pointer reorder ['halftone', 'crt', 'glitch'] -> ['crt', 'halftone', 'glitch']
+PASS plain handle click does not reorder 
+PASS wheel scroll over handle does not reorder 
+PASS render order equals stack order 
+PASS reorder survives parameter edit 
+PASS reorder edge auto-scroll 2494 -> 3196
+PASS search filters controls 1/6
+PASS search keeps mode-hidden sections hidden {"mode": "script", "script": "", "dither": "none", "color": ""}
+PASS section collapse 
+PASS panel collapse 
+PASS undo/redo 120 -> 80 -> 120
+PASS preset Terminal Green crt on, canvas changed
+PASS all named presets newsprint:ok, cyber:ok, gameboy:ok, blueprint:ok, oldphoto:ok, thermal:ok
+PASS save/load custom preset saved=True, depth=80
+PASS compare overlay 
+PASS compare splits original/processed [69, 144, 81, 8, 0, 5]
+PASS compare slider drag 570px -> 676px
+PASS hold original differs original image shown
+PASS drag and drop load 100%
+900×600
+122ms
+PASS paste load 100%
+900×600
+85ms
+PASS export png 471038 bytes, magic=ok
+PASS export jpg 290837 bytes, magic=ok
+PASS export webp 267252 bytes, magic=ok
+PASS export svg 148232 bytes, magic=ok
+PASS export txt 2673 bytes, magic=ok
+PASS export webm 366064 bytes, magic=ok
+PASS export honours output size (640, 400)
+PASS effects in PNG export 480361 bytes
+PASS effects in TXT export 2673 bytes
+PASS effects in SVG export 147804 bytes
+PASS video load 100%
+320×240
+17ms
+PASS zoom menu opens 
+PASS zoom preset 400% is crisp 400%, pixelated
+PASS zoom max 800%, + disabled 800%
+PASS zoom min 10%, - disabled 10%
+PASS 0 = fit window 100%
+PASS fit small ~ half of fit 100% -> 50%
+PASS no theme item; T and top-bar icon toggle theme count=0, T=light, T2=dark, icon=light
+PASS inverse menu dark page (light menu) {"bg": "rgb(244, 239, 226)", "fg": "rgb(26, 22, 18)", "muted": "rgb(92, 83, 68)", "bgLum": 0.8645708739754885, "fgLum": 0.008371033743496315, "text": 15.67, "mutedRatio": 6.59}
+PASS inverse menu light page (dark menu) {"bg": "rgb(21, 20, 22)", "fg": "rgb(242, 236, 225)", "muted": "rgb(185, 174, 153)", "bgLum": 0.007176686111866885, "fgLum": 0.843043936109916, "text": 15.62, "mutedRatio": 8.38}
+PASS menu accent contrast both themes dark={'ratio': 7.23, 'color': 'rgb(142, 43, 43)'}, light={'ratio': 7.14, 'accent': '#e08b7f', 'bg': '#151416'}
+PASS zoom group border matches % box {"group": "rgb(106, 99, 103)", "width": "1px", "pct": "rgb(106, 99, 103)", "sep": "rgb(42, 39, 41)"}
+PASS full page hides panel, Esc restores 
+PASS Ctrl + wheel zooms 100% -> 112%
+PASS two-finger pinch zooms 100% -> 200%
+PASS action bar solid + full width {"w": 299, "pw": 300, "bg": "rgb(21, 20, 22)", "z": "40", "gapId": "panel-actionbar"}
+PASS menu arrow keys + Esc open -> export, closed=True
+PASS touch targets >= 44px []
+PASS phone list is real models, newest first count=47, first=['iphone-18-pro-max', 'iphone-18-pro', 'iphone-18'], generic=[]
+PASS phone resolutions match brief {"iphone-12": [1170, 2532], "iphone-12-mini": [1080, 2340], "iphone-14-pro-max": [1290, 2796], "iphone-16-pro": [1206, 2622], "iphone-17-pro-max": [1320, 2868], "iphone-18": [1206, 2622], "galaxy-s25-ultra": [1440, 3120], "galaxy-s20": [1440, 3200]}
+PASS unverified 18/S26 marked ['iphone-18-pro-max', 'iphone-18-pro', 'iphone-18', 'galaxy-s26-ultra', 'galaxy-s26-plus', 'galaxy-s26']
+PASS phone list default shows 3 ['iphone-18-pro-max', 'iphone-18-pro', 'iphone-18'], extra=0
+PASS View more expands smoothly 47 visible, height=1783
+PASS View less collapses height=0
+PASS true-aspect swatches left of names {"phone": {"w": 6.01, "h": 13, "left": 1170, "nameLeft": 1200}, "wide": {"w": 13, "h": 7.31, "left": 1170, "nameLeft": 1200}}
+PASS picker search + keyboard selection s26=3, chosen={'id': 'iphone-17-pro-max', 'w': 1320, 'h': 2868, 'label': 'iPhone 17 Pro Max 1320×2868'}
+PASS preset dropdown is scrollable {"overflow": "auto", "max": "320px", "scrollHeight": 1948, "clientHeight": 320}
+PASS picker reduced-motion support 1e-05s
+PASS light theme: sun icon, action label {"sun": "block", "moon": "none", "label": "Switch to dark theme"}
+PASS dark theme: moon icon, action label {"sun": "none", "moon": "block", "label": "Switch to light theme"}
+PASS theme persists after reload dark
+PASS empty state after reload 
+PASS Open file button works 100%
+900×600
+69ms
+PASS zero console errors []
+PASS zero page errors []
+PASS English home screen {"dir": "", "direction": "ltr", "hint": "Drop an image or video here, paste it (Ctrl+V), or open a file.", "open": "Open file", "status": "No image loaded"}
+PASS English honest error message This file is too large (50 MB). Try a smaller file (under 40 MB).
+PASS 360px picker fits + scrolls {"left": 12, "right": 348, "width": 336, "listScroll": true, "overflowX": 0, "menuRight": 0, "menuLeft": 0}
+PASS 360px menu fits {"left": 8, "right": 352, "width": 344}
+PASS 360px action bar solid + full width both themes {"dark": {"open": true, "w": 360, "pw": 360, "bg": "rgb(21, 20, 22)", "z": "40", "hit": "panel-actionbar"}, "light": {"open": true, "w": 360, "pw": 360, "bg": "rgb(242, 236, 225)", "z": "40", "hit": "panel-actionbar"}}
+PASS contrast audit (both themes, 360+1280) CONTRAST TOTAL: 9068 pairs checked, 0 violations
+REPORT WRITTEN 170 checks, 0 failures
+EXIT=0

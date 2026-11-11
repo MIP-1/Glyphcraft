@@ -92,3 +92,53 @@ palette, mono and spectrum colour modes; hex palettes (`Grayscale 16`, `CGA`,
 
 Verification: G20 200/200 exact (`golden-palette.log`), 169 tests
 (`test-suite-palette.log`), build + dist smoke (`build-palette.log`).
+
+## 3. One adjustment pass instead of three
+
+`engine.js` `applyAdjustments` ran the pixel work in up to three separate
+`getImageData`/`putImageData` round trips: highlights/shadows/sharpen, then
+invert, then sepia. They now share one read and one write, with the same passes
+run back to back on the same `Uint8ClampedArray`. Every write already stores
+through `Uint8ClampedArray`, so the merged buffer holds exactly the bytes a
+put/get round trip would have returned, and G20's zero-adjustment goldens are
+untouched.
+
+The first attempt measured the whole page (`speed_page.py`, Effects Only with
+all five pixel adjustments). It was too noisy at ~150 ms per render: one run
+passed 4/5 windows at −26%, the next 3/5, and a 4K page run reversed. The
+function was therefore isolated: `tests/bench/speed_adjust.py` installs the old
+`applyAdjustments` from git and the new one from the working tree in the same
+page and alternates them on the same canvas, with an untimed source redraw and
+forced GC around every call. That function is short enough that a single canvas
+stall moved the old 4-sample median, so each window takes 8 alternating samples
+per variant. Two consecutive runs:
+
+| Metric | Old | New | Change |
+|---|---:|---:|---:|
+| Run A window medians | 184.3 / 180.9 / 182.7 / 193.9 / 181.5 ms | 161.8 / 156.3 / 162.7 / 165.9 / 162.8 ms | **−11.0%** |
+| Run A all-sample median (n=40) | 183.9 ms | 161.4 ms | −12.2% |
+| Run B window medians | 180.8 / 187.6 / 180.9 / 158.2 / 161.7 ms | 159.1 / 168.3 / 149.1 / 138.1 / 139.5 ms | **−17.5%** |
+| Run B all-sample median (n=40) | 179.6 ms | 149.0 ms | −17.1% |
+| Windows ≥10% faster | — | A 5/5, B 5/5 | keep |
+| Output hash | 1176483911 | 1176483911 | identical |
+
+1600x900, adjustments `highlights 60, shadows 60, sharpen 40, invert, sepia`.
+Logs `speed-adjust-fn.log` / `speed-adjust-fn-2.log`, data the matching JSON.
+
+At 3840x2160 the same probe is 815.2 vs 883.5 ms (−7.7%, 2/5 windows at or past
+10%, all-sample p95 961.6 vs 1081.3 ms, identical hash 4267617543). The 4K
+number is a strict work reduction but does not meet the keep rule on its own, so
+no 4K claim is made; the merge is kept on the preview-size result. The page-level
+harness remains in the tree (`speed_page.py --adj`, `--full`) for future items.
+
+### Parity
+
+`tests/bench/parity_engine.py` now appends nine adjustment profiles to the
+matrix: all pixel passes together, highlights+shadows+sharpen, the canvas
+filter group plus sharpen+invert, invert alone, sepia alone, Script with
+shadows+sharpen+sepia, Dither palette with invert, Dither mono atkinson with
+all passes, and an Effects Only CGA render. 35 cases, 0 failures, canvas hash
+identical in every case. Log: `parity-adjust.log`.
+
+Verification: G20 200/200 exact (`golden-adjust.log`), 170 tests
+(`test-suite-adjust.log`), build + dist smoke `4135467496` (`build-adjust.log`).

@@ -91,6 +91,8 @@ def main() -> int:
     ap.add_argument("--palette", default="Grayscale 16")
     ap.add_argument("--ditherKernel", default="floyd-steinberg")
     ap.add_argument("--effects", default="")
+    ap.add_argument("--adj", default="")
+    ap.add_argument("--full", action="store_true")
     ap.add_argument("--rev", default="HEAD")
     ap.add_argument("--label", default="")
     ap.add_argument("--workdir", default="/tmp/opencode/glyphcraft_speed_old")
@@ -101,6 +103,10 @@ def main() -> int:
            "params": {}, "full": False,
            "colorMode": args.colorMode, "palette": args.palette,
            "ditherKernel": args.ditherKernel}
+    if args.adj:
+        cfg["adj"] = json.loads(args.adj)
+    if args.full:
+        cfg["full"] = True
 
     B.fixtures()
     old_dir = Path(args.workdir)
