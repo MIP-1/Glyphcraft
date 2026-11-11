@@ -44,3 +44,51 @@ Verification after the change:
 | Build + dist smoke | DIST SMOKE PASS, source = dist = `4135467496` | `build-oil.log` |
 
 Raw timing data: `speed-oil.json`; output: `speed-oil.log`.
+
+## 2. Palette parsing once per render
+
+`engine.js`: `nearestPaletteColor` built a `parse` closure and ran a
+`rgba?()` regex plus a hex regex for every palette colour on every call — once
+per glyph in Script mode and once per pixel in Dither palette mode. The parsed
+form is now cached by palette content (`paletteEntries`), and the three call
+sites (Script, SVG, Dither) build it once per render. Distance arithmetic,
+iteration order, tie-breaking and the returned string are unchanged. The Dither
+path also used to re-match the nearest string with `/rgb\((\d+),(\d+),(\d+)\)/`
+per pixel to decide whether to substitute; that decision is now precomputed per
+palette entry (`hasRgb` + channels), so a hex, `rgba()` or spaced `rgb()`
+palette still falls back to the source pixel exactly as before.
+
+This path is not in the G20 golden set (the goldens use the default spectrum
+colour mode), so it has its own old-vs-new proof.
+
+### Dither, palette colour mode, 1600x900, `Grayscale 16`
+
+| Metric | Old | New | Change |
+|---|---:|---:|---:|
+| Window medians | 2376.8 / 2395.4 / 2367.8 / 2423.5 / 2414.6 ms | 405.4 / 352.4 / 352.4 / 368.6 / 349.9 ms | — |
+| Median of 5 window medians | 2395.5 ms | 352.4 ms | **−85.3%** |
+| All-sample median (n=20) | 2397.0 ms | 358.0 ms | −85.1% |
+| All-sample p95 | 2512.3 ms | 457.6 ms | −81.8% |
+| Windows ≥10% faster | — | 5 / 5 | keep |
+| Output hash | 3491481483 | 3491481483 | identical |
+
+### Script, palette colour mode, 1600x900, `Grayscale 16` (secondary)
+
+Median 104.3 → 98.4 ms (−5.7%), 2/5 windows at or past 10%, identical hash. This
+does not meet the keep rule on its own, so no speed claim is made for Script
+mode; the precompute stays because it is the same cache and the same code path,
+and it is parity-checked.
+
+### Old-vs-new parity matrix (`tests/bench/parity_engine.py`)
+
+Two trees served side by side in one browser; canvas hash plus SVG and TXT
+export fingerprints compared. 26 cases, 0 failures: Script and Dither in
+palette, mono and spectrum colour modes; hex palettes (`Grayscale 16`, `CGA`,
+`1-bit`, `Game Boy`, `Terminal`); a custom palette mixing `rgb()`, `rgba()`,
+3-digit and 6-digit hex; all nine dither kernels
+(`floyd-steinberg`, `atkinson`, `bayer2/4/8`, `threshold`, `blue-noise`,
+`random`, `halftone`); and an Effects Only palette render. Log:
+`parity-palette.log`.
+
+Verification: G20 200/200 exact (`golden-palette.log`), 169 tests
+(`test-suite-palette.log`), build + dist smoke (`build-palette.log`).

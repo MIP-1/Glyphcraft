@@ -1,0 +1,71 @@
+{
+  "label": "script",
+  "cfg": {
+    "mode": "script",
+    "effects": [],
+    "params": {},
+    "full": false,
+    "colorMode": "palette",
+    "palette": "Grayscale 16",
+    "ditherKernel": "floyd-steinberg"
+  },
+  "rev": "ad5bb37",
+  "windows": [
+    {
+      "new": 97.15,
+      "old": 100.85
+    },
+    {
+      "new": 99.6,
+      "old": 101.05000000000001
+    },
+    {
+      "new": 91.15,
+      "old": 104.25
+    },
+    {
+      "new": 98.55,
+      "old": 117.7
+    },
+    {
+      "new": 98.35,
+      "old": 104.5
+    }
+  ],
+  "samples": {
+    "new": [
+      84.3,
+      110,
+      99.1,
+      100.1,
+      82.8,
+      99.5,
+      81.5,
+      115.6,
+      96.2,
+      100.5
+    ],
+    "old": [
+      84.5,
+      117.2,
+      100.7,
+      101.4,
+      90.8,
+      117.7,
+      114.4,
+      121,
+      104.1,
+      104.9
+    ]
+  },
+  "median_new": 98.35,
+  "median_old": 104.25,
+  "p95_new": 115.6,
+  "p95_old": 121,
+  "faster_windows": 2,
+  "hashes": {
+    "new": 1623275316,
+    "old": 1623275316
+  },
+  "errors": []
+}

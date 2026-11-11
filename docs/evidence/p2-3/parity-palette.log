@@ -1,0 +1,28 @@
+PASS script/palette/Grayscale 16/floyd-steinberg
+PASS dither/palette/Grayscale 16/floyd-steinberg
+PASS script/palette/CGA/floyd-steinberg
+PASS dither/palette/CGA/floyd-steinberg
+PASS script/palette/1-bit/floyd-steinberg
+PASS dither/palette/1-bit/floyd-steinberg
+PASS script/palette/Game Boy/floyd-steinberg
+PASS dither/palette/Game Boy/floyd-steinberg
+PASS script/palette/Terminal/floyd-steinberg
+PASS dither/palette/Terminal/floyd-steinberg
+PASS dither/palette/Grayscale 16/floyd-steinberg
+PASS dither/palette/Grayscale 16/atkinson
+PASS dither/palette/Grayscale 16/bayer2
+PASS dither/palette/Grayscale 16/bayer4
+PASS dither/palette/Grayscale 16/bayer8
+PASS dither/palette/Grayscale 16/threshold
+PASS dither/palette/Grayscale 16/blue-noise
+PASS dither/palette/Grayscale 16/random
+PASS dither/palette/Grayscale 16/halftone
+PASS script/mono/Grayscale 16/floyd-steinberg
+PASS dither/mono/Grayscale 16/floyd-steinberg
+PASS script/spectrum/Grayscale 16/floyd-steinberg
+PASS dither/spectrum/Grayscale 16/floyd-steinberg
+PASS script/palette/["rgb(10,20,30)","rgb(20/floyd-steinberg
+PASS dither/palette/["rgb(10,20,30)","rgb(20/floyd-steinberg
+PASS effects/palette/Grayscale 16/floyd-steinberg
+26 cases, 0 failure(s)
+PARITY PASS

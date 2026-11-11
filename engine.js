@@ -132,23 +132,49 @@ function extractPalette(imageData, colorCount = 6) {
   return centroids.map(([r,g,b]) => `rgb(${r},${g},${b})`);
 }
 
-function nearestPaletteColor(r, g, b, palette) {
-  if (!palette || !palette.length) return `rgb(${r},${g},${b})`;
-  const parse = c => {
-    let m = c.match(/rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/);
-    if (m) return [+m[1], +m[2], +m[3]];
-    m = c.match(/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
-    if (m) return [+("0x" + m[1]), +("0x" + m[2]), +("0x" + m[3])];
-    return [0, 0, 0];
-  };
-  let best = palette[0], bestDist = Infinity;
-  for (const c of palette) {
-    const [pr, pg, pb] = parse(c);
-    const dr = r - pr, dg = g - pg, db = b - pb;
+function parsePaletteColor(c) {
+  let m = c.match(/rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+  if (m) return [+m[1], +m[2], +m[3]];
+  m = c.match(/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if (m) return [+("0x" + m[1]), +("0x" + m[2]), +("0x" + m[3])];
+  return [0, 0, 0];
+}
+
+// Parsing a palette string is expensive and used to happen once per glyph or
+// once per pixel. The parsed form is cached by content, so a render parses each
+// palette at most once. `hasRgb`/`dr,dg,db` keep the dither path's exact old
+// behaviour: only a literal `rgb(r,g,b)` string replaces the pixel, anything
+// else (hex, rgba, spaces) keeps the source pixel.
+const PALETTE_PARSE_CACHE = { key: null, entries: null };
+function paletteEntries(palette) {
+  if (!palette || !palette.length) return null;
+  const key = palette.join("\u0001");
+  if (PALETTE_PARSE_CACHE.key === key) return PALETTE_PARSE_CACHE.entries;
+  const entries = palette.map(c => {
+    const [r, g, b] = parsePaletteColor(c);
+    const m = c.match(/rgb\((\d+),(\d+),(\d+)\)/);
+    return { c, r, g, b, hasRgb: !!m,
+             dr: m ? +m[1] : 0, dg: m ? +m[2] : 0, db: m ? +m[3] : 0 };
+  });
+  PALETTE_PARSE_CACHE.key = key;
+  PALETTE_PARSE_CACHE.entries = entries;
+  return entries;
+}
+
+function nearestPaletteEntry(r, g, b, entries) {
+  let best = entries[0], bestDist = Infinity;
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    const dr = r - e.r, dg = g - e.g, db = b - e.b;
     const dist = dr * dr + dg * dg + db * db;
-    if (dist < bestDist) { bestDist = dist; best = c; }
+    if (dist < bestDist) { bestDist = dist; best = e; }
   }
   return best;
+}
+
+function nearestPaletteColor(r, g, b, palette) {
+  if (!palette || !palette.length) return `rgb(${r},${g},${b})`;
+  return nearestPaletteEntry(r, g, b, paletteEntries(palette)).c;
 }
 
 function applyAdjustments(ctx, w, h, adj) {
@@ -288,6 +314,7 @@ function renderScript(sourceCanvas, destCtx, destW, destH, opts) {
   destCtx.textBaseline = "top";
   const rampLen = ramp.chars.length;
   const threshold = 0.02;
+  const palEntries = colorMode === "palette" ? paletteEntries(palette) : null;
 
   for (let row = 0; row < rows; row++) {
     const y = row * cellH;
@@ -315,7 +342,9 @@ function renderScript(sourceCanvas, destCtx, destW, destH, opts) {
       const ch = ramp.chars[idx];
 
       if (colorMode === "spectrum") destCtx.fillStyle = `rgb(${r},${g},${b})`;
-      else if (colorMode === "palette") destCtx.fillStyle = nearestPaletteColor(r, g, b, palette);
+      else if (colorMode === "palette") destCtx.fillStyle = palEntries
+        ? nearestPaletteEntry(r, g, b, palEntries).c
+        : nearestPaletteColor(r, g, b, palette);
       else destCtx.fillStyle = opts.monoColor || "#e9dfc8";
 
       destCtx.fillText(ch, x, y);
@@ -359,6 +388,7 @@ function canvasToSvg(canvas, opts) {
   svg += `<style>text{font-family:"JetBrains Mono",monospace;font-size:${fontPx}px;dominant-baseline:hanging}</style>`;
   const rampLen = ramp.chars.length;
   const threshold = 0.02;
+  const palEntries = colorMode === "palette" ? paletteEntries(palette) : null;
 
   for (let row = 0; row < rows; row++) {
     const y = row * cellH;
@@ -384,7 +414,9 @@ function canvasToSvg(canvas, opts) {
       const ch = ramp.chars[idx].replace(/[&<>"']/g, c => ({'&':'&','<':'<','>':'>','"':'"',"'":'&apos;'}[c]));
       let fill;
       if (colorMode === "spectrum") fill = `rgb(${r},${g},${b})`;
-      else if (colorMode === "palette") fill = nearestPaletteColor(r, g, b, palette);
+      else if (colorMode === "palette") fill = palEntries
+        ? nearestPaletteEntry(r, g, b, palEntries).c
+        : nearestPaletteColor(r, g, b, palette);
       else fill = monoColor || "#e9dfc8";
       svg += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" fill="${fill}">${ch}</text>`;
     }
@@ -628,12 +660,12 @@ function renderDither(sourceCanvas, destCtx, destW, destH, opts) {
       out[j+3] = 255;
     }
   } else if (colorMode === "palette" && usePalette && palette.length) {
+    const entries = paletteEntries(palette);
     for (let i = 0, j = 0; i < workData.length; i += 3, j += 4) {
       const r = workData[i], g = workData[i+1], b = workData[i+2];
-      const nearest = nearestPaletteColor(r, g, b, palette);
-      const m = nearest.match(/rgb\((\d+),(\d+),(\d+)\)/);
-      if (m) {
-        out[j] = +m[1]; out[j+1] = +m[2]; out[j+2] = +m[3];
+      const nearest = nearestPaletteEntry(r, g, b, entries);
+      if (nearest.hasRgb) {
+        out[j] = nearest.dr; out[j+1] = nearest.dg; out[j+2] = nearest.db;
       } else {
         out[j] = r; out[j+1] = g; out[j+2] = b;
       }

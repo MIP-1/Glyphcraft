@@ -1,0 +1,10 @@
+window 1: new=405.35ms old=2376.80ms ratio=0.171
+window 2: new=352.35ms old=2395.45ms ratio=0.147
+window 3: new=352.35ms old=2367.80ms ratio=0.149
+window 4: new=368.60ms old=2423.50ms ratio=0.152
+window 5: new=349.90ms old=2414.60ms ratio=0.145
+all samples: new median=358.00ms p95=457.60ms | old median=2397.00ms p95=2512.30ms
+window medians: new=[405.4, 352.4, 352.4, 368.6, 349.9] old=[2376.8, 2395.4, 2367.8, 2423.5, 2414.6]
+median new=352.35ms old=2395.45ms ratio=0.147 faster_windows=5/5
+hash new=3491491483 old=3491491483 IDENTICAL
+SPEED PASS

@@ -82,6 +82,9 @@ BENCH_JS = r"""
     base.adj = { ...DEFAULT_ADJ };
     base.autoLevels = true;
     base.usePalette = true;
+    if (cfg.colorMode) base.colorMode = cfg.colorMode;
+    if (cfg.ditherKernel) base.ditherKernel = cfg.ditherKernel;
+    if (cfg.palette) base.palette = cfg.palette;
     base.effects = base.effects.map((fx) => ({
       id: fx.id,
       enabled: (cfg.effects || []).includes(fx.id),
@@ -90,6 +93,10 @@ BENCH_JS = r"""
     }));
     state.opts = base;
     rebuildRamp();
+    if (cfg.palette) {
+      state.opts.palette = cfg.palette;
+      state.paletteColors = currentPalette();
+    }
     state.cacheDisabled = true;
     state.lastRenderKey = "";
     state.renderCache = null;
