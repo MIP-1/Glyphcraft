@@ -443,24 +443,40 @@ function fxOil(c, p) {
   const out = fxCanvas(w, h), ctx = fxContext(out);
   const img = ctx.createImageData(w, h), o = img.data;
   const r = Math.round(fxNum(p.radius, 1, 3, 2));
+  // One scratch buffer and one result triple for the whole frame. The old loop
+  // allocated a `vals` array and a `best` array per quadrant of every pixel,
+  // which dominated this effect's cost at 1080p and 4K. Sample order and every
+  // arithmetic step are unchanged, so the output is bit-identical.
+  const vals = new Float64Array((r + 1) * (r + 1));
+  const best = [0, 0, 0];
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let bestVar = Infinity, best = [0, 0, 0];
+      let bestVar = Infinity;
       for (let qy = -1; qy <= 1; qy += 2) {
         for (let qx = -1; qx <= 1; qx += 2) {
-          let sr = 0, sg = 0, sb = 0, n = 0, vals = [];
+          let sr = 0, sg = 0, sb = 0, n = 0;
           for (let ky = -r; ky <= r; ky++) {
             for (let kx = -r; kx <= r; kx++) {
               if ((qx < 0 && kx > 0) || (qx > 0 && kx < 0) || (qy < 0 && ky > 0) || (qy > 0 && ky < 0)) continue;
               const px = Math.max(0, Math.min(w - 1, x + kx)), py = Math.max(0, Math.min(h - 1, y + ky));
               const i = (py * w + px) * 4;
               sr += src[i]; sg += src[i + 1]; sb += src[i + 2];
-              vals.push(fxLuma(src[i], src[i + 1], src[i + 2])); n++;
+              vals[n++] = fxLuma(src[i], src[i + 1], src[i + 2]);
             }
           }
-          const mean = vals.reduce((a, v) => a + v, 0) / n;
-          const varr = vals.reduce((a, v) => a + (v - mean) * (v - mean), 0) / n;
-          if (varr < bestVar) { bestVar = varr; best = [sr / n, sg / n, sb / n]; }
+          let sum = 0;
+          for (let t = 0; t < n; t++) sum += vals[t];
+          const mean = sum / n;
+          let acc = 0;
+          for (let t = 0; t < n; t++) {
+            const dv = vals[t] - mean;
+            acc += dv * dv;
+          }
+          const varr = acc / n;
+          if (varr < bestVar) {
+            bestVar = varr;
+            best[0] = sr / n; best[1] = sg / n; best[2] = sb / n;
+          }
         }
       }
       const i = (y * w + x) * 4;

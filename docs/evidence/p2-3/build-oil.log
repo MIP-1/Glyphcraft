@@ -1,0 +1,18 @@
+npm notice run glyphcraft@1.0.0 build
+npm notice run python tools/build.py
+engine.js: 35822 -> 32925 bytes
+effects.js: 30923 -> 28076 bytes
+reorder.js: 9972 -> 8376 bytes
+app.js: 125598 -> 115116 bytes
+render-worker.js: 2662 -> 2514 bytes
+style.css: 46936 -> 42902 bytes
+dist/ ready: JS 204977 -> 187007 bytes, 12 paths
+load http://127.0.0.1:44089/index.html
+hash
+load http://127.0.0.1:44089/dist/index.html
+hash
+source: hash=4135467496 canvas=900x600
+dist:   hash=4135467496 canvas=900x600
+errors: []
+DIST SMOKE PASS
+EXIT=0
