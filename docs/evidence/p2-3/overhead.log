@@ -1,0 +1,6 @@
+{"mode": "script", "preview": [1600, 900], "draw_ms": 0, "total_ms": 65.1, "draw_share_pct": 0.0}
+{"mode": "dither", "preview": [1600, 900], "draw_ms": 0, "total_ms": 244.9, "draw_share_pct": 0.0}
+{"mode": "effects", "preview": [1600, 900], "draw_ms": 0, "total_ms": 10.1, "draw_share_pct": 0.0}
+{"stack": "light", "us_per_call": 14.0, "bytes": 2662}
+{"stack": "twelve", "us_per_call": 20.5, "bytes": 2649}
+page errors: []

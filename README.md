@@ -135,17 +135,26 @@ Logs and raw data are in `docs/evidence/p2-3/perf-log.md`.
   mode, and empty sections are hidden while a query is active. New regression
   check raises the suite to 170 (`tests/gate/run_gate.py` G5 requires 170).
 
-Remaining Step 5 items, in `decisions.md` order: merge the adjustment pass and
-reuse the diffusion buffer, cache the downscaled preview base for 4K sources,
-and serialize the render key. Then the three full gate runs, break-it, docs,
-merge and `P2-3-pass`.
+- C4 (`4ab2169`): the adjustment pixel passes (highlights/shadows/sharpen,
+  invert, sepia) share one `getImageData`/`putImageData` instead of up to
+  three. Function-level paired probe: 5/5 windows and −11.0% / −17.5% in two
+  runs, identical hash; the parity matrix gained nine adjustment profiles
+  (35/35).
+- C5 (reverted): diffusion-buffer pooling measured slower for both layouts
+  (+3.5% planar, +2.5% interleaved, 0/5 windows), so `engine.js` stayed as C4.
+  The negative result and the probe are kept in `perf-log.md`.
+- The last two `decisions.md` items were measured and rejected: a cached 4K
+  preview base could save <0.1% (the source draw is below timer resolution on
+  the 1600×900 preview), and the render key costs 14–20 µs per call against a
+  65–245 ms render. No code changed; both are recorded in `perf-log.md`.
+
+Step 5 is complete. Next: three full gate runs, the break-it pass, docs, merge
+to `main` and tag `P2-3-pass`.
 
 **Next steps**
 
-1. Finish the remaining P2-3 Step 5 speed items: adjustment merge + diffusion
-   buffer reuse, 4K preview base cache, render-key serialization.
-2. Then three full gate runs, the break-it pass, docs, merge to `main` and tag
-   `P2-3-pass`.
+1. Three full gate runs on this tree, then the break-it pass.
+2. Docs closeout, merge to `main` and tag `P2-3-pass`.
 3. After P2-3: P2-4 undo/redo/history, P2-5 before/after finish and P2-6 presets.
 4. Mobile landscape refinement (height <500 px): the sheet and controls work
    today, but add a landscape-specific snap once real-device testing is available.

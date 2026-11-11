@@ -166,3 +166,38 @@ of a ~185 ms diffusion pass, and the planar layout lost a little to the extra
 is byte-identical to the C4 commit. The probe stays in the tree as
 `tests/bench/speed_dither.py` for a future dither change. Log and data:
 `speed-dither.log`, `speed-dither.json` (interleaved run).
+
+## 5. Cached downscaled preview base — measured, rejected
+
+The decision table proposed caching the downscaled preview base for 4K sources,
+because the full-size source is drawn into the 1600x900 preview canvas on every
+render. `tests/bench/overhead_probe.py` measures that draw directly through
+`sourceDrawMs()` on a 3840x2160 source, median of five renders per mode:
+
+| Mode | Preview | Source draw | Whole preview render | Draw share |
+|---|---|---:|---:|---:|
+| Script | 1600x900 | 0.0 ms | 65.1 ms | < 0.1% |
+| Dither | 1600x900 | 0.0 ms | 244.9 ms | < 0.1% |
+| Effects Only | 1600x900 | 0.0 ms | 10.1 ms | < 0.1% |
+
+The draw is below the timer's resolution. The page already avoids re-decoding
+the image (`state.previewSource` is an `ImageBitmap` of the source, and the
+worker keeps its own bitmap), so only the cheap scale remains. A cache can save
+at most ~0.5 ms, far under the 10% rule, while adding an invalidation risk on
+every source and output-size change. No change made. Log: `overhead.log`, data
+`overhead.json`.
+
+## 6. Render-key serialization — measured, rejected
+
+The decision table proposed building the render key from mutable fields instead
+of `JSON.stringify(renderOpts())`. The same probe times the stringify on the real
+options object:
+
+| Configuration | Key size | Cost per call |
+|---|---:|---:|
+| Light (no effects) | 2,662 bytes | 14.0 µs |
+| Twelve effects | 2,649 bytes | 20.5 µs |
+
+At most 20 µs against a 65–245 ms preview render is under 0.01%, and the key is
+the guard that makes the render cache safe. Replacing it risks a stale frame for
+a cost that does not measure. No change made. Log: `overhead.log`.

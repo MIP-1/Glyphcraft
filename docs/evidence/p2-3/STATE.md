@@ -56,6 +56,11 @@
     `toggleModeSections()` last and hides empty sections during a query;
     new regression check, suite now 170 (G5 updated); G20 200/200, dist smoke
   - evidence: `perf-log.md`, `b4-search.md`
-- Next: remaining Step 5 items — adjustment merge + diffusion buffer reuse,
-  4K preview base cache, render-key serialization; then three full gate runs,
-  break-it, docs, merge and `P2-3-pass`.
+  - C4 `4ab2169`: adjustment pixel passes share one get/put (up to three
+    before); function probe 5/5, −11.0% and −17.5% in two runs; parity
+    35/35 including nine adjustment profiles; G20 200/200, 170 tests
+  - C5: diffusion-buffer pooling measured slower (+3.5% planar, +2.5%
+    interleaved, 0/5), engine.js unchanged; negative result in `perf-log.md`
+  - items 4/5 rejected on measurement: 4K preview-base draw <0.1% of the
+    render; render key 14–20 µs (see `perf-log.md`, `overhead.log`)
+- Next: Step 6 three full gate runs, break-it, docs, merge and `P2-3-pass`.
