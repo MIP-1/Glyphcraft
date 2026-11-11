@@ -142,3 +142,27 @@ identical in every case. Log: `parity-adjust.log`.
 
 Verification: G20 200/200 exact (`golden-adjust.log`), 170 tests
 (`test-suite-adjust.log`), build + dist smoke `4135467496` (`build-adjust.log`).
+
+## 4. Diffusion buffer reuse — measured, no win, reverted
+
+`errorDiffusionDither` allocated a `Float32Array(data.length)` (four lanes per
+pixel) and a `Uint8ClampedArray(w*h*3)` on every dither render, and the decision
+table listed buffer reuse as a candidate. `tests/bench/speed_dither.py` installs
+the old function from `4ab2169` and the working-tree function in the same page,
+alternates them on the same `ImageData`, forces GC before every call and takes 8
+samples per variant per window. 1600x900, 4 levels, Floyd–Steinberg, serpentine.
+
+Two implementations were measured:
+
+| Variant | Window medians, new vs old | Median change | Windows ≥10% faster | Verdict |
+|---|---|---:|---:|---|
+| Three planar buffers, reused | 203.9/187.9/196.3/187.1/188.2 vs 187.8/178.9/184.1/182.0/181.5 ms | +3.5% (slower) | 0 / 5 | reject |
+| Interleaved buffers, reused (same layout as old) | 188.1/183.0/186.7/196.8/188.1 vs 190.1/182.9/180.5/183.6/187.6 ms | +2.5% (slower) | 0 / 5 | reject |
+
+Both hashes were identical to the old function (`1623916633`), so parity was
+never the issue: the allocation and zero-fill are simply not a measurable part
+of a ~185 ms diffusion pass, and the planar layout lost a little to the extra
+`planes[c]` indirection. Per the keep rule the change is reverted; `engine.js`
+is byte-identical to the C4 commit. The probe stays in the tree as
+`tests/bench/speed_dither.py` for a future dither change. Log and data:
+`speed-dither.log`, `speed-dither.json` (interleaved run).
