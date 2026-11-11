@@ -1239,8 +1239,8 @@ def g5_existing_tests() -> tuple[bool, list[str], str]:
         problems.append("tests/test_suite.py did not print its REPORT WRITTEN summary")
     else:
         checks, failed = int(match.group(1)), int(match.group(2))
-        if checks != 169:
-            problems.append(f"expected 169 checks, got {checks}")
+        if checks != 170:
+            problems.append(f"expected 170 checks, got {checks}")
         if failed != 0:
             problems.append(f"{failed} test failure(s)")
     if failures:

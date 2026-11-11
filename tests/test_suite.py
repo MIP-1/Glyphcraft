@@ -500,6 +500,13 @@ with sync_playwright() as p:
     page.wait_for_timeout(250)
     all_sections = page.evaluate("() => Array.from(document.querySelectorAll('.panel-section')).filter(s=>s.style.display!=='none').length")
     record("search filters controls", vis_sections < all_sections, f"{vis_sections}/{all_sections}")
+    b4 = page.evaluate("""() => ({
+      mode: state.opts.mode,
+      script: document.getElementById('section-script').style.display,
+      dither: document.getElementById('section-dither').style.display,
+      color: document.getElementById('section-color').style.display,
+    })""")
+    record("search keeps mode-hidden sections hidden", b4["mode"] == "script" and b4["dither"] == "none" and b4["script"] != "none", json.dumps(b4))
 
     page.click("#section-script .section-title")
     collapsed = page.evaluate("() => document.getElementById('section-script').classList.contains('collapsed')")
