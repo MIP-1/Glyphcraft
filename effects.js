@@ -443,10 +443,7 @@ function fxOil(c, p) {
   const out = fxCanvas(w, h), ctx = fxContext(out);
   const img = ctx.createImageData(w, h), o = img.data;
   const r = Math.round(fxNum(p.radius, 1, 3, 2));
-  // One scratch buffer and one result triple for the whole frame. The old loop
-  // allocated a `vals` array and a `best` array per quadrant of every pixel,
-  // which dominated this effect's cost at 1080p and 4K. Sample order and every
-  // arithmetic step are unchanged, so the output is bit-identical.
+  // --- One scratch buffer and result triple per frame ---
   const vals = new Float64Array((r + 1) * (r + 1));
   const best = [0, 0, 0];
   for (let y = 0; y < h; y++) {

@@ -140,11 +140,7 @@ function parsePaletteColor(c) {
   return [0, 0, 0];
 }
 
-// Parsing a palette string is expensive and used to happen once per glyph or
-// once per pixel. The parsed form is cached by content, so a render parses each
-// palette at most once. `hasRgb`/`dr,dg,db` keep the dither path's exact old
-// behaviour: only a literal `rgb(r,g,b)` string replaces the pixel, anything
-// else (hex, rgba, spaces) keeps the source pixel.
+// --- Palette parse cache, built once per render ---
 const PALETTE_PARSE_CACHE = { key: null, entries: null };
 function paletteEntries(palette) {
   if (!palette || !palette.length) return null;
@@ -190,11 +186,7 @@ function applyAdjustments(ctx, w, h, adj) {
     ctx.filter = "none";
   }
   if (adj.highlights !== 0 || adj.shadows !== 0 || adj.sharpen > 0 || adj.invert || adj.sepia) {
-    // One full-frame read and one write for the pixel adjustments. This used to
-    // be up to three getImageData/putImageData round trips: highlights/shadows/
-    // sharpen, then invert, then sepia. Every write stores into the same
-    // Uint8ClampedArray, so doing the passes back to back on one buffer gives
-    // the same bytes a put/get round trip would return.
+    // --- One full-frame read and write for all pixel adjustments ---
     const imgData = ctx.getImageData(0, 0, w, h);
     const data = imgData.data;
     const hl = adj.highlights / 100;

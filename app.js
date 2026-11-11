@@ -2409,8 +2409,7 @@ function filterControls(q) {
     });
     sec.style.display = (!query || visible > 0) ? "" : "none";
   });
-  // The search must not reveal controls the current mode keeps hidden (B4).
-  // Re-apply mode visibility last, then hide any section the search left empty.
+  // --- B4: mode visibility wins over the search ---
   toggleModeSections();
   if (query) {
     document.querySelectorAll(".panel-section").forEach(sec => {
