@@ -10,15 +10,16 @@ CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
 the browser supports it. Git keeps the readable sources; `npm run build`
 writes an optional minified `dist/` for publishing.
 
-## Status — 2026-11-10
+## Status — 2026-11-11
 
-**Current status:** IN PROGRESS — P2-3 Step 3 (audit, baseline, golden outputs,
-decision table) is complete and tagged `P2-3-A-pass`; Step 4 (video: 850 MB
-limit and native-resolution export) is complete and tagged `P2-3-B-pass`. Both
-are on branch `p2-3-work`. Step 5 (speed) is next. Part 1, Part 1B, Part 1C,
-P2-1 and its post-PASS cleanup, Part M, and P2-2 remain complete and tagged.
-`npm run gate` was green three times in a row on the final P2-2 tree
-(`docs/evidence/p2-2/gate-run-1/2/3.log`).
+**Current status:** IN PROGRESS on branch `p2-3-work`. P2-3 Step 3 (audit,
+baseline, golden outputs, decision table) is complete and tagged `P2-3-A-pass`;
+Step 4 (video: 850 MB limit and native-resolution export) is complete and
+tagged `P2-3-B-pass`. Step 5 (speed) is in progress: three changes are
+committed and measured, the rest of the `decisions.md` list is next. Part 1,
+Part 1B, Part 1C, P2-1 and its post-PASS cleanup, Part M, and P2-2 remain
+complete and tagged. `npm run gate` was green three times in a row on the final
+P2-2 tree (`docs/evidence/p2-2/gate-run-1/2/3.log`).
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -109,16 +110,42 @@ P2-1 and its post-PASS cleanup, Part M, and P2-2 remain complete and tagged.
 - Closeout on a real 838.1 MB 4K VP9 WebM: load 0.70 s, 0 JS heap growth,
   50.3 fps playback with 3 effects, seek exact, native 3840x2160 export in
   107.9 s. See `docs/evidence/p2-3/video-audit.md` and `video-large.log`.
-- 169 tests green, G20 golden 200/200 exact, existing video gate green, dist
-  smoke hash `4135467496`.
+- 169 tests green at the time (the suite is 170 after Step 5 C3), G20 golden
+  200/200 exact, existing video gate green, dist smoke hash `4135467496`.
+
+**P2-3 Step 5 (in progress)**
+
+Every change is one commit, measured old-vs-new in one browser session with a
+paired A/B/B/A window design, and kept only when it is at least 10% faster in
+4 of 5 windows (or removes a measured long task) with identical output hashes.
+Logs and raw data are in `docs/evidence/p2-3/perf-log.md`.
+
+- C1 (`ad5bb37`): `fxOil` no longer allocates a `vals` array and a `best`
+  array per quadrant of every pixel. Radius 2 at 1600×900: median 1470.4 →
+  1137.5 ms (−22.6%), p95 −32.4%, 5/5 windows. Hashes identical at radius
+  1/2/3 on 1600×900 and 3840×2160.
+- C2 (`2443ee0`): palette parsing is cached by content and built once per
+  render instead of per glyph or per pixel. Dither + palette: median 2395.5 →
+  352.4 ms (−85.3%), p95 −81.8%, 5/5 windows. Script + palette only −5.7%, so
+  no claim there. Old-vs-new parity matrix 26/26 across five built-in palettes,
+  a custom `rgb()`/`rgba()`/hex palette, all nine dither kernels, mono,
+  spectrum, Effects Only and the SVG/TXT exports.
+- C3 (`ec5a726`): B4 — `filterControls()` now re-applies the mode-visibility
+  rules last, so a panel search cannot reveal Dither-only controls in Script
+  mode, and empty sections are hidden while a query is active. New regression
+  check raises the suite to 170 (`tests/gate/run_gate.py` G5 requires 170).
+
+Remaining Step 5 items, in `decisions.md` order: merge the adjustment pass and
+reuse the diffusion buffer, cache the downscaled preview base for 4K sources,
+and serialize the render key. Then the three full gate runs, break-it, docs,
+merge and `P2-3-pass`.
 
 **Next steps**
 
-1. P2-3 Step 5 speed work in the order in `decisions.md`, one change per
-   commit, G20 exact and paired before/after numbers: `fxOil` allocations,
-   palette parsing, adjustment merge and diffusion reuse, 4K preview base
-   cache, render-key serialization and the B4 `filterControls()` fix.
-2. Then the three full gate runs, break-it, docs, merge and `P2-3-pass`.
+1. Finish the remaining P2-3 Step 5 speed items: adjustment merge + diffusion
+   buffer reuse, 4K preview base cache, render-key serialization.
+2. Then three full gate runs, the break-it pass, docs, merge to `main` and tag
+   `P2-3-pass`.
 3. After P2-3: P2-4 undo/redo/history, P2-5 before/after finish and P2-6 presets.
 4. Mobile landscape refinement (height <500 px): the sheet and controls work
    today, but add a landscape-specific snap once real-device testing is available.
@@ -203,7 +230,7 @@ borders in both themes at 360 px and 1280 px.
 ## Tests
 
 ```bash
-python tests/test_suite.py        # 169 checks, headless Chromium via Playwright
+python tests/test_suite.py        # 170 checks, headless Chromium via Playwright
 python tests/test_contrast.py     # WCAG contrast audit, both themes, 2 widths
 python tests/gate/p2_2_check.py   # worker acceptance (also permanent G19)
 python tests/gate/golden_check.py # 200 effect/mode/input canvas hashes (also G20)

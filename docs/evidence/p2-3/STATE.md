@@ -44,6 +44,18 @@
   - `docs/evidence/p2-3/video-audit.md` records B1 flow, RED → GREEN and the
     large-file results
 - Tag: `P2-3-B-pass`
-- Next: Step 5 speed work in the order in `decisions.md` — `fxOil`
-  allocations, palette parsing, adjustment merge + diffusion reuse, 4K preview
-  base cache, render-key serialization and the B4 `filterControls()` fix.
+- Step 5 (Task C), in progress:
+  - C1 `ad5bb37`: `fxOil` per-pixel allocations removed; 5/5 windows,
+    median −22.6%, p95 −32.4%; hashes identical at radius 1/2/3 on
+    1600x900 and 3840x2160; G20 200/200, 169 tests, dist smoke
+  - C2 `2443ee0`: palette parsed once per render and reused by Script, SVG
+    and Dither; precomputed per-entry `rgb()` substitution; dither+palette
+    median −85.3% (5/5), p95 −81.8%; script+palette −5.7% (no claim);
+    old-vs-new parity 26/26 (`parity-palette.log`); G20 200/200, 169 tests
+  - C3 `ec5a726`: B4 fix — `filterControls()` re-applies
+    `toggleModeSections()` last and hides empty sections during a query;
+    new regression check, suite now 170 (G5 updated); G20 200/200, dist smoke
+  - evidence: `perf-log.md`, `b4-search.md`
+- Next: remaining Step 5 items — adjustment merge + diffusion buffer reuse,
+  4K preview base cache, render-key serialization; then three full gate runs,
+  break-it, docs, merge and `P2-3-pass`.
