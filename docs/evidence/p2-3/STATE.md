@@ -44,7 +44,7 @@
   - `docs/evidence/p2-3/video-audit.md` records B1 flow, RED → GREEN and the
     large-file results
 - Tag: `P2-3-B-pass`
-- Step 5 (Task C), in progress:
+- Step 5 (Task C), complete:
   - C1 `ad5bb37`: `fxOil` per-pixel allocations removed; 5/5 windows,
     median −22.6%, p95 −32.4%; hashes identical at radius 1/2/3 on
     1600x900 and 3840x2160; G20 200/200, 169 tests, dist smoke
@@ -63,4 +63,21 @@
     interleaved, 0/5), engine.js unchanged; negative result in `perf-log.md`
   - items 4/5 rejected on measurement: 4K preview-base draw <0.1% of the
     render; render key 14–20 µs (see `perf-log.md`, `overhead.log`)
-- Next: Step 6 three full gate runs, break-it, docs, merge and `P2-3-pass`.
+- Step 6, complete: three consecutive full gate runs PASS on `28b22dc`
+  - run 1 06:16–06:45, run 2 13:56–14:24, run 3 14:24–14:54 (2026-11-11)
+  - every run G1–G21 PASS, G5 170 checks, G20 200 cases, G21 25 checks,
+    `GATE PASS`, EXIT=0; logs `gate-run-1/2/3.log`
+  - `gate-run-1-aborted.log` (G1 only, killed after a tree change) and
+    `gate-run-2-interrupted.log` (G1–G12, server restart) do not count
+  - screenshots: 68 per run in `p2-3-run-1/2/3/`, 58 in
+    `p2-3-run-2-interrupted/`; all 68 final-run files opened in six batches,
+    notes in `screenshot-review.md`
+  - pixel diff: runs 1/2 = 0 px outside canvas/status in all 68 files;
+    runs 2/3 same except one 2,124 px slider reflow (HUMAN-CHECK);
+    `pixel-diff-run1-run2.json`, `pixel-diff-run2-run3.json`,
+    `pixel-diff-regions.txt`
+- Step 7, complete: break-it 31/31 PASS in 87.7 s
+  (`tests/bench/breakit_p2_3.py`, `breakit.log`); all 12 required cases;
+  `docs/GATE.md` P2-3 section, README and PROJECT_MEMORY updated
+- Next: merge `p2-3-work` to `main`, closeout commit, tag `P2-3-pass`, push.
+  P2-4 is not started.

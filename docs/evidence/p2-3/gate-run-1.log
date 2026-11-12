@@ -1,0 +1,82 @@
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 73352 element/state checks, 10 cells, 84 scans
+G3 PASS screenshots: 58 captured in docs/evidence/p2-3/
+  docs/evidence/p2-3/dark-1280-fullest-top.png
+  docs/evidence/p2-3/dark-1280-fullest-effects.png
+  docs/evidence/p2-3/dark-1280-file-menu.png
+  docs/evidence/p2-3/dark-1280-view-menu.png
+  docs/evidence/p2-3/dark-1280-edit-menu.png
+  docs/evidence/p2-3/dark-1280-zoom-menu.png
+  docs/evidence/p2-3/dark-1280-size-picker.png
+  docs/evidence/p2-3/dark-1280-select-focus.png
+  docs/evidence/p2-3/dark-1280-focus-theme.png
+  docs/evidence/p2-3/dark-1280-hover-theme-tooltip.png
+  docs/evidence/p2-3/dark-1280-hover-preset.png
+  docs/evidence/p2-3/dark-1280-hover-primary.png
+  docs/evidence/p2-3/dark-360-fullest-top.png
+  docs/evidence/p2-3/dark-360-fullest-effects.png
+  docs/evidence/p2-3/dark-360-mobile-menu.png
+  docs/evidence/p2-3/dark-360-zoom-menu.png
+  docs/evidence/p2-3/dark-360-size-picker.png
+  docs/evidence/p2-3/dark-360-select-focus.png
+  docs/evidence/p2-3/dark-360-focus-theme.png
+  docs/evidence/p2-3/dark-360-hover-theme-tooltip.png
+  docs/evidence/p2-3/dark-360-hover-preset.png
+  docs/evidence/p2-3/dark-360-hover-primary.png
+  docs/evidence/p2-3/light-1280-fullest-top.png
+  docs/evidence/p2-3/light-1280-fullest-effects.png
+  docs/evidence/p2-3/light-1280-file-menu.png
+  docs/evidence/p2-3/light-1280-view-menu.png
+  docs/evidence/p2-3/light-1280-edit-menu.png
+  docs/evidence/p2-3/light-1280-zoom-menu.png
+  docs/evidence/p2-3/light-1280-size-picker.png
+  docs/evidence/p2-3/light-1280-select-focus.png
+  docs/evidence/p2-3/light-1280-focus-theme.png
+  docs/evidence/p2-3/light-1280-hover-theme-tooltip.png
+  docs/evidence/p2-3/light-1280-hover-preset.png
+  docs/evidence/p2-3/light-1280-hover-primary.png
+  docs/evidence/p2-3/light-360-fullest-top.png
+  docs/evidence/p2-3/light-360-fullest-effects.png
+  docs/evidence/p2-3/light-360-mobile-menu.png
+  docs/evidence/p2-3/light-360-zoom-menu.png
+  docs/evidence/p2-3/light-360-size-picker.png
+  docs/evidence/p2-3/light-360-select-focus.png
+  docs/evidence/p2-3/light-360-focus-theme.png
+  docs/evidence/p2-3/light-360-hover-theme-tooltip.png
+  docs/evidence/p2-3/light-360-hover-preset.png
+  docs/evidence/p2-3/light-360-hover-primary.png
+  docs/evidence/p2-3/light-1280-real-clean-icon.png
+  docs/evidence/p2-3/light-1280-real-clean-T-light.png
+  docs/evidence/p2-3/light-1280-real-clean-reload-light.png
+  docs/evidence/p2-3/light-1280-host-dark-icon.png
+  docs/evidence/p2-3/light-1280-host-dark-T-light.png
+  docs/evidence/p2-3/light-1280-host-dark-reload-light.png
+  docs/evidence/p2-3/light-1280-host-os-light-os-light.png
+  docs/evidence/p2-3/light-360-real-clean-icon.png
+  docs/evidence/p2-3/light-360-real-clean-T-light.png
+  docs/evidence/p2-3/light-360-real-clean-reload-light.png
+  docs/evidence/p2-3/light-360-host-dark-icon.png
+  docs/evidence/p2-3/light-360-host-dark-T-light.png
+  docs/evidence/p2-3/light-360-host-dark-reload-light.png
+  docs/evidence/p2-3/light-360-host-os-light-os-light.png
+G4 PASS frame timings: dark 1280: median=16.700000000000728ms p95=883.3999999999978ms frames=122, dark 360: median=16.700000000000728ms p95=866.6999999999971ms frames=112, light 1280: median=16.700000000000728ms p95=833.2999999999993ms frames=123, light 360: median=16.700000000000728ms p95=983.2999999999993ms frames=118
+G5 PASS existing tests: REPORT WRITTEN 170 checks, 0 failures (190.9s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 PASS top-bar geometry: 0 violation(s)
+G9 PASS numeric steppers: 65 measurements, 15 hold-rate rows
+G10 PASS effects: 239 checks, 0 failure(s) (50.2s)
+G11 PASS compare split: 21 checks, 0 failure(s) (129.3s)
+G12 PASS load: 15 checks, 0 failure(s) (96.1s)
+G13 PASS video: 25 checks, 0 failure(s) (90.9s)
+G14 PASS mobile layout: dark 360x680: snap=peek sheet=105px preview=519px topbar=56px/1row | light 390x750: snap=peek sheet=105px preview=589px topbar=56px/1row | dark 412x800: snap=half sheet=360px preview=384px topbar=56px/1row | light 320x568: snap=peek sheet=105px preview=407px topbar=56px/1row | dark 640x360: snap=peek sheet=105px preview=199px topbar=56px/1row | light 740x360: snap=half sheet=267px preview=267px topbar=93px/2row | docs/evidence/p2-3/m1-g14-dark-360x680-peek.png | docs/evidence/p2-3/m1-g14-dark-360x680-half.png | docs/evidence/p2-3/m1-g14-light-390x750-peek.png | docs/evidence/p2-3/m1-g14-light-390x750-half.png | docs/evidence/p2-3/m1-g14-dark-412x800-half.png | docs/evidence/p2-3/m1-g14-dark-412x800-half.png
+G15 PASS mobile gestures: swipes peek->half->peek, flick->half | tap cycle half,full,peek | pipeline during={'r': 0, 'b': 0} after={'r': 0, 'b': 0} | keyboard vvH=400 input=348..392 | compare 100%=20/20, 200%=20/20, 400%=20/20
+G16 PASS touch targets: peek:261 half:261 full:260 unique=201 unique+effects=201
+G17 PASS desktop unchanged: 15 rect(s)
+G18 PASS menu reachability: desktop items=14 | contrast {"dark": {"menuText": 15.67, "menuBorder": 3.59, "handleGrip": 8.38, "handleBorder": 1.24, "statusText": 4.72, "menuButton": 11.16}, "light": {"menuText": 15.62, "menuBorder": 3.14, "handleGrip": 10.27, "handleBorder": 1.34, "statusText": 6.81, "menuButton": 10.84}}
+G19 PASS worker: 6 checks, 0 failure(s) (29.1s)
+G20 PASS golden outputs: GOLDEN CHECK 200 cases, seed 1592594996, 0 problem(s) (138.1s)
+G21 PASS video P2-3: 25 checks, 0 failure(s) (43.6s)
+
+GATE PASS 
+EXIT=0

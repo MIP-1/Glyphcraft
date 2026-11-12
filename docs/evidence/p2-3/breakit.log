@@ -1,0 +1,34 @@
+PASS 1a limits: image=41943040 video=891289600 B
+PASS 1b 850 MB exact / +1: exact='' over='This file is too large (850.0 MB). Try a smaller file (under 850 MB).'
+PASS 2a 0-byte video: type=None text='This file is empty. Choose a file with content.'
+PASS 2b corrupt video: type=None text='Couldn’t play this video. Try MP4 (H.264) or WebM (VP9).'
+PASS 2c truncated video: type=None text='Couldn’t play this video. Try MP4 (H.264) or WebM (VP9).'
+PASS 2d video renamed as image: type=None text='Couldn’t decode this file. Try re-saving it as PNG or MP4, then open it again.'
+PASS 3a 4K video + 6 effects plays: {"frames": 25, "scale": 0.24, "long": [], "size": [3840, 2160], "snap": "playing", "effects": 6}
+PASS 3b portrait video loads: native=[1080, 1920]
+PASS 3b odd video loads: native=[1002, 562]
+PASS 3c rotated video honours rotation metadata: coded=1080x1920 displayed=[1920, 1080]
+PASS 3d no errors in 1-3: []
+PASS 4a new file during export: download=1280x720 state={"type": "image", "exporting": false, "status": "100%1920\u00d710808ms"}
+PASS 4b export abandoned mid-flight: mid=True after={"exporting": false, "type": null}
+PASS 4c export with another page in front: document.hidden=False started=True finished=True (headless reports hidden=False, so the hidden-tab branch can only be checked in a headed browser)
+PASS 4d no errors in case 4: []
+PASS 5a undo/redo during playback: 60 then 71
+PASS 5b compare split during playback: {"on": true, "frames": 26}
+PASS 5c theme switch during playback: light
+PASS 5d resize during playback: []
+PASS 6 360px video sheet peek/half/full: [{"snap": "peek", "sheet": 105, "overflow": 0, "sheetTop": 635}, {"snap": "half", "sheet": 333, "overflow": 0, "sheetTop": 407}, {"snap": "full", "sheet": 651, "overflow": 0, "sheetTop": 89}]
+PASS 7a ?worker=0 falls back: {"worker": false, "ready": false, "hash": 1760462470}
+PASS 7b no errors with worker off: []
+PASS 7c file:// renders: hash=1131822824 errors=[]
+PASS 7d Firefox renders: {"hash": 3018318775, "worker": false, "offscreen": true} errors=[]
+PASS 8 4K still, 12 effects, slider drag: {"long": [], "worst": 0, "over": 0, "effects": 12, "scale": 1, "previewW": 1600}
+PASS 9 20 image loads: heap 1.0->2.6MB delta=+1.63MB
+PASS 10 empty -> video -> image: empty={"type": null, "has": false, "status": "No image loaded"} video={"type": "video", "w": 1280, "h": 720} image={"type": "image", "w": 1920, "h": 1080}
+PASS 11a all 22 effects at out-of-range values: 22 effects rendered, errors=[]
+PASS 11b every amount at 0/max/typed out of range: []
+PASS 11c typed out-of-range clamps: {"high": 240, "low": 20}
+PASS 12 reload light theme with fullest state: {"theme": "light", "effects": 0, "sepia": false, "contrast": 0, "blank": true} (state.persisted effects/adj is not required; theme is)
+
+BREAK-IT 31/31 PASS in 87.7s
+BREAK-IT PASS

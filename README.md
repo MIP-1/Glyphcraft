@@ -10,16 +10,16 @@ CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
 the browser supports it. Git keeps the readable sources; `npm run build`
 writes an optional minified `dist/` for publishing.
 
-## Status — 2026-11-11
+## Status — 2026-11-12
 
-**Current status:** IN PROGRESS on branch `p2-3-work`. P2-3 Step 3 (audit,
-baseline, golden outputs, decision table) is complete and tagged `P2-3-A-pass`;
-Step 4 (video: 850 MB limit and native-resolution export) is complete and
-tagged `P2-3-B-pass`. Step 5 (speed) is in progress: three changes are
-committed and measured, the rest of the `decisions.md` list is next. Part 1,
-Part 1B, Part 1C, P2-1 and its post-PASS cleanup, Part M, and P2-2 remain
-complete and tagged. `npm run gate` was green three times in a row on the final
-P2-2 tree (`docs/evidence/p2-2/gate-run-1/2/3.log`).
+**Current status:** P2-3 is **PASS** on `main`, tag `P2-3-pass`. P2-3 added
+three measured speed changes, a separate 850 MB video limit, native-resolution
+video export, a permanent 200-case golden check (G20) and a permanent
+25-check video check (G21). The final tree passed the full gate three times in
+a row (`docs/evidence/p2-3/gate-run-1/2/3.log`) and 31/31 break-it checks.
+Part 1, Part 1B, Part 1C, P2-1 and its post-PASS cleanup, Part M, and P2-2
+remain complete and tagged. P2-4 is **NOT STARTED** and is not part of this
+pass.
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -38,7 +38,7 @@ P2-2 tree (`docs/evidence/p2-2/gate-run-1/2/3.log`).
 | M1-1 mobile bottom sheet | PASS | Part M commit, tag `M1-1-pass` |
 | M1-2 single-row mobile top bar | PASS | same commit, tag `M1-2-pass` |
 | P2-2 Worker + OffscreenCanvas | PASS | tag `P2-2-pass`, gate runs 1–3, `docs/GATE.md` P2-2 |
-| P2-3 fast preview | IN PROGRESS | Steps 3–4 complete, tags `P2-3-A-pass` and `P2-3-B-pass` |
+| P2-3 fast preview + video limits | PASS | tag `P2-3-pass`, gate runs 1–3, `docs/GATE.md` P2-3 |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
 | P2-5 before/after finish | NOT STARTED | |
 | P2-6 presets finish | NOT STARTED | |
@@ -113,12 +113,12 @@ P2-2 tree (`docs/evidence/p2-2/gate-run-1/2/3.log`).
 - 169 tests green at the time (the suite is 170 after Step 5 C3), G20 golden
   200/200 exact, existing video gate green, dist smoke hash `4135467496`.
 
-**P2-3 Step 5 (in progress)**
+**P2-3 Step 5 (complete)**
 
-Every change is one commit, measured old-vs-new in one browser session with a
-paired A/B/B/A window design, and kept only when it is at least 10% faster in
-4 of 5 windows (or removes a measured long task) with identical output hashes.
-Logs and raw data are in `docs/evidence/p2-3/perf-log.md`.
+Every candidate was measured old-vs-new in one browser session with a paired
+A/B/B/A window design, and kept only when it was at least 10% faster in 4 of 5
+windows (or removed a measured long task) with identical output hashes. Logs
+and raw data are in `docs/evidence/p2-3/perf-log.md`.
 
 - C1 (`ad5bb37`): `fxOil` no longer allocates a `vals` array and a `best`
   array per quadrant of every pixel. Radius 2 at 1600×900: median 1470.4 →
@@ -148,15 +148,36 @@ Logs and raw data are in `docs/evidence/p2-3/perf-log.md`.
   the 1600×900 preview), and the render key costs 14–20 µs per call against a
   65–245 ms render. No code changed; both are recorded in `perf-log.md`.
 
-Step 5 is complete. Next: three full gate runs, the break-it pass, docs, merge
-to `main` and tag `P2-3-pass`.
+**P2-3 Step 6–7 (complete)**
+
+- Three consecutive full gate runs passed on the final tree: 06:16–06:45,
+  13:56–14:24 and 14:24–14:54 on 2026-11-11 (`docs/evidence/p2-3/gate-run-1/2/3.log`).
+  Every run: G1–G21 PASS, G5 `170 checks, 0 failures`, G20 `200 cases, 0 problems`,
+  G21 `25 checks`, `GATE PASS`, exit 0. An early aborted launch and one run
+  interrupted by a server restart are kept in the evidence folder and do not
+  count.
+- Break-it: 31/31 PASS in 87.7 s (`tests/bench/breakit_p2_3.py`,
+  `docs/evidence/p2-3/breakit.log`), covering all 12 required cases — the two
+  limits, corrupt/truncated/renamed video, portrait/rotated/odd/4K video,
+  export cancel/new file/background page, playback interactions, 360 px sheet,
+  worker fallback / `file://` / Firefox, 4K 12-effect drag, 20 loads, source
+  switches, out-of-range amounts, and light-theme reload.
+- All 68 screenshots of the final run were opened in batches of 12
+  (`docs/evidence/p2-3/screenshot-review.md`). Runs 1 and 2 are pixel-identical
+  outside the preview canvas and the status digits (0 differing pixels in every
+  file); runs 2 and 3 differ only by a 2,124 px one-capture slider reflow, which
+  is listed under HUMAN-CHECK.
+- Limits: video 850 MB, image 40 MB, both named constants. Video export is
+  always the source's native pixel size, proven with ffprobe on six sources.
+- Full evidence and decisions: `docs/GATE.md` P2-3.
 
 **Next steps**
 
-1. Three full gate runs on this tree, then the break-it pass.
-2. Docs closeout, merge to `main` and tag `P2-3-pass`.
-3. After P2-3: P2-4 undo/redo/history, P2-5 before/after finish and P2-6 presets.
-4. Mobile landscape refinement (height <500 px): the sheet and controls work
+1. P2-3 is PASS. Owner hand-check (fresh reload in both themes, one real video
+   over 100 MB, one phone).
+2. After the owner confirms P2-3: P2-4 undo/redo/history, then P2-5
+   before/after finish and P2-6 presets. Do not start P2-4 in this pass.
+3. Mobile landscape refinement (height <500 px): the sheet and controls work
    today, but add a landscape-specific snap once real-device testing is available.
 
 **HUMAN-CHECK**
@@ -166,10 +187,22 @@ to `main` and tag `P2-3-pass`.
   claim.
 - Worker `FontFace` support in a real Safari/Firefox: if a browser cannot
   register the self-hosted font in the worker, the code falls back to the
-  synchronous path, but that fallback is unverified there.
-- G3 wrote 174 screenshots across the three gate runs; they were reviewed as
-  contact sheets and spot checks in this pass, not individually. An individual
-  pass over all 58 per run remains.
+  synchronous path. Firefox break-it used that fallback with correct output and
+  no errors; real-device feel is unverified.
+- MP4/H.264 on a real browser: this Chromium build does not guarantee H.264, so
+  the gate fixtures and the 838.1 MB closeout file are VP8/VP9 WebM. The largest
+  real-world video on the owner's machine is not tested.
+- Hidden-tab export: headless Chromium reports `document.hidden=false`, so the
+  hidden-tab export branch was not exercised (export cancel, new file and a
+  second page in front are covered).
+- P2-3 screenshots: all 68 files of the final run were opened in batches of 12.
+  Runs 1 and 2 are pixel-identical outside the preview canvas and status digits.
+  Runs 2 and 3 differ in one file by a 2,124 px slider thumb shift (15 px
+  narrower track in that capture); 60 consecutive reloads did not reproduce it.
+- P2-3 inherited landscape limit at 740×360 (height <500): CSS uses the narrow
+  desktop layout while the mobile sheet starts at ≤700 px, so the sidebar is
+  off-screen. The P2-2 capture of the same cell is pixel-identical except the
+  status digits; it is not a P2-3 regression and remains a later landscape step.
 - Real Android Firefox/Chrome and iOS Safari: sheet drag feel, grabber tap
   cycle, soft keyboard and URL-bar collapse.
 - Desktop: confirm 701–768 px still shows the old overlay and 1280 px is

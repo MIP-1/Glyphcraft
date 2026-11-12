@@ -3162,3 +3162,198 @@ produced no gate rows.
 Tag `P2-2-pass` resolves to this commit. No runtime file changed after the
 green gates; only this section, the evidence logs and the re-captured heavy
 screenshots were added.
+
+## P2-3 — Fast preview, 850 MB video, native video export — STATUS: PASS
+
+Branch `p2-3-work`, final tree `28b22dc`, tag `P2-3-pass`. Two owner-visible
+changes: the video limit is now 850 MB in its own constant (the image limit
+stays 40 MB), and every video export is written at the source video's native
+pixel size. Both are tested; all other changes are measured speed work with
+pixel-identical output.
+
+### What changed
+
+- `effects.js` and `engine.js`: three measured hot-path changes (`fxOil`
+  allocation removal, palette parse once per render, one adjustment pixel pass
+  instead of up to three). No module rebuild; `reorder.js`, `render-worker.js`,
+  the shell/CSS and the build were kept after the decision table found no
+  module-level bottleneck.
+- `app.js`: B4 correctness fix — `filterControls()` re-applies the
+  mode-visibility rules last, so a panel search cannot reveal Dither-only
+  controls while Script mode is active, and empty sections stay hidden while a
+  query is active. New regression check.
+- `app.js` / `index.html`: separate image/video limits, video controls
+  disabled-but-visible, native-size video export.
+- Permanent checks: G20 golden outputs (200 cases) and G21 video P2-3
+  (25 checks). The test suite is 170 checks (was 169).
+
+### Step 3 — audit, baseline, golden outputs (tag `P2-3-A-pass`)
+
+`docs/evidence/p2-3/audit.md` covers every source, tool and test file.
+Baseline on the unchanged tree (`docs/evidence/p2-3/baseline.json`):
+
+| Measure | 1080p | 4K |
+|---|---:|---:|
+| Preview, 22 effects, Script / Dither / Effects Only | 197.7 / 335.6 / 63.9 ms | 163.1 / 386.4 / 90.0 ms |
+| Slowest effect, preview | 1727.1 ms (`oil`) | 2469.4 ms (`oil`) |
+| Slowest effect, native one-shot | 3659.2 ms (`oil`) | 13136.3 ms (`oil`) |
+| Stack 1 / 3 / 6 / 12, Script preview | 162.8 / 226 / 319 / 763.9 ms | 167.3 / 222.8 / 302.8 / 646.9 ms |
+
+Worker drag: 16.7 ms rAF, 0.3 ms main-thread render, 0 long tasks. Sync drag:
+83.3 ms and 1,000 long tasks in five windows. Playback: 16.7 ms per frame in
+all six cells. Video export at 1280×720: 4.95 s per exported second.
+
+G20 golden set: 200 canvas hashes (22 effects × 3 modes at 1080p and 4K,
+44 native Effects Only cases, 24 stacks), seed `0x5EED1234`, no excluded
+effects. It passed 200/200 exact in 193.5 s (`tests/gate/golden_p2_3.json`,
+`docs/evidence/p2-3/golden.md`).
+
+Decision table (`docs/evidence/p2-3/decisions.md`): no rebuild candidate.
+`effects.js`, `engine.js`, `app.js` and the video path were optimized in place;
+`reorder.js`, `render-worker.js`, `index.html`/`style.css` and the build were
+KEEP.
+
+### Step 4 — video limit and native export (tag `P2-3-B-pass`)
+
+RED first: `tests/gate/video_p2_3_check.py` failed on the old tree because one
+40 MB constant covered images and video and export used the preview-clamped
+output size. GREEN after the change: 25 checks, 0 failures, 52.6 s standalone.
+
+- `IMAGE_MAX_FILE_BYTES = 40 MB`, `VIDEO_MAX_FILE_BYTES = 850 MB`. Exactly
+  850 MB is accepted; +1 byte is rejected with a message naming 850 MB; a
+  0-byte file is rejected as empty.
+- Video export is always `videoWidth` × `videoHeight` after rotation metadata.
+  The size preset, width, height, fit and lock controls remain visible but
+  disabled for video with an inline note; an image re-enables them. Frames,
+  24 fps, the 20 s clamp and no audio are unchanged.
+- No whole-file read: 0 `FileReader` / `Blob` / `fetch` calls on the video
+  path (object URL only).
+- ffprobe-equal export for 1920×1080, 1280×720, 3840×2160, 1080×1920,
+  1002×562 and a rotated stream, each with the preset deliberately set to
+  `custom 320x180`.
+- Real 838.1 MB 4K VP9 WebM closeout: load 0.70 s, 0 JS heap growth, 50.3 fps
+  playback with 3 effects, seek exact, native 3840×2160 export in 107.9 s
+  (`docs/evidence/p2-3/video-large.log`).
+
+### Step 5 — speed (in place, measured)
+
+Every candidate was measured old-vs-new in one browser session, paired A/B/B/A
+over five windows, warm-up discarded, GC forced. Full numbers and raw data:
+`docs/evidence/p2-3/perf-log.md`.
+
+| # | Change | Result | Verdict |
+|---|---|---|---|
+| C1 `ad5bb37` | `fxOil` no longer allocates per pixel quadrant | median 1470.4 → 1137.5 ms (−22.6%), p95 −32.4%, 5/5 windows, identical hashes | KEEP |
+| C2 `2443ee0` | Palette parses once per render, precomputed `rgb()` substitution | dither+palette 2395.5 → 352.4 ms (−85.3%), p95 −81.8%, 5/5; Script −5.7% (no claim); parity 26/26 | KEEP |
+| C3 `ec5a726` | B4 `filterControls()` correctness fix | regression check added; suite 169 → 170; no speed claim | KEEP |
+| C4 `4ab2169` | Adjustment passes share one get/put (up to three before) | 184.3 → 161.8 ms (−11.0%) and 179.6 → 149.0 ms (−17.5%), 5/5 both runs; parity 35/35; 4K −7.7% (no claim) | KEEP |
+| C5 `34cba52` | Reuse diffusion buffers | +3.5% planar / +2.5% interleaved, 0/5 windows | REVERT |
+| C6 `db4068e` | Cache 4K preview base; serialize render key | source draw <0.1% of render; key 14–20 µs | REJECT, no change |
+
+After every kept change: G20 200/200 exact, the full suite green and G1–G19 not
+broken. Build + `tools/dist_smoke.py` stayed at `4135467496` (source = dist).
+
+### Step 6 — three full gate runs
+
+Sequential, background, unbuffered, nothing else running. Logs are raw stdout
+with `EXIT=` appended in `docs/evidence/p2-3/`.
+
+| Run | Started | Finished | Duration | Result | Log |
+|---|---|---|---|---|---|
+| 1 | 2026-11-11 06:16 | 06:45 | 29m | PASS | `gate-run-1.log` |
+| 2 | 2026-11-11 13:56 | 14:24 | 28m | PASS | `gate-run-2.log` |
+| 3 | 2026-11-11 14:24 | 14:54 | 30m | PASS | `gate-run-3.log` |
+
+Every run: G1–G21 PASS, `GATE PASS`, exit 0, no non-PASS line. G5 `170 checks,
+0 failures`; G10 `239 checks`; G11 `21 checks`; G12 `15 checks`; G13 and G21
+`25 checks`; G19 `6 checks`; G20 `200 cases, 0 problems`. G3 wrote 58
+screenshots per run into `docs/evidence/p2-3/` and they were moved, with the 10
+G14 captures, to `docs/evidence/p2-3-run-N/` (68 per run).
+
+Two launches do not count and are kept for provenance:
+
+- `gate-run-1-aborted.log`: started 06:15, passed G1, then was killed after the
+  tree changed; one line only, no gate rows.
+- `gate-run-2-interrupted.log`: started 06:45, passed G1–G12, then the server
+  restarted (58 screenshots in `docs/evidence/p2-3-run-2-interrupted/`); it was
+  relaunched as run 2 at 13:56.
+
+### Step 7 — break-it (12 required cases, 31 checks)
+
+`tests/bench/breakit_p2_3.py`, 31/31 PASS in 87.7 s, log
+`docs/evidence/p2-3/breakit.log`.
+
+| Case | Result |
+|---|---|
+| 1. 850 MB exact / +1 byte | PASS: exact accepted, +1 rejected with the real limit |
+| 2. Corrupt, truncated, 0-byte, renamed, unsupported video | PASS: all four give the intended message; no page error |
+| 3. Portrait, rotated, odd-size, 4K + 6 effects | PASS: 1080×1920, 1002×562, coded 1080×1920 → displayed 1920×1080, 4K plays (25–33 frames, no long tasks) |
+| 4. Export cancelled / new file / another page in front | PASS: export stops, new file wins, `exportImage()` settles with the other page in front. Headless reports `document.hidden=False`, so the hidden-tab branch itself is HUMAN-CHECK |
+| 5. Undo/redo, compare, theme switch, resize during playback | PASS: 60 then 71 history states; compare 26 frames; theme light; resize no errors |
+| 6. 360 px video sheet peek / half / full | PASS: 105 / 333 / 651 px, 0 overflow |
+| 7. `?worker=0`, `file://`, Firefox | PASS: fallback hash `1760462470`, `file://` hash `1131822824`, Firefox hash `3018318775` via the synchronous fallback, no errors |
+| 8. 4K still, 12 effects, slider drag | PASS: 0 long tasks, 0 over 50 ms |
+| 9. 20 image loads | PASS: heap +1.63 MB total |
+| 10. Empty → video → image | PASS: type/size correct at each step |
+| 11. Every amount at 0 / max / typed out of range | PASS: 22 effects, no errors; typed `9999` clamps to 240 |
+| 12. Reload in light theme with the fullest state | PASS: theme persists (`light`), effects reset by design, no blank frame |
+
+### Screenshots and pixel diff
+
+Every one of the 68 screenshots in the final run was opened in six batches
+(12/12/12/12/12/8); notes are in
+`docs/evidence/p2-3/screenshot-review.md`. Menus, both themes, mobile sheet
+snaps, focus rings, hover states, empty state and G14 cells were checked. The
+only layout finding is the inherited 740×360 landscape limitation (preview only,
+sidebar starts off-screen at x=740) — see HUMAN-CHECK.
+
+Automated equivalence (`pixel_diff.py`, tolerance >2/255 on any channel):
+
+- Runs 1 and 2, all 68 files: after excluding the preview canvas and the status
+  render-time digits, **0 differing pixels in every file**; worst canvas
+  fraction 0.144. The canvas differences come from the deliberately random
+  effects in the fullest stack (matrix/grain/glitch/pixelsort).
+- Runs 2 and 3: same, except `light-1280-host-dark-reload-light.png` with 2,124
+  px on the Depth and Offset slider rows. Measured thumb centres: runs 1/2
+  x=1039.5 and 1071.5, run 3 x=1035.5 and 1064.2 — the exact shift a 15 px
+  narrower range track gives at values 80 and 0. 60 consecutive 650 ms reloads
+  always produced the normal 158 px track and x=1039.5, so this was a
+  one-capture reflow, not a repeated render difference. Number boxes, steppers
+  and labels are unchanged; it is listed under HUMAN-CHECK.
+- Raw numbers: `pixel-diff-run1-run2.json`, `pixel-diff-run2-run3.json`,
+  `pixel-diff-regions.txt`, `diff-regions-run1-run2.json`.
+
+### Files changed
+
+Runtime: `app.js`, `effects.js`, `engine.js`, `index.html`, `style.css`.
+Checks/tools: `tests/gate/run_gate.py`, `golden_check.py`, `golden_lib.py`,
+`golden_p2_3.json`, `video_p2_3_check.py`, `video_large.py`,
+`tests/test_suite.py`, and the `tests/bench/` harnesses (baseline, golden,
+parity, speed probes, break-it). Docs: this section, README, PROJECT_MEMORY and
+`docs/evidence/p2-3/`.
+
+### HUMAN-CHECK
+
+- Real-device frame rate, real GPU playback and real Safari are not claimed;
+  all timings are headless Chromium software raster.
+- Real Firefox/Zen feel and worker `FontFace` support there: the break-it run
+  used Firefox's synchronous fallback with correct output and no errors.
+- MP4/H.264 on a real browser: the fixtures are VP8/VP9 WebM because this
+  Chromium build does not guarantee H.264.
+- The largest real-world video on the owner's machine: the closeout used an
+  838.1 MB generated 4K VP9 file.
+- Hidden-tab export: headless cannot report `document.hidden=True`, so that
+  branch was not exercised.
+- The 2,124 px slider transient in run 3 and the single-run 740×360 landscape
+  limitation; both are described above with numbers.
+- The inherited 740×360 issue: CSS switches to the narrow desktop layout at
+  ≤768 while `isMobileSheet()` is `(max-width: 700px)`, so the 300 px sidebar is
+  off-screen. P2-2's capture of the same cell is pixel-identical except the
+  status digits (2,531 px, all inside the status box). It is not a P2-3
+  regression and is already listed as a later landscape step.
+
+### Commit / tag
+
+Tag `P2-3-pass` resolves to the closeout commit on `main`. No runtime file
+changed after the three green gate runs; only this section, README,
+PROJECT_MEMORY and the evidence files were added.
