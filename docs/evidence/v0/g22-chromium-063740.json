@@ -1,0 +1,19 @@
+{
+  "browser": "chromium",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "rows": [
+    {
+      "case": "hitch",
+      "name": "compare drag stays responsive on a 4K image with 6 effects",
+      "detail": "{\"longtasks\": 0, \"longtaskMs\": 0, \"worstLong\": 0, \"median\": 16.699999999999818, \"p95\": 16.700000000000728, \"max\": 16.800000000000182}",
+      "ok": true
+    },
+    {
+      "case": "errors",
+      "name": "no page or console errors",
+      "detail": "[]",
+      "ok": true
+    }
+  ],
+  "problems": []
+}

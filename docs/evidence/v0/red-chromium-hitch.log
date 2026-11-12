@@ -1,0 +1,4 @@
+PASS [hitch] compare drag stays responsive on a 4K image with 6 effects: {"longtasks": 0, "longtaskMs": 0, "worstLong": 0, "median": 16.699999999999818, "p95": 16.700000000000728, "max": 16.800000000000182}
+PASS [errors] no page or console errors: []
+2 checks, 0 failure(s) [chromium]
+G22 PASS

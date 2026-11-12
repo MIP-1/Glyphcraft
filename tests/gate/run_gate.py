@@ -2672,6 +2672,39 @@ def g21_video_p2_3() -> tuple[bool, list[str], str]:
     return not problems, problems[:40], detail
 
 
+def g22_video_real_flow() -> tuple[bool, list[str], str]:
+    started = time.time()
+    problems: list[str] = []
+    details: list[str] = []
+    for browser in ("chromium", "firefox"):
+        try:
+            proc = subprocess.run(
+                [sys.executable, str(ROOT / "tests" / "gate" / "video_real_flow.py"),
+                 "--browser", browser],
+                cwd=str(ROOT), capture_output=True, text=True, timeout=5400,
+            )
+        except subprocess.TimeoutExpired:
+            problems.append(f"video_real_flow.py --browser {browser}: timed out after 5400s")
+            continue
+        output = (proc.stdout or "") + (proc.stderr or "")
+        lines = output.splitlines()
+        summary = next((line for line in reversed(lines)
+                        if "checks," in line and "failure" in line), "")
+        problems += [f"{browser} {line.strip()}" for line in lines
+                     if line.strip().startswith("FAIL [")]
+        if proc.returncode != 0:
+            problems.insert(0, f"video_real_flow.py --browser {browser} exited {proc.returncode}")
+        match = re.search(r"(\d+) checks, (\d+) failure", summary)
+        checks = int(match.group(1)) if match else 0
+        if checks < 20:
+            problems.append(f"{browser} real-flow check ran only {checks} checks")
+        if "G22 PASS" not in output:
+            problems.append(f"{browser} real-flow check did not report PASS")
+        details.append(f"{browser}: {summary or 'no summary'}")
+    elapsed = time.time() - started
+    return not problems, problems[:80], "; ".join(details) + f" ({elapsed:.1f}s)"
+
+
 def main() -> int:
     global BASE_URL
     ensure_fixtures()
@@ -2812,11 +2845,17 @@ def main() -> int:
         for problem in g21_problems[:40]:
             print("  " + problem)
         results["G21"] = {"pass": g21_ok, "problems": g21_problems}
+
+        g22_ok, g22_problems, g22_detail = g22_video_real_flow()
+        print(("G22 PASS" if g22_ok else "G22 FAIL") + " video real flow: " + g22_detail)
+        for problem in g22_problems[:40]:
+            print("  " + problem)
+        results["G22"] = {"pass": g22_ok, "problems": g22_problems}
     finally:
         httpd.shutdown()
         httpd.server_close()
 
-    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14", "G15", "G16", "G17", "G18", "G19", "G20", "G21") if not results.get(name, {}).get("pass")]
+    failed = [name for name in ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12", "G13", "G14", "G15", "G16", "G17", "G18", "G19", "G20", "G21", "G22") if not results.get(name, {}).get("pass")]
     print("")
     print("GATE " + ("PASS" if not failed else "FAIL") + " " + ", ".join(failed))
     return 0 if not failed else 1

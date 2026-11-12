@@ -1,0 +1,53 @@
+FAIL [export] export produces a real WEBM video: file={'suggested': 'glyphcraft.webm', 'size': 1984140} probe={'stream': {'codec_name': 'vp9', 'codec_type': 'video', 'width': 1280, 'height': 720, 'pix_fmt': 'yuv420p'}, 'format': {'format_name': 'matroska,webm', 'size': '1984140'}} frames=0 duration=0.00 hashes=['c6d26d131c6a8385', '145b8a021a2634c1', '3f1a21d496249a40']
+Traceback (most recent call last):
+  File "/home/mustafa/glyphcraft/tests/gate/video_real_flow.py", line 490, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/mustafa/glyphcraft/tests/gate/video_real_flow.py", line 384, in main
+    page.select_option("#export-format", fmt)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mustafa/.local/lib/python3.14/site-packages/playwright/sync_api/_generated.py", line 20331, in select_option
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.select_option(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+        )
+        ^
+    )
+    ^
+  File "/home/mustafa/.local/lib/python3.14/site-packages/playwright/_impl/_sync_base.py", line 111, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "/home/mustafa/.local/lib/python3.14/site-packages/playwright/_impl/_page.py", line 1080, in select_option
+    return await self._main_frame.select_option(**params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mustafa/.local/lib/python3.14/site-packages/playwright/_impl/_frame.py", line 819, in select_option
+    return await self._channel.send("selectOption", self._timeout, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mustafa/.local/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 78, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/mustafa/.local/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 636, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.select_option: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("#export-format")
+    - locator resolved to <select id="export-format">…</select>
+  - attempting select option action
+    2 × waiting for element to be visible and enabled
+      - did not find some options
+    - retrying select option action
+    - waiting 20ms
+    2 × waiting for element to be visible and enabled
+      - did not find some options
+    - retrying select option action
+      - waiting 100ms
+    59 × waiting for element to be visible and enabled
+       - did not find some options
+     - retrying select option action
+       - waiting 500ms
+

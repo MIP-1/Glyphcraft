@@ -1,0 +1,96 @@
+{
+  "browser": "firefox",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0",
+  "rows": [
+    {
+      "case": "seek",
+      "name": "video control bar exists",
+      "detail": "{\"video-toggle\": {\"w\": 48, \"h\": 48, \"hidden\": false, \"type\": \"button\"}, \"video-seek\": null, \"video-back\": null, \"video-forward\": null}",
+      "ok": false
+    },
+    {
+      "case": "seek",
+      "name": "seek bar is a range input",
+      "detail": "null",
+      "ok": false
+    },
+    {
+      "case": "seek",
+      "name": "jump buttons meet 44px touch target",
+      "detail": "{\"video-back\": null, \"video-forward\": null}",
+      "ok": false
+    },
+    {
+      "case": "parity",
+      "name": "paused and seeked frames equal a fresh still render",
+      "detail": "20/20 timestamps, backing=[(1280, 720)], mismatches=[]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "paused preview uses the full preview size",
+      "detail": "canvas=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playback never lowers render resolution",
+      "detail": "paused=1280x720 playing=640x360 preview=1280x720",
+      "ok": false
+    },
+    {
+      "case": "parity",
+      "name": "playing frame keeps full preview backing",
+      "detail": "playing=640x360 preview=1280x720",
+      "ok": false
+    },
+    {
+      "case": "output",
+      "name": "size controls are enabled for video",
+      "detail": "{\"output-preset-trigger\": true, \"output-width\": true, \"output-height\": true, \"output-fit\": true, \"output-lock-ratio\": true}",
+      "ok": false
+    },
+    {
+      "case": "output",
+      "name": "video format list offers MP4 and WebM",
+      "detail": "[\"png\", \"jpg\", \"webp\", \"svg\", \"txt\", \"webm\"]",
+      "ok": false
+    },
+    {
+      "case": "output",
+      "name": "main button says Export Video",
+      "detail": "'Export Image'",
+      "ok": false
+    },
+    {
+      "case": "output",
+      "name": "Export Frame is a separate action",
+      "detail": "present=False",
+      "ok": false
+    },
+    {
+      "case": "output",
+      "name": "default output size line shows the native size",
+      "detail": "None",
+      "ok": false
+    },
+    {
+      "case": "errors",
+      "name": "no page or console errors",
+      "detail": "[]",
+      "ok": true
+    }
+  ],
+  "problems": [
+    "[seek] video control bar exists: {\"video-toggle\": {\"w\": 48, \"h\": 48, \"hidden\": false, \"type\": \"button\"}, \"video-seek\": null, \"video-back\": null, \"video-forward\": null}",
+    "[seek] seek bar is a range input: null",
+    "[seek] jump buttons meet 44px touch target: {\"video-back\": null, \"video-forward\": null}",
+    "[parity] playback never lowers render resolution: paused=1280x720 playing=640x360 preview=1280x720",
+    "[parity] playing frame keeps full preview backing: playing=640x360 preview=1280x720",
+    "[output] size controls are enabled for video: {\"output-preset-trigger\": true, \"output-width\": true, \"output-height\": true, \"output-fit\": true, \"output-lock-ratio\": true}",
+    "[output] video format list offers MP4 and WebM: [\"png\", \"jpg\", \"webp\", \"svg\", \"txt\", \"webm\"]",
+    "[output] main button says Export Video: 'Export Image'",
+    "[output] Export Frame is a separate action: present=False",
+    "[output] default output size line shows the native size: None"
+  ]
+}

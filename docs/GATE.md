@@ -3357,3 +3357,38 @@ parity, speed probes, break-it). Docs: this section, README, PROJECT_MEMORY and
 Tag `P2-3-pass` resolves to the closeout commit on `main`. No runtime file
 changed after the three green gate runs; only this section, README,
 PROJECT_MEMORY and the evidence files were added.
+
+## Video fix round (V0-V5, starts 2026-11-12)
+
+P2-3 was closed as PASS but the owner's hand test of the real video flow
+failed. This round fixes the real behaviour and adds G22, a real-flow check
+that runs in Chromium and Firefox. G22 is intentionally RED until V5. No task
+may be tagged PASS while its own G22 sub-checks are RED.
+
+### V0 — audit, RED reproduction, G22 registration
+
+Base `69f4b95`, tag `P2-3-pass`. Full audit, symptom table and RED logs:
+`docs/evidence/v0/report.md`.
+
+- Playback backing store: paused 1280×720, playing **755×425** (Chromium) and
+  **640×360** (Firefox). Paused/seeked parity with a fresh still render passes
+  20/20 timestamps in both browsers. The quality loss is the adaptive playback
+  scale in `render()` (`app.js:759-761`, governor `app.js:618-674`), not a stale
+  source or a worker/sync switch (`workerEligible` rejects video at
+  `app.js:943`).
+- Default Export on a video downloads `glyphcraft.png`, 1280×720, 502398 bytes.
+- `#export-format` has no `mp4` option; seek/jump controls do not exist; all
+  five Output controls report `disabled: true`.
+- G22 (`tests/gate/video_real_flow.py`) registered in `run_gate.py`. It drives
+  the real UI in both browsers: control bar, seek/jump, 20-timestamp parity,
+  playback backing size, Output UI, real MP4/WebM downloads probed with ffprobe
+  and three extracted frames, and the 4K/6-effect hitch harness.
+
+### Deliberate rule changes in this round
+
+| Rule | Before | After | Why |
+|---|---|---|---|
+| Video playback quality | The adaptive governor could lower the backing store to 20-85% of the preview while playing; G13 asserted `playing backing < full preview width` | Every shown frame uses the full preview size; playback drops frames or runs slower instead. G13's assertion is replaced by `playing backing == preview width` plus the V1 parity rule | The owner saw blocky/striped frames. Same-frame parity is now the contract; resolution is never a quality lever. |
+| Video export size | Always native `videoWidth×videoHeight`; Output controls disabled for video; G21 asserted the controls were inert and a `custom 320x180` preset was ignored | Default is Original (native); presets, Custom, Fit and Lock Ratio are enabled and used for video. G21 keeps the native assertions for Original and adds preset assertions | Owner decision, 2026-11-12. Not a weakened test: the native case is still asserted, and a new preset case is added. |
+| MP4 | Not offered | MP4/H.264 is the required video format, with WebM beside it. If the browser cannot encode H.264 at the chosen size the option stays visible, disabled, with a visible reason; no codec substitution inside `.mp4` | Owner requires MP4. |
+| `docs/ref/v*.png` | Not in the repo | Stored as the owner's reference screenshots for this round | Evidence. |

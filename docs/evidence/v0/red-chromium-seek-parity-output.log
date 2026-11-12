@@ -1,0 +1,25 @@
+FAIL [seek] video control bar exists: {"video-toggle": {"w": 48, "h": 48, "hidden": false, "type": "button"}, "video-seek": null, "video-back": null, "video-forward": null}
+FAIL [seek] seek bar is a range input: null
+FAIL [seek] jump buttons meet 44px touch target: {"video-back": null, "video-forward": null}
+PASS [parity] paused and seeked frames equal a fresh still render: 20/20 timestamps, backing=[(1280, 720)], mismatches=[]
+PASS [parity] paused preview uses the full preview size: canvas=1280x720 preview=1280x720
+FAIL [parity] playback never lowers render resolution: paused=1280x720 playing=755x425 preview=1280x720
+FAIL [parity] playing frame keeps full preview backing: playing=755x425 preview=1280x720
+FAIL [output] size controls are enabled for video: {"output-preset-trigger": true, "output-width": true, "output-height": true, "output-fit": true, "output-lock-ratio": true}
+FAIL [output] video format list offers MP4 and WebM: ["png", "jpg", "webp", "svg", "txt", "webm"]
+FAIL [output] main button says Export Video: 'Export Image'
+FAIL [output] Export Frame is a separate action: present=False
+FAIL [output] default output size line shows the native size: None
+PASS [errors] no page or console errors: []
+13 checks, 10 failure(s) [chromium]
+G22 FAIL
+FAIL [seek] video control bar exists: {"video-toggle": {"w": 48, "h": 48, "hidden": false, "type": "button"}, "video-seek": null, "video-back": null, "video-forward": null}
+FAIL [seek] seek bar is a range input: null
+FAIL [seek] jump buttons meet 44px touch target: {"video-back": null, "video-forward": null}
+FAIL [parity] playback never lowers render resolution: paused=1280x720 playing=755x425 preview=1280x720
+FAIL [parity] playing frame keeps full preview backing: playing=755x425 preview=1280x720
+FAIL [output] size controls are enabled for video: {"output-preset-trigger": true, "output-width": true, "output-height": true, "output-fit": true, "output-lock-ratio": true}
+FAIL [output] video format list offers MP4 and WebM: ["png", "jpg", "webp", "svg", "txt", "webm"]
+FAIL [output] main button says Export Video: 'Export Image'
+FAIL [output] Export Frame is a separate action: present=False
+FAIL [output] default output size line shows the native size: None
