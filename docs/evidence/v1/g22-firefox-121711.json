@@ -1,0 +1,55 @@
+{
+  "browser": "firefox",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0",
+  "rows": [
+    {
+      "case": "parity",
+      "name": "paused and seeked frames equal a fresh still render",
+      "detail": "20/20 timestamps, backing=[(1280, 720)], mismatches=[]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "a seek repaints the preview without a test render",
+      "detail": "5/5 seeks, stale=[]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "paused preview uses the full preview size",
+      "detail": "canvas=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playback never lowers render resolution",
+      "detail": "paused=1280x720 playing=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playing frame keeps full preview backing",
+      "detail": "playing=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "frames shown during playback match a fresh still render",
+      "detail": "26 distinct on-screen frames, exact=26, unmatched=[], glitches=[], offsets=[-0.3, -0.034, -0.033, 0.0], span=5.7s, retried=[], backsteps=2/27 (rVFC runs ahead of the starved clock; measured, not gated), times=[0.367, 0.7, 1.3, 1.267, 1.333, 1.7, 1.967, 2.5, 2.433, 2.667, 3, 3.3, 3.533, 3.8, 4, 4.3, 4.5, 4.767, 4.967, 5.2, 5.467, 5.7, 5.933, 6.233, 6.533, 6.7, 6.967, 7.233]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playback never shrinks the backing store",
+      "detail": "widths=[1280]",
+      "ok": true
+    },
+    {
+      "case": "errors",
+      "name": "no page or console errors",
+      "detail": "[]",
+      "ok": true
+    }
+  ],
+  "problems": []
+}

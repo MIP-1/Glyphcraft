@@ -1,0 +1,11 @@
+PASS [parity] paused and seeked frames equal a fresh still render: 20/20 timestamps, backing=[(1280, 720)], mismatches=[]
+PASS [parity] a seek repaints the preview without a test render: 5/5 seeks, stale=[]
+PASS [parity] paused preview uses the full preview size: canvas=1280x720 preview=1280x720
+PASS [parity] playback never lowers render resolution: paused=1280x720 playing=1280x720 preview=1280x720
+PASS [parity] playing frame keeps full preview backing: playing=1280x720 preview=1280x720
+FAIL [parity] frames shown during playback match a fresh still render: 28 distinct on-screen frames, unmatched=[{'t': 3.333, 'hash': 4046524919, 'frames': [3.333, 3.3]}], offsets=[0.0], span=4.133s, backsteps=0/27 (rVFC runs ahead of the starved clock; measured, not gated), times=[0.3, 0.433, 0.533, 0.7, 0.833, 0.933, 1.067, 1.2, 1.3, 1.533, 1.667, 1.8, 1.9, 2, 2.233, 2.567, 2.733, 2.9, 3, 3.133, 3.333, 3.533, 3.6, 3.8, 3.9, 4.167, 4.367, 4.433]
+PASS [parity] playback never shrinks the backing store: widths=[1280]
+PASS [errors] no page or console errors: []
+8 checks, 1 failure(s) [chromium]
+G22 FAIL
+FAIL [parity] frames shown during playback match a fresh still render: 28 distinct on-screen frames, unmatched=[{'t': 3.333, 'hash': 4046524919, 'frames': [3.333, 3.3]}], offsets=[0.0], span=4.133s, backsteps=0/27 (rVFC runs ahead of the starved clock; measured, not gated), times=[0.3, 0.433, 0.533, 0.7, 0.833, 0.933, 1.067, 1.2, 1.3, 1.533, 1.667, 1.8, 1.9, 2, 2.233, 2.567, 2.733, 2.9, 3, 3.133, 3.333, 3.533, 3.6, 3.8, 3.9, 4.167, 4.367, 4.433]

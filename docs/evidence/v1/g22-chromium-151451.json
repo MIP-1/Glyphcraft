@@ -1,0 +1,138 @@
+{
+  "browser": "chromium",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "rows": [
+    {
+      "case": "seek",
+      "name": "video control bar exists",
+      "detail": "{\"video-toggle\": {\"w\": 48, \"h\": 48, \"hidden\": false, \"type\": \"button\"}, \"video-seek\": null, \"video-back\": null, \"video-forward\": null}",
+      "ok": false
+    },
+    {
+      "case": "seek",
+      "name": "seek bar is a range input",
+      "detail": "null",
+      "ok": false
+    },
+    {
+      "case": "seek",
+      "name": "jump buttons meet 44px touch target",
+      "detail": "{\"video-back\": null, \"video-forward\": null}",
+      "ok": false
+    },
+    {
+      "case": "parity",
+      "name": "paused and seeked frames equal a fresh still render",
+      "detail": "20/20 timestamps, backing=[(1280, 720)], mismatches=[]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "a seek repaints the preview without a test render",
+      "detail": "5/5 seeks, stale=[]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "paused preview uses the full preview size",
+      "detail": "canvas=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playback never lowers render resolution",
+      "detail": "paused=1280x720 playing=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playing frame keeps full preview backing",
+      "detail": "playing=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "frames shown during playback match a fresh still render",
+      "detail": "28 distinct on-screen frames, exact=28, unmatched=[], glitches=[], offsets=[0.0], span=4.967s, retried=[], backsteps=0/27 (rVFC runs ahead of the starved clock; measured, not gated), times=[0.333, 0.5, 0.733, 0.933, 1.2, 1.333, 1.533, 1.733, 1.867, 2.067, 2.2, 2.367, 2.5, 2.7, 2.9, 3.067, 3.2, 3.433, 3.567, 3.767, 3.967, 4.133, 4.367, 4.533, 4.667, 4.9, 5.1, 5.3]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playback never shrinks the backing store",
+      "detail": "widths=[1280]",
+      "ok": true
+    },
+    {
+      "case": "output",
+      "name": "size controls are enabled for video",
+      "detail": "{\"output-preset-trigger\": true, \"output-width\": true, \"output-height\": true, \"output-fit\": true, \"output-lock-ratio\": true}",
+      "ok": false
+    },
+    {
+      "case": "output",
+      "name": "video format list offers MP4 and WebM",
+      "detail": "[\"png\", \"jpg\", \"webp\", \"svg\", \"txt\", \"webm\"]",
+      "ok": false
+    },
+    {
+      "case": "output",
+      "name": "main button says Export Video",
+      "detail": "'Export Image'",
+      "ok": false
+    },
+    {
+      "case": "output",
+      "name": "Export Frame is a separate action",
+      "detail": "present=False",
+      "ok": false
+    },
+    {
+      "case": "output",
+      "name": "default output size line shows the native size",
+      "detail": "None",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "export produces a real WEBM video",
+      "detail": "file={'suggested': 'glyphcraft.webm', 'size': 1909168} probe={'stream': {'codec_name': 'vp9', 'codec_type': 'video', 'width': 1280, 'height': 720, 'pix_fmt': 'yuv420p'}, 'format': {'format_name': 'matroska,webm', 'size': '1909168'}} frames=0 duration=0.00 hashes=['af69f21b0ac21a11', '886d3266cbb30b92', '3b02b597afc3937a']",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "export produces a real MP4 video",
+      "detail": "format option 'mp4' is missing from the list",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "a still format never turns a video into one frame",
+      "detail": "default export={'suggested': 'glyphcraft.png', 'size': 116825}",
+      "ok": true
+    },
+    {
+      "case": "hitch",
+      "name": "compare drag stays responsive on a 4K image with 6 effects",
+      "detail": "{\"longtasks\": 0, \"longtaskMs\": 0, \"worstLong\": 0, \"median\": 16.69999999999709, \"p95\": 16.80000000000291, \"max\": 33.39999999999418}",
+      "ok": true
+    },
+    {
+      "case": "errors",
+      "name": "no page or console errors",
+      "detail": "[]",
+      "ok": true
+    }
+  ],
+  "problems": [
+    "[seek] video control bar exists: {\"video-toggle\": {\"w\": 48, \"h\": 48, \"hidden\": false, \"type\": \"button\"}, \"video-seek\": null, \"video-back\": null, \"video-forward\": null}",
+    "[seek] seek bar is a range input: null",
+    "[seek] jump buttons meet 44px touch target: {\"video-back\": null, \"video-forward\": null}",
+    "[output] size controls are enabled for video: {\"output-preset-trigger\": true, \"output-width\": true, \"output-height\": true, \"output-fit\": true, \"output-lock-ratio\": true}",
+    "[output] video format list offers MP4 and WebM: [\"png\", \"jpg\", \"webp\", \"svg\", \"txt\", \"webm\"]",
+    "[output] main button says Export Video: 'Export Image'",
+    "[output] Export Frame is a separate action: present=False",
+    "[output] default output size line shows the native size: None",
+    "[export] export produces a real WEBM video: file={'suggested': 'glyphcraft.webm', 'size': 1909168} probe={'stream': {'codec_name': 'vp9', 'codec_type': 'video', 'width': 1280, 'height': 720, 'pix_fmt': 'yuv420p'}, 'format': {'format_name': 'matroska,webm', 'size': '1909168'}} frames=0 duration=0.00 hashes=['af69f21b0ac21a11', '886d3266cbb30b92', '3b02b597afc3937a']",
+    "[export] export produces a real MP4 video: format option 'mp4' is missing from the list"
+  ]
+}

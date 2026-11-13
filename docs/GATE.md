@@ -3362,7 +3362,9 @@ PROJECT_MEMORY and the evidence files were added.
 
 P2-3 was closed as PASS but the owner's hand test of the real video flow
 failed. This round fixes the real behaviour and adds G22, a real-flow check
-that runs in Chromium and Firefox. G22 is intentionally RED until V5. No task
+that runs in Chromium and Firefox. G22 is intentionally RED until V5; each
+task must turn its own G22 sub-checks green (V1: parity) while later-task
+checks stay RED. No task
 may be tagged PASS while its own G22 sub-checks are RED.
 
 ### V0 — audit, RED reproduction, G22 registration
@@ -3392,3 +3394,119 @@ Base `69f4b95`, tag `P2-3-pass`. Full audit, symptom table and RED logs:
 | Video export size | Always native `videoWidth×videoHeight`; Output controls disabled for video; G21 asserted the controls were inert and a `custom 320x180` preset was ignored | Default is Original (native); presets, Custom, Fit and Lock Ratio are enabled and used for video. G21 keeps the native assertions for Original and adds preset assertions | Owner decision, 2026-11-12. Not a weakened test: the native case is still asserted, and a new preset case is added. |
 | MP4 | Not offered | MP4/H.264 is the required video format, with WebM beside it. If the browser cannot encode H.264 at the chosen size the option stays visible, disabled, with a visible reason; no codec substitution inside `.mp4` | Owner requires MP4. |
 | `docs/ref/v*.png` | Not in the repo | Stored as the owner's reference screenshots for this round | Evidence. |
+
+### V1 — stable full-resolution video frames
+
+Status: **PASS**. Evidence: `docs/evidence/v1/report.md`.
+
+Root cause: `render()` called `previewSize(full, state.playback.scale)`, and
+`adaptPlaybackScale()` lowered that scale until a frame fit 26 ms. V0 measured
+paused 1280×720 against playing 755×425 (Chromium, scale 0.59) and 640×360
+(Firefox, scale 0.5); six heavy effects reached a 256 px backing (scale 0.2).
+The fix removes the governor: every shown frame renders at `previewSize(full)`
+and the app drops frames or slows playback instead.
+
+- RED: G13 with the V0 `app.js` failed the two new assertions —
+  `backing=256 scale=0.2` against `full=1280 preview=1280`
+  (`docs/evidence/v1/g13-red.log`, 25 checks, 2 failures).
+- GREEN: G13 `27 checks, 0 failures` (`g13-green-attempt5.log`): paused and
+  playing backing 1280×720 = preview, scale 1, box error 0.00%; heavy-six 32
+  renders in the 10 s window, video advanced 7.205 s, p50 275.8 ms, CPU/frame
+  best 255.5 ms, backing 1280×720, scales `{"1": 6}`; light-two p50 72.5 ms vs
+  paired control 42.5 ms (delta 30.0 ms). Across five attempts: 32–37 renders,
+  p50 273.3–285.0 ms.
+- G22 parity: 20/20 paused-seek timestamps and 28 distinct play frames in both
+  browsers. Chromium offsets all `0.0`; Firefox `0.0`, `-0.033`, `-0.034`. Both
+  back 1280×720. Logs: `docs/evidence/v1/parity-chromium.log`,
+  `parity-firefox.log`.
+
+#### G13 rule change (measured)
+
+| Assertion | Before | After | Measured |
+|---|---|---|---|
+| Playing backing | `< full preview` (≥150 px) | `== preview`, scale `{"1"}` | 1280×720 |
+| Heavy p50 delta | ≤ 8 ms | ≤ 380 ms | best 228.2 ms |
+| Heavy CPU/frame | ≤ 40 ms | ≤ 400 ms | best 220.7–255.5 ms |
+| Heavy longest task | ≤ 250 ms | ≤ 650 ms | best 276–291 ms |
+| Heavy long-task / 2 s | ≤ 400 ms | reported only | 1602–1767 ms |
+| Heavy task_ms | < 8000 ms | reported only | 8572–9759 ms |
+| Min heavy renders | 50 | 10 | 32–37 |
+| Drops frames, not resolution | — | ≥10 renders, ≥1.5 s advance, full backing | 32, 7.205 s |
+| Light-two interactive | — | paired p50 delta ≤45 ms, CPU delta ≤50 ms, p50 ≤130 ms | 30.0 / 30.8 ms, 72.5 ms |
+
+Reason: the old 8 ms/40 ms bounds were only reachable by shrinking the backing
+store to 0.2×. At full 1280×720 the six-effect stack is 273–285 ms/frame by
+design, so the new bounds gate the measured full-resolution cost; the light
+stack is gated by a paired delta so desktop load cancels. Check count 25 → 27.
+
+#### G22 parity rule change (measured)
+
+| Part | Before | After |
+|---|---|---|
+| Paused seek wait | rVFC `mediaTime` (1.5 s timeout in Firefox) | `seeked` + 120 ms + two rAF |
+| Playback identity | still at `mediaTime ±0.02 s`, then 1/30 s within ±0.6 s | exact hash at the nearest ffprobe PTS frame, ±3 frames first, then ±0.53 s |
+| Liveness | none | every match within ±0.5 s and matched span ≥1.5 s |
+| Time monotonicity | not asserted | reported, not gated |
+| New: plain seek repaints | — | 5 before/after seeks, canvas must equal a fresh still and change, no test render |
+| Still match retry | — | one 500 ms retry per sample, reported as `retried=[...]` |
+| Partly decoded frame | — | at most `distinct - 2` exact samples; every other sample must be within mean 4.0 of its nearest frame |
+
+Reason: Firefox fires rVFC only after a paused seek's `seeked` (a seek can take
+908 ms), so the old helper timed out and wasted 1.5 s per seek. Its rVFC
+`mediaTime` also runs ahead of a starved clock (measured `1.467` while
+`currentTime` was `1.173`, then `1.233`), and `drawImage` can lag 0–1 frame
+normally and −0.3 s under load. The gate now proves exact identity to a real
+decoded frame and bounds staleness, instead of trusting a non-monotonic
+timestamp. Parity subset 7 → 8 checks: a plain seek must repaint without a
+test-driven render (mutation RED: 0/5 repainted with the `seeked` render
+removed, `docs/evidence/v1/seek-red-mutation-firefox.log`).
+
+Measured glitch data (Chromium, 2 CPU burners, `probe_lag/pixels/bands.py` in
+`/tmp/opencode`): 2 of 28 samples hashed no frame anywhere in the 180-frame
+clip; 1 of 28 differed from its nearest frame by mean 2.66 and max 191 while
+the other 27 matched exactly (mean 0, max 0); the unmatched sample matched no
+frame band by band, so it is not a two-frame row split. Adjacent frames of this
+clip differ by mean 8–10, so a 4.0 bound cannot accept a different frame. After
+the rule, four Chromium parity runs under load measured 0, 0, 0 and 1 glitch
+(mean 2.01). Mutation check: restoring the 0.59 playback scale makes the same
+check fail (`canvas sizes=[(755, 425)] ... identity not testable`, plus three
+other failures) — `parity-red-resolution-chromium.log`.
+
+#### Gate runs
+
+Six full runs on the V1 tree, logs in `docs/evidence/v1/gate-run1.log` …
+`gate-run6.log`. Runs 4, 5 and 6 are consecutive and all PASS G1–G21; G22 fails
+only on the V2–V5 checks (3 seek, 5 output, 2 export; Firefox also failed the
+intermittent V5 hitch in runs 2 and 5). Elapsed 30:00–37:32.
+
+Run 3 failed G5 with two pre-existing timing checks (`FAIL video load 100%`,
+`FAIL zoom preset 400% is crisp 100%, auto`, a 1.5 s status wait and a 350 ms
+zoom wait). The same tree ran standalone at `170 checks, 0 failures` with both
+checks PASS, and runs 4–6 passed G5 again; G4 in run 3 measured p95 frame times
+of 966–1066 ms, so the failure is desktop load, not a regression. No test or
+threshold was relaxed.
+
+#### Status-bar times
+
+`state.lastRender` is one `render()` call (draw + adjustments + every effect +
+composite), shown by `updateStatus()`. It is not FPS or export time; zoom does
+not change it. At 1600×900 this machine measured medians of 78 ms (2 effects),
+374 ms (6 heavy effects) and 1063 ms (Oil Paint), and 1035 ms for Oil Paint at
+112% zoom with an unchanged 1600×900 canvas. The owner's 15/244/1767 ms are the
+same metric and ordering on another machine; absolute ms vary.
+
+#### Screenshots and break-it
+
+`video-light-1280.png`, `video-dark-1280.png`, `video-light-360.png`,
+`video-dark-360.png`: the same t=2.4 s frame and two effects, at 72% (1280) and
+26% (360) display scale, full 1280×720 backing, status 41/36/45/35 ms. Eleven
+break-it checks passed: first/last frame parity, 2→6→2 effects during playback,
+theme toggle, compare toggle, 20 rapid play/pause, portrait, 4K (1600 cap),
+resize, `?worker=0`, and every size preset. Details in
+`docs/evidence/v1/breakit.json`.
+
+#### HUMAN-CHECK
+
+- Real GPU/Zen frame rate is not claimed; all timings are headless software
+  raster.
+- The owner's exact 15/244/1767 ms machine is not available here.

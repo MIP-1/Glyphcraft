@@ -1,0 +1,27 @@
+PASS empty state hides the video control - hidden=True size=0x0
+PASS image source hides video control - hidden=True
+PASS video shows a 48px play control - hidden=False size=48x48 label='Play video' playing=False
+PASS click controls play and pause; label follows state - after play: playing=True label='Pause video'; after pause: playing=False label='Play video'
+PASS label follows programmatic play/pause - play='Pause video'/True pause='Play video'/False
+PASS Space on the focused control toggles without panning - first={'playing': True, 'cursor': '', 'spaceDown': False, 'label': 'Pause video'} second={'playing': False, 'cursor': '', 'spaceDown': False}
+PASS letter shortcuts stay off a focused control - before=light onControl=light blurred=dark
+PASS six rapid clicks settle in the true state - mid={'paused': True, 'label': 'Play video', 'playingLabel': 'false'} after-pause label='Play video' playing=False
+PASS rejected play() leaves the control truthful - paused=True label='Play video' unhandled=None newErrors=0
+PASS 50 toggles: no heap/listener/loop growth - heap 2.9->2.9MB (+2.1%), listeners 7->7, raf/s=0, renders/s=2
+PASS visible tab resumes the play loop - renders=7 raf=0 videoTime=4.96
+PASS export preserves a paused video and its control - was_paused=True label_before='Play video' paused_after=True label_after='Play video'
+PASS replacing the source keeps one listener set - first=7 last=7 ids=[1, 2, 3] totalTracked=42
+PASS playback fixture outlasts the measurement - duration=20s
+PASS playback keeps the full preview backing, never a reduced one - paused={'w': 1280, 'h': 720, 'backing': 1280, 'backingH': 720, 'scale': 1, 'pvW': 1280, 'pvH': 720, 'playScale': 1} playing={'w': 1280, 'h': 720, 'backing': 1280, 'backingH': 720, 'scale': 1, 'pvW': 1280, 'pvH': 720, 'playScale': 1} boxErr=0.00%
+PASS a zero-effect control is measured in the same session - p50=39.7ms p95(median)=57.1ms longest=86ms/any 161ms script/frame=42.47ms backing=1280
+FAIL playback cost is measured at full output size - full=1280 preview=1280 backing=1280 scale=1
+FAIL playback 6 effects stays under budget - renders=36 p50=285ms(reported, budget 26.0) delta_p50=245.6ms(median, reported) best=231.5ms(limit 8.0) p95(median)=366.4ms delta_p95=321.6ms(reported) windows=[279.5, 289.2, 366.4, 390.3, 434.1] windowP50=[273.6, 271.4, 285.8, 286.1, 305.6] pair_p50=[233.5, 231.5, 245.6, 246.9, 266.2] paired_p95=[(279.5, 57.1), (366.4, 44.8), (289.2, 84), (390.3, 51.3), (434.1, 76.4)] late=36/36 (100.0%, ctrl 100.0%, median delta 0.0pp, best 0.0pp, limit 15pp) pair_late=[0.0, 0.0, 0.0, 0.0, 0.0] max=434.1ms longtask(median)=1752ms best=1670ms(limit 400.0) delta_longtask=1180ms(median, reported) windows=[1670, 1763, 1748, 1913, 1752] total=8846ms script/frame=255.29ms(median) windows=[230.0, 260.03, 229.62, 268.96, 301.75] best=229.62ms(limit 40.0) longest(median)=380ms any=438ms best=287ms(limit 250.0) delta_any=315ms(median, reported) windows=[287, 380, 298, 401, 438] task=9634.4ms videoTime=19.68 scale=1 backing=1280 scales={'1': 6} | control: p50=39.7 p95=57.1 longtask=546 longest=86/161 script/frame=42.47 backing=1280
+FAIL playback CPU per frame stays inside the budget - best=229.62ms(limit 40.0) median=255.29ms windows=[230.0, 260.03, 229.62, 268.96, 301.75] renders=36
+PASS playback allocates at most one canvas per frame - canvases=0 renders=36 per_render=0.0
+PASS paused video with 6 effects is idle - raf=0 renders=0 timeouts=0 longtask=0ms
+PASS paused video renders at full preview resolution - canvas=1280 preview=1280
+PASS image with 6 effects is idle - raf=0 renders=0 timeouts=0
+PASS pooled path is pixel-identical to the cached path - cached=1963066133 pooled=1963066133
+PASS no page or console errors in the whole flow - 0 error(s): []
+25 checks, 3 failure(s)
+VIDEO FAIL

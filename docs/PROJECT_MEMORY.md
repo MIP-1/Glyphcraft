@@ -68,6 +68,8 @@ Rules: states are PASS / FAIL / BLOCKED / HUMAN-CHECK only; test first (see it R
 - **Worker fonts:** workers do not inherit `document.fonts`. Self-host the exact woff2 and register the same bytes with `FontFace` in the worker; reject worker boot if registration fails. Also clear the font-string-keyed glyph-density cache when fonts become ready, otherwise the ramp keeps fallback metrics.
 - 22 effects: halftone, crt, glitch, vhs, pixelate, pixelsort, bloom, grain, vignette, duotone, posterize, edges, sketch, oil, emboss, blur, sharpen, invert, sepia, thermal, matrix, retro.
 - The earlier "all green" reports were misleading because the tests did not cover the owner's real browser conditions. Always test the fullest state in both themes with the host CSS fixture.
+- **Video quality (V1):** playback used to shrink the backing store (1280×720 → 755×425 Chromium, 640×360 Firefox, 256 px with 6 effects). V1 removes the governor; every frame renders at the full preview size and the app drops frames instead. Heavy-six full-res playback measures 273–285 ms/frame, so G13's old 8 ms/40 ms bounds were replaced by measured full-res bounds; light two-effect playback is still gated by a paired delta (~30 ms). Never reintroduce resolution scaling for speed.
+- **Firefox video parity:** rVFC does not fire for paused seeks, so wait on `seeked` plus a paint settle. During starved playback Firefox's `mediaTime` runs ahead of `currentTime` (measured 1.467 vs 1.173) and `drawImage` can lag 0–1 frame, occasionally −0.3 s. G22 requires an exact match to a real ffprobe PTS frame within ±0.5 s and ≥1.5 s span; do not assume monotonic rVFC time.
 
 ## 7. Unverified / HUMAN-CHECK list
 - Phone resolutions not confirmed from official specs: iPhone 18 Pro Max 1320×2868; iPhone 18 Pro and 18 1206×2622; Galaxy S26 Ultra and S26+ 1440×3120; S26 1080×2340.
@@ -95,9 +97,10 @@ Continue from the first task that is not PASS. Do not ask me which effect or val
 
 ## 10. Next actions
 1. Part 1, Part 1B, Part 1C, P2-1, Part M, P2-2 and P2-3 are PASS, each tagged `<task>-pass`; Part M's three green gates are `docs/evidence/m1-2/gate-run-1/2/3.log`; P2-1's are `docs/evidence/p2-1/gate-run-5/6/7.log`; the cleanup's are `docs/evidence/cleanup/gate-run-8/9/10.log`; P2-2's are `docs/evidence/p2-2/gate-run-1/2/3.log`; P2-3's are `docs/evidence/p2-3/gate-run-1/2/3.log`.
-2. **Next action: P2-4** (undo/redo/history) from `docs/prompts/part2_performance_core.md`, only after the owner confirms P2-3. Write its acceptance check first and see it RED.
-3. Then P2-4 to P2-6 in order. Do not start P3 before the owner confirms Part 2.
-4. Mobile landscape refinement (height <500 px): keep the current working layout, then add a landscape-specific snap after real-device testing.
-5. After each task: open every screenshot, list 5 ways it could break, run the full gate 3× in a row, record the block in `docs/GATE.md`, commit and tag `<task>-pass`.
-6. Then Part 3 (P3-1 … P3-5).
-7. Owner verifies by hand after each part.
+2. **Current work: the owner's video-fix round** `docs/prompts/p2_3_video_fix.md`, tasks V0–V5. V0 (`V0-pass`) and V1 (`V1-pass`) are done. Next is V2 (real MP4/WebM export via WebCodecs + vendored muxers), then V3 (seek/jump control bar), V4 (output dimensions + G21 update), V5 (image hitch fix + closeout). G22 stays RED overall until V5; only the current task's sub-checks must be green.
+3. After V5, return to **P2-4** (undo/redo/history) from `docs/prompts/part2_performance_core.md`, only after the owner confirms. Write its acceptance check first and see it RED.
+4. Then P2-4 to P2-6 in order. Do not start P3 before the owner confirms Part 2.
+5. Mobile landscape refinement (height <500 px): keep the current working layout, then add a landscape-specific snap after real-device testing.
+6. After each task: open every screenshot, list at least 8 ways it could break, run the full gate 3× in a row, record the block in `docs/GATE.md`, commit and tag `<task>-pass`.
+7. Then Part 3 (P3-1 … P3-5).
+8. Owner verifies by hand after each part.

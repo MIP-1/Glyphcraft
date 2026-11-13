@@ -1,0 +1,10 @@
+PASS [parity] paused and seeked frames equal a fresh still render: 20/20 timestamps, backing=[(1280, 720)], mismatches=[]
+PASS [parity] a seek repaints the preview without a test render: 5/5 seeks, stale=[]
+PASS [parity] paused preview uses the full preview size: canvas=1280x720 preview=1280x720
+PASS [parity] playback never lowers render resolution: paused=1280x720 playing=1280x720 preview=1280x720
+PASS [parity] playing frame keeps full preview backing: playing=1280x720 preview=1280x720
+PASS [parity] frames shown during playback match a fresh still render: 28 distinct on-screen frames, unmatched=[], offsets=[-0.3, -0.267, -0.034, -0.033, 0.0], span=4.134s, backsteps=4/27 (rVFC runs ahead of the starved clock; measured, not gated), times=[0.333, 0.733, 0.533, 0.967, 0.9, 1.1, 1.233, 1.333, 1.533, 1.767, 1.867, 2.3, 2.233, 2.3, 2.433, 2.6, 2.8, 3.133, 3.3, 3.4, 3.5, 3.667, 3.8, 4.167, 4.067, 4.2, 4.333, 4.467]
+PASS [parity] playback never shrinks the backing store: widths=[1280]
+PASS [errors] no page or console errors: []
+8 checks, 0 failure(s) [firefox]
+G22 PASS

@@ -1,0 +1,57 @@
+[
+  {
+    "name": "first and last frame parity",
+    "detail": "t0=True last=5.967->True 2987048320/2987048320 218621769/218621769",
+    "ok": true
+  },
+  {
+    "name": "effects switch during playback keeps full backing",
+    "detail": "heavy={'type': 'video', 'w': 1280, 'h': 720, 'pw': 1280, 'ph': 720, 'scale': 1, 'playing': True, 't': 2.95} light={'type': 'video', 'w': 1280, 'h': 720, 'pw': 1280, 'ph': 720, 'scale': 1, 'playing': True, 't': 4.48}",
+    "ok": true
+  },
+  {
+    "name": "theme toggle during playback",
+    "detail": "state={'type': 'video', 'w': 1280, 'h': 720, 'pw': 1280, 'ph': 720, 'scale': 1, 'playing': True, 't': 1.69}",
+    "ok": true
+  },
+  {
+    "name": "compare toggle during playback returns to full backing",
+    "detail": "compare={'type': 'video', 'w': 1280, 'h': 720, 'pw': 1280, 'ph': 720, 'scale': 1, 'playing': True, 't': 2.36} off={'type': 'video', 'w': 1280, 'h': 720, 'pw': 1280, 'ph': 720, 'scale': 1, 'playing': True, 't': 2.84}",
+    "ok": true
+  },
+  {
+    "name": "20 rapid play/pause cycles then parity",
+    "detail": "parity=True state={'type': 'video', 'w': 1280, 'h': 720, 'pw': 1280, 'ph': 720, 'scale': 1, 'playing': False, 't': 1.5} 3959656576/3959656576",
+    "ok": true
+  },
+  {
+    "name": "portrait video full backing and parity",
+    "detail": "state={'type': 'video', 'w': 900, 'h': 1600, 'pw': 900, 'ph': 1600, 'scale': 1, 'playing': True, 't': 1.27} parity=True",
+    "ok": true
+  },
+  {
+    "name": "4K video capped only by the preview limit",
+    "detail": "state={'type': 'video', 'w': 1600, 'h': 900, 'pw': 1600, 'ph': 900, 'scale': 1, 'playing': True, 't': 1.13} parity=True",
+    "ok": true
+  },
+  {
+    "name": "resize 1280 -> 360 -> 1280 keeps render backing",
+    "detail": "mobile={'type': 'video', 'w': 1280, 'h': 720, 'pw': 1280, 'ph': 720, 'scale': 1, 'playing': True, 't': 1.79} desktop={'type': 'video', 'w': 1280, 'h': 720, 'pw': 1280, 'ph': 720, 'scale': 1, 'playing': True, 't': 2.74}",
+    "ok": true
+  },
+  {
+    "name": "no page errors in the break-it run",
+    "detail": "[]",
+    "ok": true
+  },
+  {
+    "name": "worker=0 has no effect on video parity",
+    "detail": "state={'type': 'video', 'w': 1280, 'h': 720, 'pw': 1280, 'ph': 720, 'scale': 1, 'playing': False, 't': 1} parity=True",
+    "ok": true
+  },
+  {
+    "name": "every size preset keeps full preview backing while playing",
+    "detail": "[{\"720p\": [1280, 720, 1280, 720, 1]}, {\"1080p\": [1600, 900, 1600, 900, 1]}, {\"2k\": [1600, 900, 1600, 900, 1]}, {\"4k\": [1600, 900, 1600, 900, 1]}, {\"8k\": [1600, 900, 1600, 900, 1]}, {\"vertical-1080\": [900, 1600, 900, 1600, 1]}, {\"hd\": [1366, 768, 1366, 768, 1]}, {\"wxga\": [1600, 1000, 1600, 1000, 1]}, {\"1440p\": [1600, 1000, 1600, 1000, 1]}, {\"ultrawide\": [1600, 670, 1600, 670, 1]}, {\"5k\": [1600, 450, 1600, 450, 1]}, {\"iphone-18-pro-max\": [736, 1600, 736, 1600, 1]}, {\"iphone-18-pro\": [736, 1600, 736, 1600, 1]}, {\"iphone-18\": [736, 1600, 736, 1600, 1]}, {\"iphone-17-pro-max\": [736, 1600, 736, 1600, 1]}, {\"iphone-17-pro\": [736, 1600, 736, 1600, 1]}, {\"iphone-17\": [736, 1600, 736, 1600, 1]}, {\"iphone-16-pro-max\": [736, 1600, 736, 1600, 1]}, {\"iphone-16-pro\": [736, 1600, 736, 1600, 1]}, {\"iphone-16-plus\": [738, 1600, 738, 1600, 1]}, {\"iphone-16\": [738, 1600, 738, 1600, 1]}, {\"iphone-15-pro-max\": [738, 1600, 738, 1600, 1]}, {\"iphone-15-pro\": [738, 1600, 738, 1600, 1]}, {\"iphone-15-plus\": [738, 1600, 738, 1600, 1]}, {\"iphone-15\": [738, 1600, 738, 1600, 1]}, {\"iphone-14-pro-max\": [738, 1600, 738, 1600, 1]}, {\"iphone-14-pro\": [738, 1600, 738, 1600, 1]}, {\"iphone-14-plus\": [740, 1600, 740, 1600, 1]}, {\"iphone-14\": [739, 1600, 739, 1600, 1]}, {\"iphone-13-pro-max\": [740, 1600, 740, 1600, 1]}, {\"iphone-13-pro\": [739, 1600, 739, 1600, 1]}, {\"iphone-13\": [739, 1600, 739, 1600, 1]}, {\"iphone-13-mini\": [738, 1600, 738, 1600, 1]}, {\"iphone-12-pro-max\": [740, 1600, 740, 1600, 1]}, {\"iphone-12-pro\": [739, 1600, 739, 1600, 1]}, {\"iphone-12\": [739, 1600, 739, 1600, 1]}, {\"iphone-12-mini\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s26-ultra\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s26-plus\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s26\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s25-ultra\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s25-plus\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s25\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s24-ultra\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s24-plus\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s24\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s23-ultra\": [746, 1600, 746, 1600, 1]}, {\"galaxy-s23-plus\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s23\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s22-ultra\": [746, 1600, 746, 1600, 1]}, {\"galaxy-s22-plus\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s22\": [738, 1600, 738, 1600, 1]}, {\"galaxy-s21-ultra\": [720, 1600, 720, 1600, 1]}, {\"galaxy-s21-plus\": [720, 1600, 720, 1600, 1]}, {\"galaxy-s21\": [720, 1600, 720, 1600, 1]}, {\"galaxy-s20-ultra\": [720, 1600, 720, 1600, 1]}, {\"galaxy-s20-plus\": [720, 1600, 720, 1600, 1]}, {\"galaxy-s20\": [720, 1600, 720, 1600, 1]}, {\"ig-portrait\": [1080, 1350, 1080, 1350, 1]}, {\"ig-square\": [1080, 1080, 1080, 1080, 1]}, {\"ig-story\": [900, 1600, 900, 1600, 1]}, {\"yt-thumb\": [1280, 720, 1280, 720, 1]}, {\"yt-thumb-4k\": [1600, 900, 1600, 900, 1]}, {\"yt-banner\": [1600, 900, 1600, 900, 1]}, {\"yt-icon\": [800, 800, 800, 800, 1]}, {\"og\": [1200, 630, 1200, 630, 1]}, {\"linkedin\": [1200, 627, 1200, 627, 1]}, {\"avatar-400\": [400, 400, 400, 400, 1]}, {\"avatar-800\": [800, 800, 800, 800, 1]}, {\"favicon-32\": [32, 32, 32, 32, 1]}, {\"favicon-64\": [64, 64, 64, 64, 1]}, {\"apple-touch\": [180, 180, 180, 180, 1]}, {\"pwa-192\": [192, 192, 192, 192, 1]}, {\"pwa-512\": [512, 512, 512, 512, 1]}, {\"app-icon\": [1024, 1024, 1024, 1024, 1]}, {\"logo-1000\": [1000, 1000, 1000, 1000, 1]}, {\"a4-150\": [1131, 1600, 1131, 1600, 1]}, {\"a4-300\": [1131, 1600, 1131, 1600, 1]}, {\"original\": [1280, 720, 1280, 720, 1]}, {\"custom\": [1, 1, 1, 1, 1]}]",
+    "ok": true
+  }
+]

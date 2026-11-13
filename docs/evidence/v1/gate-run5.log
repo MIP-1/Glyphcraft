@@ -1,0 +1,124 @@
+npm notice run glyphcraft@1.0.0 gate
+npm notice run python tests/gate/run_gate.py
+G1 PASS token lint: 0 violation(s)
+G2 PASS theme parity: 0 violation(s), 73352 element/state checks, 10 cells, 84 scans
+G3 PASS screenshots: 58 captured in docs/evidence/v1/
+  docs/evidence/v1/dark-1280-fullest-top.png
+  docs/evidence/v1/dark-1280-fullest-effects.png
+  docs/evidence/v1/dark-1280-file-menu.png
+  docs/evidence/v1/dark-1280-view-menu.png
+  docs/evidence/v1/dark-1280-edit-menu.png
+  docs/evidence/v1/dark-1280-zoom-menu.png
+  docs/evidence/v1/dark-1280-size-picker.png
+  docs/evidence/v1/dark-1280-select-focus.png
+  docs/evidence/v1/dark-1280-focus-theme.png
+  docs/evidence/v1/dark-1280-hover-theme-tooltip.png
+  docs/evidence/v1/dark-1280-hover-preset.png
+  docs/evidence/v1/dark-1280-hover-primary.png
+  docs/evidence/v1/dark-360-fullest-top.png
+  docs/evidence/v1/dark-360-fullest-effects.png
+  docs/evidence/v1/dark-360-mobile-menu.png
+  docs/evidence/v1/dark-360-zoom-menu.png
+  docs/evidence/v1/dark-360-size-picker.png
+  docs/evidence/v1/dark-360-select-focus.png
+  docs/evidence/v1/dark-360-focus-theme.png
+  docs/evidence/v1/dark-360-hover-theme-tooltip.png
+  docs/evidence/v1/dark-360-hover-preset.png
+  docs/evidence/v1/dark-360-hover-primary.png
+  docs/evidence/v1/light-1280-fullest-top.png
+  docs/evidence/v1/light-1280-fullest-effects.png
+  docs/evidence/v1/light-1280-file-menu.png
+  docs/evidence/v1/light-1280-view-menu.png
+  docs/evidence/v1/light-1280-edit-menu.png
+  docs/evidence/v1/light-1280-zoom-menu.png
+  docs/evidence/v1/light-1280-size-picker.png
+  docs/evidence/v1/light-1280-select-focus.png
+  docs/evidence/v1/light-1280-focus-theme.png
+  docs/evidence/v1/light-1280-hover-theme-tooltip.png
+  docs/evidence/v1/light-1280-hover-preset.png
+  docs/evidence/v1/light-1280-hover-primary.png
+  docs/evidence/v1/light-360-fullest-top.png
+  docs/evidence/v1/light-360-fullest-effects.png
+  docs/evidence/v1/light-360-mobile-menu.png
+  docs/evidence/v1/light-360-zoom-menu.png
+  docs/evidence/v1/light-360-size-picker.png
+  docs/evidence/v1/light-360-select-focus.png
+  docs/evidence/v1/light-360-focus-theme.png
+  docs/evidence/v1/light-360-hover-theme-tooltip.png
+  docs/evidence/v1/light-360-hover-preset.png
+  docs/evidence/v1/light-360-hover-primary.png
+  docs/evidence/v1/light-1280-real-clean-icon.png
+  docs/evidence/v1/light-1280-real-clean-T-light.png
+  docs/evidence/v1/light-1280-real-clean-reload-light.png
+  docs/evidence/v1/light-1280-host-dark-icon.png
+  docs/evidence/v1/light-1280-host-dark-T-light.png
+  docs/evidence/v1/light-1280-host-dark-reload-light.png
+  docs/evidence/v1/light-1280-host-os-light-os-light.png
+  docs/evidence/v1/light-360-real-clean-icon.png
+  docs/evidence/v1/light-360-real-clean-T-light.png
+  docs/evidence/v1/light-360-real-clean-reload-light.png
+  docs/evidence/v1/light-360-host-dark-icon.png
+  docs/evidence/v1/light-360-host-dark-T-light.png
+  docs/evidence/v1/light-360-host-dark-reload-light.png
+  docs/evidence/v1/light-360-host-os-light-os-light.png
+G4 PASS frame timings: dark 1280: median=16.700000000000728ms p95=833.3000000000029ms frames=119, dark 360: median=16.700000000000728ms p95=816.6999999999971ms frames=118, light 1280: median=16.700000000000728ms p95=800ms frames=115, light 360: median=16.700000000000728ms p95=800ms frames=115
+G5 PASS existing tests: REPORT WRITTEN 170 checks, 0 failures (196.2s)
+G6 PASS no Arabic: 0 violation(s)
+G7 PASS no Theme item in View menu
+G8 PASS top-bar geometry: 0 violation(s)
+G9 PASS numeric steppers: 65 measurements, 15 hold-rate rows
+G10 PASS effects: 239 checks, 0 failure(s) (33.6s)
+G11 PASS compare split: 21 checks, 0 failure(s) (140.5s)
+G12 PASS load: 15 checks, 0 failure(s) (103.7s)
+G13 PASS video: 27 checks, 0 failure(s) (119.4s)
+G14 PASS mobile layout: dark 360x680: snap=peek sheet=105px preview=519px topbar=56px/1row | light 390x750: snap=peek sheet=105px preview=589px topbar=56px/1row | dark 412x800: snap=half sheet=360px preview=384px topbar=56px/1row | light 320x568: snap=peek sheet=105px preview=407px topbar=56px/1row | dark 640x360: snap=peek sheet=105px preview=199px topbar=56px/1row | light 740x360: snap=half sheet=267px preview=267px topbar=93px/2row | docs/evidence/v1/m1-g14-dark-360x680-peek.png | docs/evidence/v1/m1-g14-dark-360x680-half.png | docs/evidence/v1/m1-g14-light-390x750-peek.png | docs/evidence/v1/m1-g14-light-390x750-half.png | docs/evidence/v1/m1-g14-dark-412x800-half.png | docs/evidence/v1/m1-g14-dark-412x800-half.png
+G15 PASS mobile gestures: swipes peek->half->peek, flick->half | tap cycle half,full,peek | pipeline during={'r': 0, 'b': 0} after={'r': 0, 'b': 0} | keyboard vvH=400 input=348..392 | compare 100%=20/20, 200%=20/20, 400%=20/20
+G16 PASS touch targets: peek:261 half:261 full:260 unique=201 unique+effects=201
+G17 PASS desktop unchanged: 15 rect(s)
+G18 PASS menu reachability: desktop items=14 | contrast {"dark": {"menuText": 15.67, "menuBorder": 3.59, "handleGrip": 8.38, "handleBorder": 1.24, "statusText": 4.72, "menuButton": 11.16}, "light": {"menuText": 15.62, "menuBorder": 3.14, "handleGrip": 10.27, "handleBorder": 1.34, "statusText": 6.81, "menuButton": 10.84}}
+G19 PASS worker: 6 checks, 0 failure(s) (23.6s)
+G20 PASS golden outputs: GOLDEN CHECK 200 cases, seed 1592594996, 0 problem(s) (169.5s)
+G21 PASS video P2-3: 25 checks, 0 failure(s) (62.9s)
+G22 FAIL video real flow: chromium: 20 checks, 10 failure(s) [chromium]; firefox: 20 checks, 11 failure(s) [firefox] (246.8s)
+  video_real_flow.py --browser firefox exited 1
+  video_real_flow.py --browser chromium exited 1
+  chromium FAIL [seek] video control bar exists: {"video-toggle": {"w": 48, "h": 48, "hidden": false, "type": "button"}, "video-seek": null, "video-back": null, "video-forward": null}
+  chromium FAIL [seek] seek bar is a range input: null
+  chromium FAIL [seek] jump buttons meet 44px touch target: {"video-back": null, "video-forward": null}
+  chromium FAIL [output] size controls are enabled for video: {"output-preset-trigger": true, "output-width": true, "output-height": true, "output-fit": true, "output-lock-ratio": true}
+  chromium FAIL [output] video format list offers MP4 and WebM: ["png", "jpg", "webp", "svg", "txt", "webm"]
+  chromium FAIL [output] main button says Export Video: 'Export Image'
+  chromium FAIL [output] Export Frame is a separate action: present=False
+  chromium FAIL [output] default output size line shows the native size: None
+  chromium FAIL [export] export produces a real WEBM video: file={'suggested': 'glyphcraft.webm', 'size': 1909168} probe={'stream': {'codec_name': 'vp9', 'codec_type': 'video', 'width': 1280, 'height': 720, 'pix_fmt': 'yuv420p'}, 'format': {'format_name': 'matroska,webm', 'size': '1909168'}} frames=0 duration=0.00 hashes=['af69f21b0ac21a11', '886d3266cbb30b92', '3b02b597afc3937a']
+  chromium FAIL [export] export produces a real MP4 video: format option 'mp4' is missing from the list
+  chromium FAIL [seek] video control bar exists: {"video-toggle": {"w": 48, "h": 48, "hidden": false, "type": "button"}, "video-seek": null, "video-back": null, "video-forward": null}
+  chromium FAIL [seek] seek bar is a range input: null
+  chromium FAIL [seek] jump buttons meet 44px touch target: {"video-back": null, "video-forward": null}
+  chromium FAIL [output] size controls are enabled for video: {"output-preset-trigger": true, "output-width": true, "output-height": true, "output-fit": true, "output-lock-ratio": true}
+  chromium FAIL [output] video format list offers MP4 and WebM: ["png", "jpg", "webp", "svg", "txt", "webm"]
+  chromium FAIL [output] main button says Export Video: 'Export Image'
+  chromium FAIL [output] Export Frame is a separate action: present=False
+  chromium FAIL [output] default output size line shows the native size: None
+  chromium FAIL [export] export produces a real WEBM video: file={'suggested': 'glyphcraft.webm', 'size': 1909168} probe={'stream': {'codec_name': 'vp9', 'codec_type': 'video', 'width': 1280, 'height': 720, 'pix_fmt': 'yuv420p'}, 'format': {'format_name': 'matroska,webm', 'size': '1909168'}} frames=0 duration=0.00 hashes=['af69f21b0ac21a11', '886d3266cbb30b92', '3b02b597afc3937a']
+  chromium FAIL [export] export produces a real MP4 video: format option 'mp4' is missing from the list
+  chromium real-flow check did not report PASS
+  firefox FAIL [seek] video control bar exists: {"video-toggle": {"w": 48, "h": 48, "hidden": false, "type": "button"}, "video-seek": null, "video-back": null, "video-forward": null}
+  firefox FAIL [seek] seek bar is a range input: null
+  firefox FAIL [seek] jump buttons meet 44px touch target: {"video-back": null, "video-forward": null}
+  firefox FAIL [output] size controls are enabled for video: {"output-preset-trigger": true, "output-width": true, "output-height": true, "output-fit": true, "output-lock-ratio": true}
+  firefox FAIL [output] video format list offers MP4 and WebM: ["png", "jpg", "webp", "svg", "txt", "webm"]
+  firefox FAIL [output] main button says Export Video: 'Export Image'
+  firefox FAIL [output] Export Frame is a separate action: present=False
+  firefox FAIL [output] default output size line shows the native size: None
+  firefox FAIL [export] export produces a real WEBM video: file={'suggested': 'glyphcraft.webm', 'size': 2148294} probe={'stream': {'codec_name': 'vp8', 'codec_type': 'video', 'width': 1280, 'height': 720, 'pix_fmt': 'yuv420p'}, 'format': {'format_name': 'matroska,webm', 'size': '2148294'}} frames=0 duration=0.00 hashes=['f4df0fb6b5108b80', 'e28c58f9d1763d6f', '1925ce174a63983e']
+  firefox FAIL [export] export produces a real MP4 video: format option 'mp4' is missing from the list
+  firefox FAIL [hitch] compare drag stays responsive on a 4K image with 6 effects: {"longtasks": 0, "longtaskMs": 0, "worstLong": 0, "median": 17.119999999995343, "p95": 49.25999999999476, "max": 50.04000000000815}
+  firefox FAIL [seek] video control bar exists: {"video-toggle": {"w": 48, "h": 48, "hidden": false, "type": "button"}, "video-seek": null, "video-back": null, "video-forward": null}
+  firefox FAIL [seek] seek bar is a range input: null
+  firefox FAIL [seek] jump buttons meet 44px touch target: {"video-back": null, "video-forward": null}
+  firefox FAIL [output] size controls are enabled for video: {"output-preset-trigger": true, "output-width": true, "output-height": true, "output-fit": true, "output-lock-ratio": true}
+  firefox FAIL [output] video format list offers MP4 and WebM: ["png", "jpg", "webp", "svg", "txt", "webm"]
+  firefox FAIL [output] main button says Export Video: 'Export Image'
+
+GATE FAIL G22

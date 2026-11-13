@@ -1,0 +1,10 @@
+PASS [parity] paused and seeked frames equal a fresh still render: 20/20 timestamps, backing=[(1280, 720)], mismatches=[]
+PASS [parity] paused preview uses the full preview size: canvas=1280x720 preview=1280x720
+PASS [parity] playback never lowers render resolution: paused=1280x720 playing=1280x720 preview=1280x720
+PASS [parity] playing frame keeps full preview backing: playing=1280x720 preview=1280x720
+FAIL [parity] frames shown during playback match a fresh still render: 28 distinct on-screen frames, unmatched=[{'t': 0.26, 'hash': 2168690181}, {'t': 0.47, 'hash': 1062957760}, {'t': 1.06, 'hash': 2011662821}, {'t': 1.27, 'hash': 207856638}]
+PASS [parity] playback never shrinks the backing store: widths=[1280]
+PASS [errors] no page or console errors: []
+7 checks, 1 failure(s) [chromium]
+G22 FAIL
+FAIL [parity] frames shown during playback match a fresh still render: 28 distinct on-screen frames, unmatched=[{'t': 0.26, 'hash': 2168690181}, {'t': 0.47, 'hash': 1062957760}, {'t': 1.06, 'hash': 2011662821}, {'t': 1.27, 'hash': 207856638}]

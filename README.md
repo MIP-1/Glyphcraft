@@ -10,16 +10,15 @@ CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
 the browser supports it. Git keeps the readable sources; `npm run build`
 writes an optional minified `dist/` for publishing.
 
-## Status — 2026-11-12
+## Status — 2026-11-13
 
-**Current status:** P2-3 is **PASS** on `main`, tag `P2-3-pass`. P2-3 added
-three measured speed changes, a separate 850 MB video limit, native-resolution
-video export, a permanent 200-case golden check (G20) and a permanent
-25-check video check (G21). The final tree passed the full gate three times in
-a row (`docs/evidence/p2-3/gate-run-1/2/3.log`) and 31/31 break-it checks.
-Part 1, Part 1B, Part 1C, P2-1 and its post-PASS cleanup, Part M, and P2-2
-remain complete and tagged. P2-4 is **NOT STARTED** and is not part of this
-pass.
+**Current status:** the owner's video-fix round is **in progress** on `main`.
+V0 (`V0-pass`) reproduced the real video defects and registered G22; V1
+(`V1-pass`) fixes the unstable/pixelated frames so every played, paused or
+seeked frame renders at the full preview size, with parity in Chromium and
+Firefox. V2–V5 (real MP4/WebM export, video control bar, output dimensions,
+image hitches) are **NOT DONE** yet. P2-3 remains complete and tagged
+`P2-3-pass`; P2-4 is still **NOT STARTED** and is not part of this pass.
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -39,6 +38,9 @@ pass.
 | M1-2 single-row mobile top bar | PASS | same commit, tag `M1-2-pass` |
 | P2-2 Worker + OffscreenCanvas | PASS | tag `P2-2-pass`, gate runs 1–3, `docs/GATE.md` P2-2 |
 | P2-3 fast preview + video limits | PASS | tag `P2-3-pass`, gate runs 1–3, `docs/GATE.md` P2-3 |
+| Video fix V0 | PASS | tag `V0-pass`, `docs/evidence/v0/report.md` |
+| Video fix V1 full-resolution frames | PASS | tag `V1-pass`, `docs/evidence/v1/report.md` |
+| Video fix V2–V5 | IN PROGRESS | MP4/WebM export, control bar, output sizes, hitches |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
 | P2-5 before/after finish | NOT STARTED | |
 | P2-6 presets finish | NOT STARTED | |

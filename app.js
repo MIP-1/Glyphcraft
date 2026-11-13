@@ -132,7 +132,9 @@ const state = {
   vfcId: null,
   videoLoopToken: 0,
   lastVideoRenderAt: 0,
-  playback: { scale: 1, frames: 0, lastDown: 0, pending: false, bad: {}, recent: [], sig: "" },
+  playback: { scale: 1, frames: 0, sig: "" },
+  playbackFrameTime: null,
+  videoFrameMediaTime: null,
   statusAt: 0,
   uiSig: "",
   renderTimer: null,
@@ -185,8 +187,6 @@ const state = {
 
 const PREVIEW_MAX = 1600;
 const MAX_PREVIEW_PIXELS = 1600 * 1600;
-const PLAYBACK_BUDGET_MS = 26;
-const PLAYBACK_SCALES = [1, 0.85, 0.7, 0.59, 0.5, 0.42, 0.35, 0.29, 0.24, 0.2, 0.17];
 const PLAYBACK_MIN_INTERVAL = 1000 / 40;
 const GC_APP_SRC = (document.currentScript && document.currentScript.src) || location.href;
 const GC_WORKER_URL = GC_APP_SRC.replace(/app(\.min)?\.js(\?.*)?$/, (m, min, q) => "render-worker" + (min || "") + ".js" + (q || ""));
@@ -615,62 +615,9 @@ function playbackEffectSig() {
     .map(fx => fx.id).join(",");
 }
 
-function playbackGuessScale() {
-  const n = (state.opts.effects || []).filter(fx => fx.enabled && typeof EFFECT_RUNNERS !== "undefined" && EFFECT_RUNNERS[fx.id]).length;
-  return n >= 6 ? 0.24 : n >= 4 ? 0.35 : n >= 2 ? 0.59 : 1;
-}
-
-let playbackRemember = { sig: "", scale: 1 };
-
 function resetPlaybackScale() {
-  const sig = playbackEffectSig();
-  const scale = sig === playbackRemember.sig ? playbackRemember.scale : playbackGuessScale();
-  state.playback = {
-    scale, sig, frames: 0, lastDown: 0, pending: false, bad: {}, recent: [],
-  };
+  state.playback = { scale: 1, sig: playbackEffectSig(), frames: 0 };
   state.uiSig = "";
-}
-
-function adaptPlaybackScale(cost) {
-  const p = state.playback;
-  let idx = PLAYBACK_SCALES.indexOf(p.scale);
-  if (idx < 0) { idx = 0; p.scale = PLAYBACK_SCALES[0]; }
-  p.frames++;
-  if (p.pending) { p.pending = false; return; }
-  p.recent.push(cost);
-  if (p.recent.length > 20) p.recent.shift();
-  if (p.recent.length < 10) return;
-  const sorted = p.recent.slice().sort((a, b) => a - b);
-  const p90 = sorted[Math.floor((sorted.length - 1) * 0.9)];
-  const now = performance.now();
-  const target = PLAYBACK_BUDGET_MS * 0.8;
-  if (p90 > target) {
-    const want = p.scale * Math.sqrt(target / p90);
-    let next = -1;
-    for (let i = idx + 1; i < PLAYBACK_SCALES.length; i++) {
-      if (PLAYBACK_SCALES[i] <= want) { next = i; break; }
-    }
-    if (next < 0) return;
-    p.bad[p.scale] = true;
-    p.scale = PLAYBACK_SCALES[next];
-    p.lastDown = now;
-    p.pending = true;
-    p.recent = [];
-    playbackRemember = { sig: p.sig, scale: p.scale };
-    return;
-  }
-  if (p90 < PLAYBACK_BUDGET_MS * 0.45 && idx > 0
-      && !p.bad[PLAYBACK_SCALES[idx - 1]] && now - (p.lastDown || 0) > 6000) {
-    const up = PLAYBACK_SCALES[idx - 1];
-    const predicted = p90 * Math.pow(up / p.scale, 2);
-    if (predicted <= PLAYBACK_BUDGET_MS * 0.65) {
-      p.scale = up;
-      p.lastDown = now;
-      p.pending = true;
-      p.recent = [];
-      playbackRemember = { sig: p.sig, scale: p.scale };
-    }
-  }
 }
 
 function uiSignature() {
@@ -756,15 +703,15 @@ function render(interactive) {
   const playing = videoIsPlaying();
   if (playing && state.playback.sig !== playbackEffectSig()) resetPlaybackScale();
   const full = computeOutputSize(state.sourceW, state.sourceH, state.opts.outputPreset, state.opts.outputWidth, state.opts.outputHeight, state.opts.outputFit);
-  const pv = playing && state.playback.scale < 1
-    ? previewSize(full, state.playback.scale)
-    : previewSize(full);
+  const pv = previewSize(full);
   const opts = renderOpts();
   const optsKey = JSON.stringify(opts);
   const still = state.sourceType !== "video" && !state.videoExporting && !state.cacheDisabled;
   const viewKey = optsKey + "|" + (state.compare ? state.compareFrac : "-") + "|" + (state.showOriginal ? "orig" : "");
   const stateKey = pv.w + "x" + pv.h + "|" + state.sourceId + "|" + viewKey;
   state.currentStateKey = stateKey;
+  if (playing) state.playbackFrameTime = typeof state.videoFrameMediaTime === "number"
+    ? state.videoFrameMediaTime : state.video.currentTime;
   if (still && stateKey === state.lastRenderKey) return;
 
   let resized = false;
@@ -829,7 +776,7 @@ function render(interactive) {
   if (still) state.lastRenderKey = stateKey;
 
   if (playing) {
-    adaptPlaybackScale(state.lastRender - (typeof sourceDrawMs === "function" ? sourceDrawMs() : 0));
+    state.playback.frames++;
     const sig = uiSignature();
     if (sig !== state.uiSig) {
       state.uiSig = sig;
@@ -1478,6 +1425,14 @@ function loadFile(file) {
       if (vid === state.video && !state.videoExporting) scheduleRender(0);
     });
     vid.addEventListener("ended", () => { syncVideoControl(); stopVideoLoop(); });
+    vid.addEventListener("seeked", () => {
+      if (vid !== state.video || state.videoExporting || !vid.paused) return;
+      if (typeof vid.requestVideoFrameCallback === "function") {
+        vid.requestVideoFrameCallback(() => { if (vid === state.video && vid.paused) scheduleRender(0); });
+      } else {
+        scheduleRender(0);
+      }
+    });
     vid.addEventListener("emptied", syncVideoControl);
     vid.addEventListener("loadedmetadata", () => {
       stopVideoLoop();
@@ -1617,9 +1572,17 @@ function startVideoLoop() {
   function schedule() {
     if (token !== state.videoLoopToken) return;
     if (typeof v.requestVideoFrameCallback === "function") {
-      state.vfcId = v.requestVideoFrameCallback(() => { state.vfcId = null; step(); });
+      state.vfcId = v.requestVideoFrameCallback((now, meta) => {
+        state.vfcId = null;
+        state.videoFrameMediaTime = meta && typeof meta.mediaTime === "number"
+          ? meta.mediaTime : v.currentTime;
+        step();
+      });
     } else {
-      state.rafId = requestAnimationFrame(step);
+      state.rafId = requestAnimationFrame(() => {
+        state.videoFrameMediaTime = v.currentTime;
+        step();
+      });
     }
   }
   function step() {

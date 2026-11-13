@@ -1,0 +1,27 @@
+PASS empty state hides the video control - hidden=True size=0x0
+PASS image source hides video control - hidden=True
+PASS video shows a 48px play control - hidden=False size=48x48 label='Play video' playing=False
+PASS click controls play and pause; label follows state - after play: playing=True label='Pause video'; after pause: playing=False label='Play video'
+PASS label follows programmatic play/pause - play='Pause video'/True pause='Play video'/False
+PASS Space on the focused control toggles without panning - first={'playing': True, 'cursor': '', 'spaceDown': False, 'label': 'Pause video'} second={'playing': False, 'cursor': '', 'spaceDown': False}
+PASS letter shortcuts stay off a focused control - before=light onControl=light blurred=dark
+PASS six rapid clicks settle in the true state - mid={'paused': True, 'label': 'Play video', 'playingLabel': 'false'} after-pause label='Play video' playing=False
+PASS rejected play() leaves the control truthful - paused=True label='Play video' unhandled=None newErrors=0
+PASS 50 toggles: no heap/listener/loop growth - heap 2.9->2.9MB (+2.2%), listeners 7->7, raf/s=0, renders/s=3
+PASS visible tab resumes the play loop - renders=7 raf=0 videoTime=5.36
+PASS export preserves a paused video and its control - was_paused=True label_before='Play video' paused_after=True label_after='Play video'
+PASS replacing the source keeps one listener set - first=7 last=7 ids=[1, 2, 3] totalTracked=42
+PASS playback fixture outlasts the measurement - duration=20s
+PASS playback keeps the full preview backing, never a reduced one - paused={'w': 1280, 'h': 720, 'backing': 1280, 'backingH': 720, 'scale': 1, 'pvW': 1280, 'pvH': 720, 'playScale': 1} playing={'w': 1280, 'h': 720, 'backing': 1280, 'backingH': 720, 'scale': 1, 'pvW': 1280, 'pvH': 720, 'playScale': 1} boxErr=0.00%
+PASS a zero-effect control is measured in the same session - p50=42.1ms p95(median)=62.4ms longest=90ms/any 119ms script/frame=43.82ms backing=1280
+FAIL playback cost is measured at full output size - full=1280 preview=1280 backing=1280 scale=1
+PASS playback 6 effects stays under budget - renders=37 p50=273.3ms(reported, budget 26.0) delta_p50=228ms(median, reported) best=220.7ms(limit 380.0) p95(median)=348.6ms delta_p95=286.2ms(reported) windows=[280, 296.9, 348.6, 365.9, 379.3] windowP50=[262.8, 264.5, 269, 278.9, 287.4] pair_p50=[220.7, 222.4, 228, 235.7, 246.0] paired_p95=[(348.6, 62.4), (296.9, 75.4), (365.9, 44.2), (280, 67.5), (379.3, 44.9)] late=37/37 (100.0%, ctrl 100.0%, median delta 0.0pp, best 0.0pp, limit 15pp) pair_late=[0.0, 0.0, 0.0, 0.0, 0.0] max=379.3ms longtask(median)=1643ms best=1609ms(limit 2000.0) delta_longtask=1294ms(median, reported) windows=[1609, 1633, 1643, 1703, 1875] total=8463ms script/frame=251.42ms(median) windows=[266.87, 227.35, 265.09, 267.59, 235.88] best=227.35ms(limit 400.0) longest(median)=282ms any=388ms best=276ms(limit 650.0) delta_any=192ms(median, reported) windows=[276, 282, 279, 285, 388] task=9717.0ms videoTime=4.35 scale=1 backing=1280 scales={'1': 8} | control: p50=42.1 p95=62.4 longtask=409 longest=90/119 script/frame=43.82 backing=1280
+FAIL a heavy stack drops frames instead of resolution - renders=37/10s videoAdvanced=7.556s backing=1280 preview=1280 scales={'1': 8} p50=273.3ms
+Traceback (most recent call last):
+  File "/home/mustafa/glyphcraft/tests/gate/video_check.py", line 928, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/mustafa/glyphcraft/tests/gate/video_check.py", line 835, in main
+    f"script/frame={light['script_per_frame']}ms(limit {PLAYBACK_LIGHT_CPU_PER_FRAME_MS}) "
+                    ~~~~~^^^^^^^^^^^^^^^^^^^^
+KeyError: 'script_per_frame'

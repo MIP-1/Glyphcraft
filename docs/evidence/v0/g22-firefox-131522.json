@@ -1,0 +1,51 @@
+{
+  "browser": "firefox",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0",
+  "rows": [
+    {
+      "case": "parity",
+      "name": "paused and seeked frames equal a fresh still render",
+      "detail": "20/20 timestamps, backing=[(1280, 720)], mismatches=[]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "paused preview uses the full preview size",
+      "detail": "canvas=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playback never lowers render resolution",
+      "detail": "paused=1280x720 playing=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playing frame keeps full preview backing",
+      "detail": "playing=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "frames shown during playback match a fresh still render",
+      "detail": "28 distinct on-screen frames, unmatched=[{'t': 3.6, 'hash': 3859650748}, {'t': 1.73, 'hash': 3158045045}, {'t': 3.1, 'hash': 3919163936}]",
+      "ok": false
+    },
+    {
+      "case": "parity",
+      "name": "playback never shrinks the backing store",
+      "detail": "widths=[1280]",
+      "ok": true
+    },
+    {
+      "case": "errors",
+      "name": "no page or console errors",
+      "detail": "[]",
+      "ok": true
+    }
+  ],
+  "problems": [
+    "[parity] frames shown during playback match a fresh still render: 28 distinct on-screen frames, unmatched=[{'t': 3.6, 'hash': 3859650748}, {'t': 1.73, 'hash': 3158045045}, {'t': 3.1, 'hash': 3919163936}]"
+  ]
+}

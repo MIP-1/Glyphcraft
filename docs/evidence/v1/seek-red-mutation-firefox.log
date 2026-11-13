@@ -1,0 +1,12 @@
+FAIL [parity] paused and seeked frames equal a fresh still render: 18/20 timestamps, backing=[(1280, 720)], mismatches=[{'t': 3.2, 'preview': 3400220518, 'still': 2613681605, 'w': 1280, 'h': 720}, {'t': 3.6, 'preview': 3400220518, 'still': 2613681605, 'w': 1280, 'h': 720}]
+FAIL [parity] a seek repaints the preview without a test render: 0/5 seeks, stale=[{'from': 0.5, 'to': 1.7, 'canvas_equals_still': False, 'unchanged': True, 't': 1.7}, {'from': 2.6, 'to': 4.1, 'canvas_equals_still': False, 'unchanged': True, 't': 4.1}, {'from': 4.9, 'to': 0.3, 'canvas_equals_still': False, 'unchanged': True, 't': 0.3}]
+PASS [parity] paused preview uses the full preview size: canvas=1280x720 preview=1280x720
+PASS [parity] playback never lowers render resolution: paused=1280x720 playing=1280x720 preview=1280x720
+PASS [parity] playing frame keeps full preview backing: playing=1280x720 preview=1280x720
+PASS [parity] frames shown during playback match a fresh still render: 28 distinct on-screen frames, unmatched=[], offsets=[-0.3, -0.266, -0.034, -0.033, 0.0], span=4.267s, backsteps=3/27 (rVFC runs ahead of the starved clock; measured, not gated), times=[0.367, 0.5, 0.6, 0.7, 0.933, 1.1, 1.233, 1.367, 2, 1.767, 2.1, 2.233, 2.4, 2.5, 2.633, 2.733, 2.833, 2.933, 3.033, 3.167, 3.633, 3.6, 4.067, 3.967, 4.133, 4.3, 4.433, 4.6]
+PASS [parity] playback never shrinks the backing store: widths=[1280]
+PASS [errors] no page or console errors: []
+8 checks, 2 failure(s) [firefox]
+G22 FAIL
+FAIL [parity] paused and seeked frames equal a fresh still render: 18/20 timestamps, backing=[(1280, 720)], mismatches=[{'t': 3.2, 'preview': 3400220518, 'still': 2613681605, 'w': 1280, 'h': 720}, {'t': 3.6, 'preview': 3400220518, 'still': 2613681605, 'w': 1280, 'h': 720}]
+FAIL [parity] a seek repaints the preview without a test render: 0/5 seeks, stale=[{'from': 0.5, 'to': 1.7, 'canvas_equals_still': False, 'unchanged': True, 't': 1.7}, {'from': 2.6, 'to': 4.1, 'canvas_equals_still': False, 'unchanged': True, 't': 4.1}, {'from': 4.9, 'to': 0.3, 'canvas_equals_still': False, 'unchanged': True, 't': 0.3}]

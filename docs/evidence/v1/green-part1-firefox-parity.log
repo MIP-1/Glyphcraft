@@ -1,0 +1,7 @@
+PASS [parity] paused and seeked frames equal a fresh still render: 20/20 timestamps, backing=[(1280, 720)], mismatches=[]
+PASS [parity] paused preview uses the full preview size: canvas=1280x720 preview=1280x720
+PASS [parity] playback never lowers render resolution: paused=1280x720 playing=1280x720 preview=1280x720
+PASS [parity] playing frame keeps full preview backing: playing=1280x720 preview=1280x720
+PASS [errors] no page or console errors: []
+5 checks, 0 failure(s) [firefox]
+G22 PASS

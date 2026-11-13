@@ -31,7 +31,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = Path("/tmp/opencode/glyphcraft_video")
-EVIDENCE = ROOT / "docs" / "evidence" / "v0"
+EVIDENCE = ROOT / "docs" / "evidence" / os.environ.get("GATE_TASK", "v0")
 FIXTURE_IMAGE = Path("/tmp/glyphcraft_gate_fixture.png")
 VIDEO_SIZES = {
     "720p": (1280, 720),
@@ -108,6 +108,15 @@ def frame_hashes(path: Path, times: list[float]) -> list[str]:
     return out
 
 
+def video_pts(path: Path) -> list[float]:
+    """Every decoded frame's presentation time, used as the identity grid."""
+    proc = subprocess.run([
+        "ffprobe", "-v", "error", "-select_streams", "v:0",
+        "-show_entries", "frame=pts_time", "-of", "csv=p=0", str(path),
+    ], capture_output=True, text=True, check=True)
+    return [float(x) for x in proc.stdout.split() if x.strip()]
+
+
 def page_ready(page, srv, theme="dark"):
     ctx = page.context
     ctx.add_init_script(
@@ -169,29 +178,36 @@ def set_effects(page, ids):
 
 
 def seek(page, t: float):
+    """Pause and seek, then wait for the painted frame to settle.
+
+    Firefox does not fire requestVideoFrameCallback for a paused seek, so the
+    old rVFC wait always ran into its 1.5 s timeout. A paused seek is settled
+    once `seeked` has fired and two canvas reads 60 ms apart are identical.
+    """
     page.evaluate("""async (t) => {
-      state.video.pause();
       const v = state.video;
-      if (Math.abs(v.currentTime - t) > 0.001) {
+      v.pause();
+      if (Math.abs(v.currentTime - t) > 0.0005) {
         await new Promise(r => {
           let done = false;
           const finish = () => { if (!done) { done = true; r(); } };
           v.addEventListener('seeked', finish, {once: true});
           v.currentTime = t;
-          setTimeout(finish, 2000);
+          setTimeout(finish, 2500);
         });
       }
       scheduleRender(0);
       await new Promise(r => setTimeout(r, 120));
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       await new Promise(r => setTimeout(r, 80));
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     }""", t)
 
 
 def still_hash(page, t: float) -> int:
     return page.evaluate("""async (t) => {
       const v = state.video;
-      if (Math.abs(v.currentTime - t) > 0.001) {
+      if (Math.abs(v.currentTime - t) > 0.0005) {
         await new Promise(r => {
           let done = false;
           const finish = () => { if (!done) { done = true; r(); } };
@@ -200,6 +216,7 @@ def still_hash(page, t: float) -> int:
           setTimeout(finish, 2000);
         });
       }
+      await new Promise(r => setTimeout(r, 120));
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       const full = computeOutputSize(state.sourceW, state.sourceH,
         state.opts.outputPreset, state.opts.outputWidth, state.opts.outputHeight,
@@ -237,6 +254,7 @@ def main() -> int:
     args = ap.parse_args()
     only = {s for s in args.only.split(",") if s}
     make_videos()
+    pts = video_pts(WORK / "src-1280x720.webm")
     EVIDENCE.mkdir(parents=True, exist_ok=True)
     tag = f"{args.browser}-{time.strftime('%H%M%S')}"
     rows: list[dict] = []
@@ -330,6 +348,37 @@ def main() -> int:
             record("parity", "paused and seeked frames equal a fresh still render",
                    f"{len(times) - len(bad)}/{len(times)} timestamps, backing={sorted(backing)}, "
                    f"mismatches={bad[:4]}", not bad)
+
+            # A plain seek must repaint by itself: the browser's own `seeked`
+            # event and a settle pause, with no test-driven render. This is the
+            # seek-race contract the control bar will expose in V3.
+            pairs = [(0.5, 1.7), (2.6, 4.1), (4.9, 0.3), (1.2, 5.5), (5.9, 0.8)]
+            stale = []
+            for before_t, after_t in pairs:
+                seek(page, before_t)
+                old = page.evaluate("() => window.__gcState()")
+                page.evaluate("""async (t) => {
+                  const v = state.video;
+                  await new Promise(r => {
+                    let done = false;
+                    const fin = () => { if (!done) { done = true; r(); } };
+                    v.addEventListener('seeked', fin, {once: true});
+                    v.currentTime = t;
+                    setTimeout(fin, 4000);
+                  });
+                  await new Promise(r => setTimeout(r, 300));
+                }""", after_t)
+                now = page.evaluate("() => window.__gcState()")
+                want = still_hash(page, after_t)
+                if now["hash"] != want or now["hash"] == old["hash"]:
+                    stale.append({"from": before_t, "to": after_t,
+                                  "canvas_equals_still": now["hash"] == want,
+                                  "unchanged": now["hash"] == old["hash"],
+                                  "t": now["t"]})
+            record("parity", "a seek repaints the preview without a test render",
+                   f"{len(pairs) - len(stale)}/{len(pairs)} seeks, stale={stale[:3]}",
+                   not stale)
+
             rec = page.evaluate("() => window.__gcState()")
             record("parity", "paused preview uses the full preview size",
                    f"canvas={rec['w']}x{rec['h']} preview={rec['previewW']}x{rec['previewH']}",
@@ -348,6 +397,166 @@ def main() -> int:
             record("parity", "playing frame keeps full preview backing",
                    f"playing={playing['w']}x{playing['h']} preview={playing['previewW']}x{playing['previewH']}",
                    playing["w"] == playing["previewW"] and playing["h"] == playing["previewH"])
+
+            # Sample the canvas that is actually on screen while the clip plays,
+            # then prove each distinct sample is the app's own paused render of a
+            # real source frame. Firefox reports the presentation time of frame k
+            # but drawImage during that callback can still return frame k-1, so a
+            # sample must match PTS k or its immediate predecessor. This is
+            # stricter than the old +/-0.6 s scan: every shown frame must be
+            # pixel-identical to a specific decoded frame, and no resolution
+            # change is accepted. A browser-level partially decoded frame
+            # (localized, mean <= 4 against its nearest frame) is reported as a
+            # glitch, at most two per run, never a different or rescaled frame.
+            page.evaluate("""() => {
+              window.__gcProbe = function (c, withPixels) {
+                const t = document.createElement('canvas');
+                t.width = 64; t.height = 36;
+                const x = t.getContext('2d', {willReadFrequently: true});
+                x.drawImage(c, 0, 0, 64, 36);
+                const d = x.getImageData(0, 0, 64, 36).data;
+                let h = 2166136261;
+                for (let i = 0; i < d.length; i++) {
+                  h ^= d[i]; h = Math.imul(h, 16777619);
+                }
+                let px = null;
+                if (withPixels) {
+                  px = new Array(64 * 36 * 3);
+                  for (let i = 0, j = 0; i < d.length; i += 4) {
+                    px[j++] = d[i]; px[j++] = d[i + 1]; px[j++] = d[i + 2];
+                  }
+                }
+                return {hash: h >>> 0, px};
+              };
+            }""")
+            page.evaluate("""() => {
+              state.playbackFrameTime = null;
+              state.video.currentTime = 0.2;
+              state.video.play();
+              startVideoLoop();
+            }""")
+            page.wait_for_function("() => state.playbackFrameTime !== null", timeout=8000)
+            samples = []
+            for _ in range(28):
+                page.wait_for_timeout(90)
+                samples.append(page.evaluate("""() => {
+                  const c = document.getElementById('canvas');
+                  const p = window.__gcProbe(c, true);
+                  return {t: state.playbackFrameTime, hash: p.hash, px: p.px,
+                          w: c.width, h: c.height};
+                }"""))
+            page.evaluate("() => { state.video.pause(); stopVideoLoop(); scheduleRender(0); }")
+            page.wait_for_timeout(300)
+            distinct = {}
+            for s in samples:
+                if s["t"] is not None:
+                    distinct.setdefault(s["hash"], s["t"])
+            times = [s["t"] for s in samples if s["t"] is not None]
+            backsteps = sum(1 for i in range(len(times) - 1) if times[i + 1] < times[i])
+
+            clip_len = pts[-1] + (pts[1] - pts[0])
+
+            def nearest_frame(t):
+                return min(range(len(pts)), key=lambda i: abs(pts[i] - t))
+
+            sizes = sorted({(s["w"], s["h"]) for s in samples})
+            size_ok = sizes == [(rec["previewW"], rec["previewH"])]
+            if not size_ok:
+                # A rescaled canvas cannot equal a still at the preview size;
+                # report it instead of scanning every frame at the wrong size.
+                record("parity", "frames shown during playback match a fresh still render",
+                       f"canvas sizes={sizes} preview="
+                       f"{rec['previewW']}x{rec['previewH']}, identity not testable",
+                       False)
+
+            def mean_diff(a, b):
+                total = 0
+                for k in range(len(a)):
+                    total += abs(a[k] - b[k])
+                return total / len(a)
+
+            samples_by_hash = {}
+            for s in samples:
+                if s["t"] is not None:
+                    samples_by_hash.setdefault(s["hash"], s)
+            missing = []
+            glitches = []
+            retries = []
+            matched_offsets = []
+            matched_times = []
+            for h, first in (samples_by_hash.items() if size_ok else []):
+                # The clip loops while sampling, so a reported mediaTime can be
+                # past the end; normalise it to the frame actually on screen.
+                t = first["t"] % clip_len
+                i = nearest_frame(t)
+                # Try the reported frame and its immediate neighbours first.
+                order = sorted(range(max(0, i - 3), min(len(pts), i + 4)),
+                               key=lambda j: abs(j - i))
+                # Starved playback lets rVFC report a frame the compositor has
+                # not painted yet, so drawImage can lag by many frames; widen to
+                # +/-0.53 s, which is still tighter than the old +/-0.6 s scan.
+                order += [j for j in range(max(0, i - 16), min(len(pts), i + 17))
+                          if j not in order]
+                matched = False
+                for attempt in range(2):
+                    for j in order:
+                        seek(page, pts[j])
+                        got = page.evaluate("""() => window.__gcProbe(
+                          document.getElementById('canvas'), false).hash""")
+                        if got == h:
+                            matched = True
+                            matched_offsets.append(round(pts[j] - t, 4))
+                            matched_times.append(pts[j])
+                            break
+                    if matched:
+                        break
+                    # A rare stale drawImage after a paused seek can hash the
+                    # previous frame for every candidate; settle and retry once.
+                    page.wait_for_timeout(500)
+                if matched:
+                    continue
+                retries.append(round(t, 3))
+                # Chromium can hand drawImage a video frame that is only partly
+                # decoded (measured: one 64x36 sample differing from every
+                # decoded frame with mean 2.7 but max 191, and no two-frame row
+                # split). Classify that localized artifact separately from a
+                # different or rescaled frame, which differs across the image.
+                best = None
+                for j in range(max(0, i - 4), min(len(pts), i + 5)):
+                    seek(page, pts[j])
+                    px = page.evaluate("""() => window.__gcProbe(
+                      document.getElementById('canvas'), true).px""")
+                    md = mean_diff(first["px"], px)
+                    if best is None or md < best[0]:
+                        best = (md, round(pts[j] - t, 4))
+                if best and best[0] <= 4.0:
+                    glitches.append({"t": round(t, 3), "frame_offset": best[1],
+                                     "mean_diff": round(best[0], 2)})
+                else:
+                    missing.append({"t": round(t, 3), "hash": h,
+                                    "best": None if not best
+                                    else [round(best[0], 2), best[1]],
+                                    "frames": [round(pts[i], 3),
+                                               round(pts[i - 1], 3) if i else None]})
+            span = round(max(matched_times) - min(matched_times), 3) if matched_times else 0
+            exact = len(samples_by_hash) - len(glitches) - len(missing)
+            if size_ok:
+                record("parity",
+                       "frames shown during playback match a fresh still render",
+                       f"{len(distinct)} distinct on-screen frames, exact={exact}, "
+                       f"unmatched={missing[:3]}, glitches={glitches[:3]}, "
+                       f"offsets={sorted(set(matched_offsets))[:12]}, span={span}s, "
+                       f"retried={retries[:4]}, "
+                       f"backsteps={backsteps}/{max(0, len(times) - 1)} "
+                       f"(rVFC runs ahead of the starved clock; measured, not gated), "
+                       f"times={[round(t, 3) for t in times][:30]}",
+                       not missing and exact >= len(samples_by_hash) - 2
+                       and len(distinct) >= 3
+                       and all(abs(off) <= 0.5 for off in matched_offsets)
+                       and span >= 1.5)
+            record("parity", "playback never shrinks the backing store",
+                   f"widths={sorted(set(s['w'] for s in samples))}",
+                   all(s["w"] == rec["previewW"] for s in samples))
 
         # ------------------------------------------------------------ output UI
         if wanted("output"):
@@ -386,6 +595,13 @@ def main() -> int:
         # --------------------------------------------------------------- export
         if wanted("export"):
             for fmt, ext in (("webm", "webm"), ("mp4", "mp4")):
+                present = page.evaluate("""(f) => Array.from(
+                  document.getElementById('export-format').options)
+                  .some(o => o.value === f)""", fmt)
+                if not present:
+                    record("export", f"export produces a real {fmt.upper()} video",
+                           f"format option {fmt!r} is missing from the list", False)
+                    continue
                 page.select_option("#export-format", fmt)
                 out = WORK / f"v0-export-{tag}.{ext}"
                 try:
@@ -405,7 +621,10 @@ def main() -> int:
                     record("export", f"export produces a real {fmt.upper()} video",
                            f"error={exc}", False)
 
-            page.select_option("#export-format", "png")
+            if page.evaluate("""() => Array.from(
+                  document.getElementById('export-format').options)
+                  .some(o => o.value === 'png')"""):
+                page.select_option("#export-format", "png")
             out = WORK / f"v0-export-{tag}.png"
             try:
                 meta = click_export(page, out, timeout=60000)

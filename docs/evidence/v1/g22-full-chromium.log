@@ -1,0 +1,32 @@
+FAIL [seek] video control bar exists: {"video-toggle": {"w": 48, "h": 48, "hidden": false, "type": "button"}, "video-seek": null, "video-back": null, "video-forward": null}
+FAIL [seek] seek bar is a range input: null
+FAIL [seek] jump buttons meet 44px touch target: {"video-back": null, "video-forward": null}
+PASS [parity] paused and seeked frames equal a fresh still render: 20/20 timestamps, backing=[(1280, 720)], mismatches=[]
+PASS [parity] a seek repaints the preview without a test render: 5/5 seeks, stale=[]
+PASS [parity] paused preview uses the full preview size: canvas=1280x720 preview=1280x720
+PASS [parity] playback never lowers render resolution: paused=1280x720 playing=1280x720 preview=1280x720
+PASS [parity] playing frame keeps full preview backing: playing=1280x720 preview=1280x720
+PASS [parity] frames shown during playback match a fresh still render: 28 distinct on-screen frames, exact=28, unmatched=[], glitches=[], offsets=[0.0], span=4.8s, retried=[], backsteps=0/27 (rVFC runs ahead of the starved clock; measured, not gated), times=[0.367, 0.567, 0.767, 0.967, 1.167, 1.367, 1.5, 1.633, 1.833, 2.033, 2.167, 2.3, 2.467, 2.667, 2.867, 3.067, 3.2, 3.4, 3.533, 3.667, 3.833, 4.033, 4.233, 4.433, 4.567, 4.767, 4.967, 5.167]
+PASS [parity] playback never shrinks the backing store: widths=[1280]
+FAIL [output] size controls are enabled for video: {"output-preset-trigger": true, "output-width": true, "output-height": true, "output-fit": true, "output-lock-ratio": true}
+FAIL [output] video format list offers MP4 and WebM: ["png", "jpg", "webp", "svg", "txt", "webm"]
+FAIL [output] main button says Export Video: 'Export Image'
+FAIL [output] Export Frame is a separate action: present=False
+FAIL [output] default output size line shows the native size: None
+FAIL [export] export produces a real WEBM video: file={'suggested': 'glyphcraft.webm', 'size': 2040636} probe={'stream': {'codec_name': 'vp9', 'codec_type': 'video', 'width': 1280, 'height': 720, 'pix_fmt': 'yuv420p'}, 'format': {'format_name': 'matroska,webm', 'size': '2040636'}} frames=0 duration=0.00 hashes=['af69f21b0ac21a11', '8791b0304a2610d9', 'b8d618954cbb5764']
+FAIL [export] export produces a real MP4 video: format option 'mp4' is missing from the list
+PASS [export] a still format never turns a video into one frame: default export={'suggested': 'glyphcraft.png', 'size': 116825}
+PASS [hitch] compare drag stays responsive on a 4K image with 6 effects: {"longtasks": 0, "longtaskMs": 0, "worstLong": 0, "median": 16.69999999999709, "p95": 16.70000000001164, "max": 16.80000000000291}
+PASS [errors] no page or console errors: []
+20 checks, 10 failure(s) [chromium]
+G22 FAIL
+FAIL [seek] video control bar exists: {"video-toggle": {"w": 48, "h": 48, "hidden": false, "type": "button"}, "video-seek": null, "video-back": null, "video-forward": null}
+FAIL [seek] seek bar is a range input: null
+FAIL [seek] jump buttons meet 44px touch target: {"video-back": null, "video-forward": null}
+FAIL [output] size controls are enabled for video: {"output-preset-trigger": true, "output-width": true, "output-height": true, "output-fit": true, "output-lock-ratio": true}
+FAIL [output] video format list offers MP4 and WebM: ["png", "jpg", "webp", "svg", "txt", "webm"]
+FAIL [output] main button says Export Video: 'Export Image'
+FAIL [output] Export Frame is a separate action: present=False
+FAIL [output] default output size line shows the native size: None
+FAIL [export] export produces a real WEBM video: file={'suggested': 'glyphcraft.webm', 'size': 2040636} probe={'stream': {'codec_name': 'vp9', 'codec_type': 'video', 'width': 1280, 'height': 720, 'pix_fmt': 'yuv420p'}, 'format': {'format_name': 'matroska,webm', 'size': '2040636'}} frames=0 duration=0.00 hashes=['af69f21b0ac21a11', '8791b0304a2610d9', 'b8d618954cbb5764']
+FAIL [export] export produces a real MP4 video: format option 'mp4' is missing from the list

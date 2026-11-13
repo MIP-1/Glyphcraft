@@ -1,0 +1,14 @@
+PASS [parity] paused and seeked frames equal a fresh still render: 20/20 timestamps, backing=[(1280, 720)], mismatches=[]
+PASS [parity] a seek repaints the preview without a test render: 5/5 seeks, stale=[]
+PASS [parity] paused preview uses the full preview size: canvas=1280x720 preview=1280x720
+FAIL [parity] playback never lowers render resolution: paused=1280x720 playing=755x425 preview=1280x720
+FAIL [parity] playing frame keeps full preview backing: playing=755x425 preview=1280x720
+FAIL [parity] frames shown during playback match a fresh still render: canvas sizes=[(755, 425)] preview=1280x720, identity not testable
+FAIL [parity] playback never shrinks the backing store: widths=[755]
+PASS [errors] no page or console errors: []
+8 checks, 4 failure(s) [chromium]
+G22 FAIL
+FAIL [parity] playback never lowers render resolution: paused=1280x720 playing=755x425 preview=1280x720
+FAIL [parity] playing frame keeps full preview backing: playing=755x425 preview=1280x720
+FAIL [parity] frames shown during playback match a fresh still render: canvas sizes=[(755, 425)] preview=1280x720, identity not testable
+FAIL [parity] playback never shrinks the backing store: widths=[755]
