@@ -8,9 +8,10 @@ Checks, in real Chromium:
      Blob.text, Blob.stream and fetch are instrumented and must stay at 0.
   3. The size controls stay visible but inert for video, with an inline note;
      they are enabled again for an image.
-  4. An export ignores the size preset and matches the video's native
-     display size (rotation metadata included) for landscape, portrait, odd
-     and 4K inputs, measured with ffprobe.
+  4. With Original, an export matches the video's native display size
+     (rotation metadata included) for landscape, portrait, odd and 4K inputs.
+     With a custom preset the export uses that size instead. Measured with
+     ffprobe.
   5. The canvas-limit helper rejects an impossible native size clearly.
 
 usage:
@@ -130,12 +131,13 @@ def load_video(page, path: Path) -> None:
     page.wait_for_timeout(500)
 
 
-def export_video_size(page, path: Path, out: Path) -> tuple[int, int]:
+def export_video_size(page, path: Path, out: Path,
+                      preset: str = "original") -> tuple[int, int]:
     load_video(page, path)
-    page.evaluate("""() => {
+    page.evaluate("""(preset) => {
       state.opts.effects.forEach(fx => { fx.enabled = false; });
       state.opts.exportFormat = 'webm';
-      state.opts.outputPreset = 'custom';
+      state.opts.outputPreset = preset;
       state.opts.outputWidth = 320;
       state.opts.outputHeight = 180;
       state.opts.outputFit = 'contain';
@@ -143,7 +145,7 @@ def export_video_size(page, path: Path, out: Path) -> tuple[int, int]:
       rebuildRamp();
       syncUIFromState();
       scheduleRender(0);
-    }""")
+    }""", preset)
     page.wait_for_timeout(500)
     if out.exists():
         out.unlink()
@@ -264,17 +266,26 @@ def main() -> int:
                     out = WORK / f"out-{label}.webm"
                     width, height = export_video_size(page, path, out)
                     native = page.evaluate("() => [state.video.videoWidth, state.video.videoHeight]")
-                    record(f"export {label} equals native {native[0]}x{native[1]}",
-                           f"ffprobe={width}x{height} preset=320x180",
+                    record(f"export {label} keeps native {native[0]}x{native[1]} with Original",
+                           f"ffprobe={width}x{height}",
                            (width, height) == (native[0], native[1]))
+                    out = WORK / f"out-{label}-custom.webm"
+                    width, height = export_video_size(page, path, out, preset="custom")
+                    record(f"export {label} uses the custom preset 320x180",
+                           f"ffprobe={width}x{height}",
+                           (width, height) == (320, 180))
 
                 out = WORK / "out-rotated.webm"
                 width, height = export_video_size(page, ROTATED, out)
                 native = page.evaluate("() => [state.video.videoWidth, state.video.videoHeight]")
                 has_rotation = native != [1080, 1920]
-                record("export rotated video equals displayed native size",
+                record("export rotated video keeps displayed native size",
                        f"ffprobe={width}x{height} browser={native[0]}x{native[1]} rotation_seen={has_rotation}",
                        (width, height) == (native[0], native[1]) and has_rotation)
+                out = WORK / "out-rotated-custom.webm"
+                width, height = export_video_size(page, ROTATED, out, preset="custom")
+                record("export rotated video uses the custom preset 320x180",
+                       f"ffprobe={width}x{height}", (width, height) == (320, 180))
 
                 record("no page or console errors", repr(errors[:6]), not errors)
             finally:

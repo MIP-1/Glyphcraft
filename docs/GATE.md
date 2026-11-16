@@ -3510,3 +3510,261 @@ resize, `?worker=0`, and every size preset. Details in
 - Real GPU/Zen frame rate is not claimed; all timings are headless software
   raster.
 - The owner's exact 15/244/1767 ms machine is not available here.
+
+### V2 — a real MP4/WebM export (PASS)
+
+Base `4112a32` (`V1-pass`). Full report: `docs/evidence/v2/report.md`.
+Status: **PASS** — G22 export subset `16 checks, 0 failures` in Chromium and
+Firefox, 36/36 matrix cells, G21 `31 checks, 0 failures`, three consecutive
+gate runs with G1–G21 PASS and only the expected V3/V4 (and one V5 Firefox)
+G22 reds.
+
+#### RED (before)
+
+`docs/evidence/v2/red-g22-chromium-before-export.json`, 10 checks, 7 failures.
+The V1 export was `canvas.captureStream()` + `MediaRecorder`: a downloaded
+2,088,652-byte Matroska that ffprobe read as **0 frames, 0.0 s**, no duration;
+no progress element, no Cancel, no `mp4` option, no Export Frame button, and
+nothing for the cancel check to cancel. `MediaRecorder` records wall clock, so
+at 0.66–0.91 s per rendered frame (measured) it cannot hold 30 fps. The method
+was replaced rather than patched.
+
+#### Method choice (measured, Firefox first)
+
+| Candidate | Measurement | Verdict |
+|---|---|---|
+| `captureStream()` + `MediaRecorder` | 0 decodable frames, 0.0 s | rejected |
+| WebCodecs `VideoEncoder` + vendored muxer, seek → render → encode | 60/60 and 180/180 decoded frames, exact duration, cues/fast start | chosen |
+
+Firefox was done first because it is the harder encoder: it supports H.264
+High at 4K but emits B-frames in decode order. `vendor/mp4-muxer.mjs` 5.2.2 and
+`vendor/webm-muxer.mjs` 5.1.4 (MIT, Vanilagy; SHA-256 in `vendor/README.md`)
+are byte-identical to the npm builds. `tools/vendor_muxers.py` generates the
+classic-script `vendor/*-muxer.js` builds (same bytes except the ESM export
+block becomes a window global), which are loaded on demand when an export
+starts, and copied into `dist/vendor/` by `npm run build`. No runtime or
+build-time network access, no ffmpeg.wasm.
+
+#### Codec support (`docs/evidence/v2/codec-support.json`)
+
+| Browser | H.264 720p | H.264 1080p | H.264 4K | VP9 | VP8 | AAC encode | Opus encode |
+|---|---|---|---|---|---|---|---|
+| Firefox | yes | yes | yes | yes | yes | no | yes |
+| Chromium | yes | yes | **no** | yes | yes | no | yes |
+
+- Chromium 4K: MP4 stays in the list, disabled, with
+  "This browser cannot encode H.264 at 3840×2160. Choose WebM instead."
+  No codec substitution inside `.mp4`.
+- No browser encodes AAC. A source with audio shows a visible note and the
+  file has one video stream; audio is never dropped silently.
+
+#### Firefox MP4: arrival order, 67 ms `ctts`, rebuilt `avcC`
+
+Sorting Firefox's chunks by timestamp corrupted the stream (`sps_id 1 out of
+range`, `illegal short term buffer state`; `g22-firefox-050102.json`). Fix:
+mux in arrival order, DTS = index × frame duration, PTS =
+`chunk.timestamp + 67 ms` as `ctts` (the muxer rejects negative DTS and writes
+no edit list); rebuild `avcC` from the in-band SPS/PPS because Firefox
+duplicates the first parameter-set byte in `decoderConfig.description`.
+Chromium's encoder emits no B-frames and needs neither. Final files:
+`ffmpeg -i … -f null -` stderr empty, 180/180 frames, 6.0 s; Chromium
+`has_b_frames=0 start_time=0`, Firefox `has_b_frames=2 start_time=0.0667`.
+
+Chromium tags the sRGB canvas as full range, so ffprobe reports `yuvj420p`
+(same 4:2:0 layout); Firefox reports `yuv420p`. The matrix accepts both.
+
+#### Progress and Cancel on a 700 px sheet (break-it finding)
+
+At 700 px the sheet's peek is 105 px = handle + sticky action bar, so the
+scroll viewport is 61 px and the bar fills all of it. Starting an export from
+the peek left the progress panel and Cancel far below the viewport: the panel's
+top was **7,762 px** at `scrollTop` 24, and the break-it's
+`page.click("#export-cancel")` timed out — first "Reset All intercepts pointer
+events", then "element is outside of the viewport". A keyboard user tabbing to
+Cancel had the same problem under the sticky bar.
+
+Fix: `revealExportProgress()` expands a peeked sheet to half without animation
+and scrolls the progress panel into view when an export starts; the progress
+panel and its Cancel get `scroll-margin-top` 76 px (68 px on the sheet) so
+scroll-into-view and focus clear the sticky bar. After: panel 774–847, Cancel
+774–818, `elementFromPoint` returns `export-cancel`, and a keyboard focus to
+Cancel measures `cancelTop 732 > barBottom 601`.
+
+That is now guarded by two permanent G22 checks: "Cancel is visible and
+clickable on a 700 px peek sheet" (sheet leaves peek, panel and Cancel inside
+the viewport, hit test is the button) and "the 700 px Cancel tap stops the
+export". The tap check was tightened while doing this: it used to read the busy
+flag immediately after `click()`, before the async export notices the cancel;
+it now requires the click itself to succeed, waits up to 120 s for
+`!state.videoExporting`, and asserts the progress panel is hidden. The export
+subset is 16 checks after this.
+
+#### Evidence — G22 export subset (real UI, both browsers)
+
+`docs/evidence/v2/export-final-chromium.log`,
+`export-final-firefox.log`: **16 checks, 0 failures** each. Real MP4 and WebM
+from a 2.8 s playhead (file stays 6.0 s), decoded frame count, duration, two
+seeks, MP4 fast start, progress + Cancel, Export Frame, audio note, cancel
+cleanup, preview restored. RED proof is the 7 failures above.
+
+#### Full G22 on the V2 tree (only V3/V4 reds)
+
+The full G22 runs inside the final gate runs
+(`gate-run1.log`, `gate-run2.log`, `gate-run3.log`;
+`g22-chromium-163333.json`, `g22-firefox-164007.json`): Chromium **32 checks,
+4 failures**, Firefox **32 checks, 4–5 failures**. Every export, parity and
+error check passes. The reds belong to later tasks and match the V1 baseline:
+
+| Red check | Owner | Browsers |
+|---|---|---|
+| video control bar exists | V3 | both |
+| seek bar is a range input | V3 | both |
+| jump buttons meet 44px touch target | V3 | both |
+| size controls are enabled for video | V4 | both |
+| 4K six-effect compare drag p95 ≤ 25 ms | V5 | Firefox only |
+
+The Firefox hitch is the intermittent V5 item already recorded in
+`docs/evidence/v1/report.md` (60 fps median, two or three 33 ms frames in the
+final runs). No V2 sub-check is red, so V2 may be tagged PASS (task line 92).
+The gate as a whole prints `GATE FAIL G22` until V5 turns these checks green.
+
+#### Evidence — size / preset matrix (36 cells)
+
+`tools/v2_export_matrix.py` drives the real UI, saves each download, probes it
+with ffprobe (`-count_frames`), seeks at 35 %/80 %, and extracts three frames
+with effects. 18 cells per browser: 1280×720, 1920×1080, 3840×2160,
+1080×1920, rotated source (displayed 1080×1920, Original), 640×360 Custom in
+Contain/Cover/Stretch, and a `dist` build export. All 36 PASS
+(`matrix-chromium-164828.json`, `matrix-firefox-170230.json`; re-run on the final
+loader, logs `matrix-final-chromium.log` / `matrix-final-firefox.log`); decoded counts
+re-probed from the saved files in `matrix-decoded.json` (35 files; the 4K
+Chromium MP4 cell is a visible skip). Every file: exact size, exact duration,
+seekable, fast-start/cues present, effects diff 27.5–43.8 greyscale levels
+against the source, distinct frames.
+
+**chromium** (18 cells, 0 failures; the 4K MP4 cell is a visible skip)
+
+| Cell | Size | Codec | pix_fmt | Frames | Duration | Seek | Fast start / cues | Effects diff | Export s |
+|---|---|---|---|---|---|---|---|---|---|
+| custom-640x360-contain-mp4 | 640x360 | h264 | yuvj420p | 60 | 2.0 | yes | yes | 27.54 | 39.8 |
+| custom-640x360-contain-webm | 640x360 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 27.59 | 39.4 |
+| custom-640x360-cover-mp4 | 640x360 | h264 | yuvj420p | 60 | 2.0 | yes | yes | 27.54 | 39.6 |
+| custom-640x360-cover-webm | 640x360 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 27.59 | 39.3 |
+| custom-640x360-stretch-mp4 | 640x360 | h264 | yuvj420p | 60 | 2.0 | yes | yes | 27.54 | 39.0 |
+| custom-640x360-stretch-webm | 640x360 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 27.59 | 38.2 |
+| dist-1280x720-mp4 | 1280x720 | h264 | yuvj420p | 60 | 2.0 | yes | yes | 29.02 | 42.3 |
+| dist-1280x720-webm | 1280x720 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 29.05 | 41.7 |
+| orig-1080x1920-original-mp4 | 1080x1920 | h264 | yuvj420p | 60 | 2.0 | yes | yes | 29.88 | 54.6 |
+| orig-1080x1920-original-webm | 1080x1920 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 29.91 | 56.0 |
+| orig-1280x720-original-mp4 | 1280x720 | h264 | yuvj420p | 60 | 2.0 | yes | yes | 29.04 | 41.4 |
+| orig-1280x720-original-webm | 1280x720 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 29.05 | 41.9 |
+| orig-1920x1080-original-mp4 | 1920x1080 | h264 | yuvj420p | 60 | 2.0 | yes | yes | 30.92 | 52.9 |
+| orig-1920x1080-original-webm | 1920x1080 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 30.94 | 51.1 |
+| orig-3840x2160-original-mp4 | — | — | — | — | — | — | — | — | skipped |
+| orig-3840x2160-original-webm | 3840x2160 | vp9 | yuv420p | 30 | 0.966 | yes | yes | 30.89 | 38.5 |
+| orig-rotated-original-mp4 | 1080x1920 | h264 | yuvj420p | 60 | 2.0 | yes | yes | 37.18 | 55.5 |
+| orig-rotated-original-webm | 1080x1920 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 37.18 | 56.8 |
+
+**firefox** (18 cells, 0 failures)
+
+| Cell | Size | Codec | pix_fmt | Frames | Duration | Seek | Fast start / cues | Effects diff | Export s |
+|---|---|---|---|---|---|---|---|---|---|
+| custom-640x360-contain-mp4 | 640x360 | h264 | yuv420p | 60 | 2.0 | yes | yes | 32.59 | 40.0 |
+| custom-640x360-contain-webm | 640x360 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 32.61 | 43.4 |
+| custom-640x360-cover-mp4 | 640x360 | h264 | yuv420p | 60 | 2.0 | yes | yes | 32.59 | 39.9 |
+| custom-640x360-cover-webm | 640x360 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 32.61 | 43.8 |
+| custom-640x360-stretch-mp4 | 640x360 | h264 | yuv420p | 60 | 2.0 | yes | yes | 32.59 | 40.2 |
+| custom-640x360-stretch-webm | 640x360 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 32.61 | 43.4 |
+| dist-1280x720-mp4 | 1280x720 | h264 | yuv420p | 60 | 2.0 | yes | yes | 34.98 | 44.3 |
+| dist-1280x720-webm | 1280x720 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 35.01 | 54.5 |
+| orig-1080x1920-original-mp4 | 1080x1920 | h264 | yuv420p | 60 | 2.0 | yes | yes | 37.01 | 60.3 |
+| orig-1080x1920-original-webm | 1080x1920 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 37.06 | 81.6 |
+| orig-1280x720-original-mp4 | 1280x720 | h264 | yuv420p | 60 | 2.0 | yes | yes | 34.98 | 44.4 |
+| orig-1280x720-original-webm | 1280x720 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 35.01 | 54.7 |
+| orig-1920x1080-original-mp4 | 1920x1080 | h264 | yuv420p | 60 | 2.0 | yes | yes | 38.03 | 57.1 |
+| orig-1920x1080-original-webm | 1920x1080 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 38.03 | 78.1 |
+| orig-3840x2160-original-mp4 | 3840x2160 | h264 | yuv420p | 30 | 1.0 | yes | yes | 36.61 | 46.1 |
+| orig-3840x2160-original-webm | 3840x2160 | vp9 | yuv420p | 30 | 0.966 | yes | yes | 36.61 | 83.4 |
+| orig-rotated-original-mp4 | 1080x1920 | h264 | yuv420p | 60 | 2.0 | yes | yes | 43.8 | 60.7 |
+| orig-rotated-original-webm | 1080x1920 | vp9 | yuv420p | 60 | 1.966 | yes | yes | 43.81 | 81.3 |
+
+#### Peak memory (Chromium)
+
+| Clip | Output | JS heap peak | Browser RSS base → peak |
+|---|---|---|---|
+| 1920×1080, 2 s | WebM 2.6 MB | 32 MB | 727 → **1,432 MB** (Δ 705) |
+| 3840×2160, 1 s | WebM 3.8 MB | 32 MB | 1,336 → **2,437 MB** (Δ 1,101) |
+
+RSS sums VmRSS over the six browser processes (`matrix-chromium-061834.json`).
+The file is small, so `ArrayBufferTarget` is not the driver; decoded source,
+canvases, effect scratch and encoder are. Firefox has no `performance.memory`
+and is not claimed. Cost is seek-bound: a 6 s 4K source at 640×360 took 281 s
+for 180 frames with the estimate within ~2×.
+
+#### Gate findings fixed on the V2 tree
+
+The first three gate runs (2026-11-15) failed G5 and G13 as well as the
+expected V3/V4 G22 reds. Both are fixed:
+
+| Finding | First runs | Cause | Fix | After |
+|---|---|---|---|---|
+| G5 `export webm` timeout + CORS console error | 170 checks, 2 failures, all three runs | a dynamic `import()` of `vendor/webm-muxer.mjs` is blocked on `file://` (origin "null"); the existing suite runs from `file://` | `tools/vendor_muxers.py` generates classic-script `vendor/*-muxer.js` (ESM export block → window global); `loadMuxer()` injects it on demand | `g5-file-fix.log`: **170 checks, 0 failures**, `export webm 416111 bytes, magic=ok`, `zero console errors []` |
+| G13 `replacing the source keeps one listener set` | `first=67 last=7` in all three runs | one `{once:true}` `seeked` listener per exported frame; the browser removes it silently, the test tracker only sees `removeEventListener`, so 60 finished seeks stayed counted | `seekVideoFrame()` calls `removeEventListener` and `clearTimeout` in `finish()` | `g13-listener-fix.log`: **27 checks, 0 failures**, `first=7 last=7 totalTracked=42` |
+
+Neither change removes an assertion. The G5 suite runs the same 170 checks from
+`file://`; G13 still requires equal listener counts before and after three
+source replacements.
+
+The first classic-script build failed the G22 export subset (16 checks, 4
+failures): both muxer files put their top-level `var` names on `window`, so
+loading MP4 after WebM replaced `Target` and the WebM muxer threw "The target
+must be provided and an instance of Target". Fix: the generated files are
+wrapped in an IIFE; only the window global escapes. After: 16/16 in both
+browsers (`export-final-chromium.log` / `export-final-firefox.log`).
+
+#### G21 rule change (before / after assertions)
+
+| Assertion per fixture (landscape, portrait, 4K, odd) | Before (V1) | After (V2) |
+|---|---|---|
+| native size | `export <label> equals native` with preset deliberately 320×180 and **ignored** | `export <label> keeps native <w>x<h> with Original` |
+| custom preset | — | `export <label> uses the custom preset 320x180` |
+| rotated | `equals displayed native size` | `keeps displayed native size` + `uses custom preset 320x180` |
+
+The native assertion is kept; six preset assertions are added. 25 → **31
+checks, 0 failures** (`docs/evidence/v2/g21-31-checks.log`). Reason: owner
+decision 2026-11-12 (section 3 of the task). Fit itself is the existing image
+behaviour (`computeOutputSize` ignores `fit`, the base is stretched); V4 audits
+it rather than inventing new semantics.
+
+#### Gate runs (three consecutive, final tree)
+
+`GATE_TASK=v2 npm run gate`, 2026-11-16:
+
+| Run | Log | Window | G1–G21 | G22 chromium | G22 firefox | Verdict |
+|---|---|---|---|---|---|---|
+| 1 | `gate-run1.log` | 14:09–14:54 | all PASS | 32 checks, 4 failures | 32 checks, 4 failures | `GATE FAIL G22` |
+| 2 | `gate-run2.log` | 14:54–15:42 | all PASS | 32 checks, 4 failures | 32 checks, 5 failures | `GATE FAIL G22` |
+| 3 | `gate-run3.log` | 16:02–16:48 | all PASS | 32 checks, 4 failures | 32 checks, 4 failures | `GATE FAIL G22` |
+
+Every run: G5 `170 checks, 0 failures`, G13 `27 checks, 0 failures`, G20
+`200 cases, 0 problems`, G21 `31 checks, 0 failures`. The G22 reds are the
+three V3 seek checks plus V4's "size controls are enabled for video"; run 2's
+Firefox also hit the intermittent V5 4K compare-drag hitch. No V2 sub-check is
+red, which is the V2 pass condition (task line 92).
+
+Three earlier attempts are kept as `gate-attempt{1,2,3}.log`: attempt 1 had one
+unexpected G13 failure (`light two-effect playback`, ctrl delta 70.4 ms against
+a 45 ms limit) and therefore does not count; attempts 2 and 3 pass G1–G21 with
+the same G22 reds. The G13 measurement is the same flaky timing check that V1
+needed five attempts for. Further interrupted attempts left no logs and are not
+counted.
+
+#### Limits / HUMAN-CHECK
+
+- Audio is never included (no AAC encoder in either browser); visible note plus
+  README Limits.
+- Chromium 4K H.264 unsupported; MP4 disabled with a visible reason.
+- Firefox MP4 starts at 67 ms by container metadata, not a lost frame.
+- Real GPU/Zen encode speed, real Safari and player-specific start behaviour
+  are unverified; all numbers are headless.
+- The owner's real 4K camera files are not used here.

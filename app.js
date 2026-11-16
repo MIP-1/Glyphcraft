@@ -169,6 +169,11 @@ const state = {
   videoExporting: false,
   videoExportFrames: 0,
   videoExportTotal: 0,
+  videoExportCancel: false,
+  videoExportError: null,
+  videoHasAudio: false,
+  exportSupport: null,
+  pendingRevokeUrl: null,
   history: { undo: [], redo: [], lastKey: "", lastAt: 0 },
   pendingReset: false,
   exportProgress: { active: false, format: "", progress: 0, total: 0 },
@@ -183,6 +188,17 @@ const state = {
   currentStateKey: "",
   fontsReady: false,
   previewSource: null
+};
+
+const VIDEO_FPS = 30;
+const VIDEO_BITRATE = 6000000;
+const STILL_FORMATS = [["png", "PNG"], ["jpg", "JPG"], ["webp", "WebP"],
+  ["svg", "SVG (Script only)"], ["txt", "TXT (Script only)"],
+  ["webm", "WebM Video"]];
+const VIDEO_FORMATS = [["mp4", "MP4 (H.264)"], ["webm", "WebM (VP9)"]];
+const VIDEO_CODECS = {
+  mp4: ["avc1.640028", "avc1.4d0028", "avc1.42E01E"],
+  webm: ["vp09.00.10.08", "vp8"]
 };
 
 const PREVIEW_MAX = 1600;
@@ -267,6 +283,19 @@ function initEls() {
   els.outputHeight = $("output-height");
   els.outputFit = $("output-fit");
   els.exportFormat = $("export-format");
+  els.exportFormatNote = $("export-format-note");
+  els.exportFormatNoteText = $("export-format-note-text");
+  els.exportFrameRow = $("export-frame-row");
+  els.btnExportFrame = $("btn-export-frame");
+  els.exportAudioNote = $("export-audio-note");
+  els.exportAudioNoteText = $("export-audio-note-text");
+  els.exportProgress = $("export-progress");
+  els.exportProgressText = $("export-progress-text");
+  els.exportProgressBar = $("export-progress-bar");
+  els.exportCancel = $("export-cancel");
+  els.outputSizeLine = $("output-size-line");
+  els.outputSizeText = $("output-size-text");
+  els.menuExportLabel = $("menu-export-label");
   els.ditherKernel = $("dither-kernel");
   els.ditherDepth = $("dither-depth");
   els.ditherDepthNum = $("dither-depth-num");
@@ -1118,8 +1147,9 @@ function syncOutputControls() {
    els.outputLockRatio, els.outputPresetTrigger].forEach(el => {
     if (el) el.disabled = isVideo;
   });
-  if (els.outputVideoNote) els.outputVideoNote.hidden = !isVideo;
+  showControl(els.outputVideoNote, isVideo);
   if (isVideo) closePresetPicker(false);
+  syncExportControls();
 }
 
 function zoomForScale(scale) {
@@ -1446,9 +1476,16 @@ function loadFile(file) {
       clearStageCache();
       workerInvalidate();
       resetPlaybackScale();
+      state.videoHasAudio = videoHasAudioTrack(vid);
       syncVideoControl();
       syncOutputControls();
-      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      const outSize = videoOutputSize();
+      ensureExportSupport(outSize.w, outSize.h).then(syncExportControls);
+      if (cancelVideoExport("Export cancelled: a new file was loaded.")) {
+        state.pendingRevokeUrl = previousUrl;
+      } else if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+      }
       state.sourceUrl = url;
       els.canvasArea.classList.add("has-content");
       vid.play().catch(() => {});
@@ -1469,6 +1506,11 @@ function loadFile(file) {
     img.onload = () => {
       stopVideoLoop();
       if (state.video) { state.video.pause(); state.video = null; }
+      state.videoHasAudio = false;
+      state.exportSupport = null;
+      if (cancelVideoExport("Export cancelled: a new file was loaded.")) {
+        state.pendingRevokeUrl = previousUrl;
+      }
       syncVideoControl();
       state.source = img;
       state.sourceType = "image";
@@ -1478,7 +1520,7 @@ function loadFile(file) {
       state.sourceId++;
       clearStageCache();
       workerInvalidate();
-      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      if (!state.pendingRevokeUrl && previousUrl) URL.revokeObjectURL(previousUrl);
       state.sourceUrl = url;
       els.canvasArea.classList.add("has-content");
       if (state.opts.palette === "__auto__") extractAutoPalette(img);
@@ -1680,11 +1722,13 @@ function loadPreset() {
 
 async function exportImage() {
   if (!state.source || state.videoExporting) return;
+  if (state.sourceType === "video") { await exportVideo(); return; }
   const full = computeOutputSize(state.sourceW, state.sourceH, state.opts.outputPreset, state.opts.outputWidth, state.opts.outputHeight, state.opts.outputFit);
   const opts = renderOpts();
-  const base = prepareBase(state.source, full.w, full.h, opts);
   const format = state.opts.exportFormat;
 
+  if (format === "webm") { await exportStillVideo(full, opts); return; }
+  const base = prepareBase(state.source, full.w, full.h, opts);
   if (format === "svg") {
     const svg = canvasToSvg(base, { ...opts, preApplied: true });
     saveBlob(new Blob([svg], { type: "image/svg+xml" }), "glyphcraft.svg");
@@ -1695,10 +1739,6 @@ async function exportImage() {
     const txt = canvasToTxt(base, { ...opts, preApplied: true });
     saveBlob(new Blob([txt], { type: "text/plain" }), "glyphcraft.txt");
     showToast("TXT exported");
-    return;
-  }
-  if (format === "webm") {
-    await exportVideo(full, opts);
     return;
   }
   const canvas = document.createElement("canvas");
@@ -1722,76 +1762,474 @@ function saveBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
-async function exportVideo(full, opts) {
-  if (!window.MediaRecorder) { alert("WebM export is not supported in this browser"); return; }
-  const video = state.video;
-  if (state.sourceType === "video") {
-    if (!video) { showToast("Load a video before exporting WebM."); return; }
-    full = { w: video.videoWidth, h: video.videoHeight };
-    const sizeError = videoExportSizeError(full.w, full.h);
-    if (sizeError) { showToast(sizeError, 6000); return; }
-  }
-  state.videoExporting = true;
-  state.exportProgress = { active: true, format: "webm", progress: 0, total: 0 };
-  const canvas = document.createElement("canvas");
-  canvas.width = full.w; canvas.height = full.h;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx || canvas.width !== full.w || canvas.height !== full.h) {
-    state.videoExporting = false;
-    state.exportProgress.active = false;
-    updateStatus();
-    updateExportButton();
-    showToast(`This video is ${full.w}×${full.h}. The browser cannot create a canvas that large, so it cannot be exported at its original resolution.`, 6000);
-    return;
-  }
-  const fps = 24;
-  const duration = video && isFinite(video.duration) ? Math.min(video.duration, 20) : 1;
-  const total = Math.max(1, Math.ceil(duration * fps));
-  state.videoExportTotal = total;
-  state.videoExportFrames = 0;
-  state.exportProgress.total = total;
+function showControl(el, show) {
+  if (!el) return;
+  el.classList.toggle("hidden", !show);
+  el.hidden = !show;
+}
 
-  const resumeAfterExport = !!video && !video.paused && !video.ended;
-  if (video) { video.pause(); video.currentTime = 0; }
+function evenSize(n) {
+  const v = Math.max(2, Math.round(n || 0));
+  return v % 2 ? v - 1 : v;
+}
 
-  const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
-  const stream = canvas.captureStream(fps);
-  const chunks = [];
-  const recorder = new MediaRecorder(stream, { mimeType });
-  recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-  const done = new Promise(resolve => {
-    recorder.onstop = () => {
-      saveBlob(new Blob(chunks, { type: mimeType }), "glyphcraft.webm");
-      state.videoExporting = false;
-      state.exportProgress.active = false;
-      updateStatus();
-      updateExportButton();
-      showToast("WebM exported");
+const muxerLoads = {};
+function loadMuxer(kind) {
+  if (muxerLoads[kind]) return muxerLoads[kind];
+  const globalName = kind === "mp4" ? "Mp4Muxer" : "WebmMuxer";
+  muxerLoads[kind] = new Promise((resolve, reject) => {
+    if (window[globalName]) { resolve(window[globalName]); return; }
+    const script = document.createElement("script");
+    script.src = new URL(`vendor/${kind}-muxer.js`, GC_APP_SRC).href;
+    script.onload = () => window[globalName]
+      ? resolve(window[globalName])
+      : reject(new Error("Muxer did not initialise"));
+    script.onerror = () => reject(new Error("Muxer failed to load"));
+    document.head.appendChild(script);
+  }).catch(err => {
+    delete muxerLoads[kind];
+    throw err;
+  });
+  return muxerLoads[kind];
+}
+
+function videoOutputSize() {
+  const v = state.video;
+  const w = v && v.videoWidth ? v.videoWidth : state.sourceW;
+  const h = v && v.videoHeight ? v.videoHeight : state.sourceH;
+  const full = computeOutputSize(w, h, state.opts.outputPreset,
+    state.opts.outputWidth, state.opts.outputHeight, state.opts.outputFit);
+  return { w: evenSize(full.w), h: evenSize(full.h) };
+}
+
+function avcCFromChunk(chunk) {
+  const data = new Uint8Array(chunk.byteLength);
+  chunk.copyTo(data);
+  let off = 0;
+  let sps = null, pps = null;
+  while (off + 4 <= data.length) {
+    const size = ((data[off] << 24) | (data[off + 1] << 16) |
+                  (data[off + 2] << 8) | data[off + 3]) >>> 0;
+    off += 4;
+    if (!size || off + size > data.length) break;
+    const type = data[off] & 0x1f;
+    if (type === 7 && !sps) sps = data.subarray(off, off + size);
+    else if (type === 8 && !pps) pps = data.subarray(off, off + size);
+    off += size;
+  }
+  if (!sps || !pps) return null;
+  const out = new Uint8Array(11 + sps.length + pps.length);
+  out[0] = 1; out[1] = sps[1]; out[2] = sps[2]; out[3] = sps[3];
+  out[4] = 0xff; out[5] = 0xe1;
+  out[6] = sps.length >> 8; out[7] = sps.length & 0xff;
+  out.set(sps, 8);
+  let at = 8 + sps.length;
+  out[at++] = 1;
+  out[at++] = pps.length >> 8; out[at++] = pps.length & 0xff;
+  out.set(pps, at);
+  return out;
+}
+
+function videoHasAudioTrack(v) {
+  if (!v) return false;
+  try {
+    if (typeof v.captureStream === "function") {
+      const stream = v.captureStream();
+      const has = stream.getAudioTracks().length > 0;
+      stream.getTracks().forEach(track => track.stop());
+      if (has) return true;
+    }
+  } catch (err) {}
+  if (v.mozHasAudio === true) return true;
+  if (v.audioTracks && v.audioTracks.length) return true;
+  return typeof v.webkitAudioDecodedByteCount === "number" &&
+    v.webkitAudioDecodedByteCount > 0;
+}
+
+async function ensureExportSupport(w, h) {
+  const key = `${w}x${h}`;
+  if (state.exportSupport && state.exportSupport.key === key) return state.exportSupport;
+  const support = { key, webm: false, webmCodec: "", mp4: false, mp4Codec: "", mp4Reason: "" };
+  if (typeof VideoEncoder === "undefined") {
+    support.mp4Reason = "This browser cannot encode video: WebCodecs is unavailable.";
+    state.exportSupport = support;
+    return support;
+  }
+  const config = codec => ({ codec, width: w, height: h, bitrate: VIDEO_BITRATE, framerate: VIDEO_FPS });
+  for (const codec of VIDEO_CODECS.webm) {
+    try {
+      const res = await VideoEncoder.isConfigSupported(config(codec));
+      if (res && res.supported) { support.webm = true; support.webmCodec = codec; break; }
+    } catch (err) {}
+  }
+  for (const codec of VIDEO_CODECS.mp4) {
+    try {
+      const res = await VideoEncoder.isConfigSupported(config(codec));
+      if (res && res.supported) { support.mp4 = true; support.mp4Codec = codec; break; }
+    } catch (err) {}
+  }
+  if (!support.mp4) support.mp4Reason = `This browser cannot encode H.264 at ${w}×${h}. Choose WebM instead.`;
+  state.exportSupport = support;
+  return support;
+}
+
+function syncExportControls() {
+  const isVideo = !!state.source && state.sourceType === "video";
+  const sel = els.exportFormat;
+  if (sel) {
+    const kind = isVideo ? "video" : "still";
+    if (sel.dataset.kind !== kind) {
+      const list = isVideo ? VIDEO_FORMATS : STILL_FORMATS;
+      sel.innerHTML = list.map(([value, label]) => `<option value="${value}">${label}</option>`).join("");
+      sel.dataset.kind = kind;
+      state.opts.exportFormat = isVideo ? "mp4" : "png";
+    }
+    const support = state.exportSupport;
+    if (isVideo && support) {
+      const mp4 = Array.from(sel.options).find(o => o.value === "mp4");
+      if (mp4) {
+        mp4.disabled = !support.mp4;
+        mp4.textContent = support.mp4 ? "MP4 (H.264)" : "MP4 (H.264) — unavailable";
+      }
+      if (!support.mp4 && state.opts.exportFormat === "mp4") state.opts.exportFormat = "webm";
+    }
+    if (els.exportFormatNote) {
+      const show = isVideo && !!support && !support.mp4;
+      showControl(els.exportFormatNote, show);
+      if (els.exportFormatNoteText) els.exportFormatNoteText.textContent = show ? support.mp4Reason : "";
+    }
+    sel.value = state.opts.exportFormat;
+  }
+  showControl(els.exportFrameRow, isVideo);
+  if (els.exportAudioNote) {
+    const show = isVideo && state.videoHasAudio;
+    showControl(els.exportAudioNote, show);
+    if (els.exportAudioNoteText) {
+      els.exportAudioNoteText.textContent = show
+        ? "Audio is not included in exported videos: this browser cannot encode AAC, so the picture is exported without it."
+        : "";
+    }
+  }
+  if (els.outputSizeLine) {
+    showControl(els.outputSizeLine, isVideo);
+    if (els.outputSizeText && isVideo) {
+      const size = videoOutputSize();
+      els.outputSizeText.textContent = `Output size: ${size.w}×${size.h}`;
+    }
+  }
+  if (els.menuExportLabel) {
+    els.menuExportLabel.textContent = isVideo ? "Export Video…" : "Export Image…";
+  }
+  if (els.jpgQualityControl) {
+    els.jpgQualityControl.hidden = isVideo || state.opts.exportFormat !== "jpg";
+  }
+  updateExportButton();
+}
+
+function formatClock(ms) {
+  const total = Math.max(0, Math.round(ms / 1000));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}
+
+function exportProgressText() {
+  const p = state.exportProgress;
+  const done = p.progress || 0;
+  const total = Math.max(1, p.total || 1);
+  const elapsed = performance.now() - (p.startedAt || performance.now());
+  const left = done ? (elapsed / done) * Math.max(0, total - done) : 0;
+  const eta = done ? `${formatClock(left)} left` : "estimating";
+  return `${p.format.toUpperCase()} · ${done} of ${total} frames · ${formatClock(elapsed)} elapsed · ${eta}`;
+}
+
+function cancelVideoExport(reason) {
+  if (!state.videoExporting) return false;
+  state.videoExportCancel = true;
+  if (reason) showToast(reason, 5000);
+  return true;
+}
+
+function seekVideoFrame(video, t) {
+  return new Promise(resolve => {
+    if (Math.abs(video.currentTime - t) < 0.0005) { resolve(); return; }
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      video.removeEventListener("seeked", finish);
+      clearTimeout(timer);
       resolve();
     };
-  });
-  recorder.start(500);
-
-  for (let i = 0; i < total; i++) {
-    if (video) {
-      video.currentTime = i / fps;
-      await new Promise(r => { video.onseeked = r; setTimeout(r, 120); });
+    const timer = setTimeout(finish, 3000);
+    video.addEventListener("seeked", finish);
+    video.currentTime = t;
+  }).then(() => new Promise(resolve => {
+    const settle = () => requestAnimationFrame(() => requestAnimationFrame(resolve));
+    if (typeof video.requestVideoFrameCallback !== "function") {
+      setTimeout(settle, 40);
+      return;
     }
-    const base = prepareBase(video || state.source, full.w, full.h, opts);
-    renderToContext(base, ctx, full.w, full.h, opts);
-    state.videoExportFrames = i + 1;
-    state.exportProgress.progress = i + 1;
-    updateStatus();
+    let done = false;
+    const fin = () => {
+      if (done) return;
+      done = true;
+      settle();
+    };
+    video.requestVideoFrameCallback(fin);
+    setTimeout(fin, 400);
+  }));
+}
+
+async function exportVideo() {
+  const video = state.video;
+  if (!video) { showToast("Load a video before exporting."); return; }
+  const size = videoOutputSize();
+  const sizeError = videoExportSizeError(size.w, size.h);
+  if (sizeError) { showToast(sizeError, 6000); return; }
+  const support = await ensureExportSupport(size.w, size.h);
+  const format = state.opts.exportFormat === "mp4" ? "mp4" : "webm";
+  if (format === "mp4" && !support.mp4) {
+    syncExportControls();
+    showToast(support.mp4Reason, 6000);
+    return;
+  }
+  if (format === "webm" && !support.webm) {
+    showToast("This browser cannot encode WebM video.", 6000);
+    return;
+  }
+  const codec = format === "mp4" ? support.mp4Codec : support.webmCodec;
+  const duration = isFinite(video.duration) && video.duration > 0 ? video.duration : 1;
+  const total = Math.max(1, Math.round(duration * VIDEO_FPS));
+  const bitrate = Math.min(40000000, Math.round(VIDEO_BITRATE * (size.w * size.h) / (1280 * 720)));
+
+  state.videoExporting = true;
+  state.videoExportCancel = false;
+  state.videoExportFrames = 0;
+  state.videoExportTotal = total;
+  state.exportProgress = { active: true, format, progress: 0, total, startedAt: performance.now() };
+  updateExportButton();
+  revealExportProgress();
+  updateStatus();
+
+  const resumeAfter = !video.paused && !video.ended;
+  const startTime = video.currentTime;
+  const wasLoop = video.loop;
+  video.pause();
+  stopVideoLoop();
+  video.loop = false;
+  let encoder = null;
+
+  try {
+    const lib = await loadMuxer(format);
+    const target = new lib.ArrayBufferTarget();
+    const options = {
+      target,
+      video: {
+        codec: format === "mp4" ? "avc" : (codec.startsWith("vp09") ? "V_VP9" : "V_VP8"),
+        width: size.w, height: size.h, frameRate: VIDEO_FPS
+      }
+    };
+    if (format === "mp4") options.fastStart = "in-memory";
+    const muxer = new lib.Muxer(options);
+    const encoded = [];
+    encoder = new VideoEncoder({
+      output: (chunk, meta) => { encoded.push({ chunk, meta }); },
+      error: err => { state.videoExportCancel = true; state.videoExportError = err; }
+    });
+    const config = {
+      codec, width: size.w, height: size.h, bitrate,
+      framerate: VIDEO_FPS, latencyMode: "quality"
+    };
+    if (format === "mp4") config.avc = { format: "avc" };
+    encoder.configure(config);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = size.w;
+    canvas.height = size.h;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const opts = renderOpts();
+    const last = Math.max(0, duration - 0.5 / VIDEO_FPS);
+
+    for (let i = 0; i < total; i++) {
+      if (state.videoExportCancel) break;
+      await seekVideoFrame(video, Math.min(i / VIDEO_FPS, last));
+      const base = prepareBase(video, size.w, size.h, opts);
+      renderToContext(base, ctx, size.w, size.h, opts);
+      const frame = new VideoFrame(canvas, {
+        timestamp: Math.round(i * 1000000 / VIDEO_FPS),
+        duration: Math.round(1000000 / VIDEO_FPS)
+      });
+      encoder.encode(frame, { keyFrame: i % (VIDEO_FPS * 2) === 0 });
+      frame.close();
+      state.videoExportFrames = i + 1;
+      state.exportProgress.progress = i + 1;
+      if (i % 3 === 0 || i === total - 1) updateExportButton();
+      if (encoder.encodeQueueSize > 6) {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    }
+
+    if (state.videoExportCancel) {
+      showToast(state.videoExportError ? `Export failed: ${state.videoExportError.message || state.videoExportError}` : "Export cancelled", 5000);
+    } else {
+      state.exportProgress.progress = total;
+      updateExportButton();
+      await encoder.flush();
+      if (format === "mp4") {
+        const frameUs = 1000000 / VIDEO_FPS;
+        let delayUs = 0;
+        encoded.forEach((item, i) => {
+          delayUs = Math.max(delayUs, i * frameUs - item.chunk.timestamp);
+        });
+        delayUs = delayUs > 500 ? Math.ceil(delayUs / 1000) * 1000 : 0;
+        const first = encoded[0];
+        const inband = avcCFromChunk(first.chunk);
+        const meta = inband && first.meta && first.meta.decoderConfig
+          ? {...first.meta, decoderConfig: {...first.meta.decoderConfig, description: inband}}
+          : first.meta;
+        encoded.forEach((item, i) => {
+          const decodeUs = Math.round(i * frameUs);
+          const stampUs = Math.round(item.chunk.timestamp + delayUs);
+          muxer.addVideoChunk(item.chunk, i === 0 ? meta : item.meta,
+                              stampUs, stampUs - decodeUs);
+        });
+      } else {
+        for (const item of encoded) {
+          muxer.addVideoChunk(item.chunk, item.meta, item.chunk.timestamp);
+        }
+      }
+      muxer.finalize();
+      const type = format === "mp4" ? "video/mp4" : "video/webm";
+      saveBlob(new Blob([target.buffer], { type }), `glyphcraft.${format}`);
+      showToast(`${format.toUpperCase()} exported`);
+    }
+  } catch (err) {
+    showToast(`Export failed: ${(err && err.message) || err}`, 6000);
+  } finally {
+    try {
+      if (encoder && encoder.state !== "closed") encoder.close();
+    } catch (err) {}
+    if (state.pendingRevokeUrl) {
+      URL.revokeObjectURL(state.pendingRevokeUrl);
+      state.pendingRevokeUrl = null;
+    }
+    state.videoExportError = null;
+    state.videoExporting = false;
+    state.videoExportCancel = false;
+    state.exportProgress.active = false;
+    if (state.video === video) {
+      video.loop = wasLoop;
+      video.currentTime = startTime;
+      syncVideoControl();
+      if (resumeAfter) video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    }
     updateExportButton();
-    await new Promise(r => setTimeout(r, 1000 / fps));
+    updateStatus();
+    scheduleRender(0);
   }
-  recorder.stop();
-  if (video) {
-    video.onseeked = null;
-    if (resumeAfterExport) video.play().catch(() => {});
+}
+
+async function exportStillVideo(full, opts) {
+  const w = evenSize(full.w);
+  const h = evenSize(full.h);
+  const support = await ensureExportSupport(w, h);
+  if (!support.webm) {
+    showToast("This browser cannot encode WebM video.", 6000);
+    return;
   }
-  syncVideoControl();
-  await done;
+  const bitrate = Math.min(40000000, Math.round(VIDEO_BITRATE * (w * h) / (1280 * 720)));
+  state.videoExporting = true;
+  state.videoExportCancel = false;
+  state.videoExportError = null;
+  state.videoExportFrames = 0;
+  state.videoExportTotal = VIDEO_FPS;
+  state.exportProgress = { active: true, format: "webm", progress: 0,
+                           total: VIDEO_FPS, startedAt: performance.now() };
+  updateExportButton();
+  revealExportProgress();
+  let encoder = null;
+  try {
+    const lib = await loadMuxer("webm");
+    const target = new lib.ArrayBufferTarget();
+    const muxer = new lib.Muxer({
+      target,
+      video: {
+        codec: support.webmCodec.startsWith("vp09") ? "V_VP9" : "V_VP8",
+        width: w, height: h, frameRate: VIDEO_FPS
+      }
+    });
+    const encoded = [];
+    encoder = new VideoEncoder({
+      output: (chunk, meta) => { encoded.push({ chunk, meta }); },
+      error: err => { state.videoExportCancel = true; state.videoExportError = err; }
+    });
+    encoder.configure({
+      codec: support.webmCodec, width: w, height: h, bitrate,
+      framerate: VIDEO_FPS, latencyMode: "quality"
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const base = prepareBase(state.source, w, h, opts);
+    renderToContext(base, ctx, w, h, opts);
+    for (let i = 0; i < VIDEO_FPS; i++) {
+      if (state.videoExportCancel) break;
+      const frame = new VideoFrame(canvas, {
+        timestamp: Math.round(i * 1000000 / VIDEO_FPS),
+        duration: Math.round(1000000 / VIDEO_FPS)
+      });
+      encoder.encode(frame, { keyFrame: i === 0 });
+      frame.close();
+      state.videoExportFrames = i + 1;
+      state.exportProgress.progress = i + 1;
+      if (i % 4 === 0 || i === VIDEO_FPS - 1) updateExportButton();
+      if (encoder.encodeQueueSize > 6) {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    }
+    if (state.videoExportCancel) {
+      showToast(state.videoExportError ? `Export failed: ${state.videoExportError.message || state.videoExportError}` : "Export cancelled", 5000);
+    } else {
+      await encoder.flush();
+      for (const item of encoded) {
+        muxer.addVideoChunk(item.chunk, item.meta, item.chunk.timestamp);
+      }
+      muxer.finalize();
+      saveBlob(new Blob([target.buffer], { type: "video/webm" }), "glyphcraft.webm");
+      showToast("WEBM exported");
+    }
+  } catch (err) {
+    showToast(`Export failed: ${(err && err.message) || err}`, 6000);
+  } finally {
+    try {
+      if (encoder && encoder.state !== "closed") encoder.close();
+    } catch (err) {}
+    state.videoExportError = null;
+    state.videoExporting = false;
+    state.videoExportCancel = false;
+    state.exportProgress.active = false;
+    updateExportButton();
+    updateStatus();
+  }
+}
+
+async function exportFrame() {
+  if (!state.source || state.sourceType !== "video" || state.videoExporting) return;
+  const size = videoOutputSize();
+  const opts = renderOpts();
+  const base = prepareBase(state.video, size.w, size.h, opts);
+  const canvas = document.createElement("canvas");
+  canvas.width = size.w;
+  canvas.height = size.h;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  renderToContext(base, ctx, size.w, size.h, opts);
+  const blob = await canvasToBlob(canvas, "image/png", 0.95);
+  saveBlob(blob, "glyphcraft-frame.png");
+  showToast("Frame exported");
 }
 
 function saveSectionCollapse() {
@@ -1835,17 +2273,30 @@ function showToast(message, duration = 2500) {
 
 function updateExportButton() {
   if (!els.btnExport) return;
+  const isVideo = state.sourceType === "video";
   if (state.exportProgress.active) {
-    const pct = Math.round((state.exportProgress.progress / state.exportProgress.total) * 100);
+    const total = Math.max(1, state.exportProgress.total || 1);
+    const pct = Math.round((state.exportProgress.progress / total) * 100);
     els.btnExport.textContent = `Exporting ${state.exportProgress.format.toUpperCase()} ${pct}%`;
     els.btnExport.disabled = true;
-  } else if (state.videoExporting) {
-    els.btnExport.textContent = "Exporting...";
-    els.btnExport.disabled = true;
+    showControl(els.exportProgress, true);
+    if (els.exportProgressBar) {
+      els.exportProgressBar.max = total;
+      els.exportProgressBar.value = state.exportProgress.progress;
+    }
+    if (els.exportProgressText) els.exportProgressText.textContent = exportProgressText();
   } else {
-    els.btnExport.textContent = "Export Image";
+    els.btnExport.textContent = isVideo ? "Export Video" : "Export Image";
     els.btnExport.disabled = false;
+    showControl(els.exportProgress, false);
   }
+}
+
+function revealExportProgress() {
+  if (isMobileSheet() && currentSnap() === "peek") setMobileSnap("half", false);
+  const el = els.exportProgress;
+  if (!el) return;
+  requestAnimationFrame(() => el.scrollIntoView({ block: "center" }));
 }
 
 function resetAll() {
@@ -1928,6 +2379,7 @@ function syncUIFromState() {
   els.exportFormat.value = o.exportFormat;
   els.jpgQuality.value = o.jpgQuality; els.jpgQualityNum.value = o.jpgQuality;
   els.jpgQualityControl.hidden = o.exportFormat !== "jpg";
+  syncExportControls();
   updateOutputCustomVisibility();
   toggleModeSections();
   renderEffectsList();
@@ -2923,6 +3375,12 @@ function setupEventListeners() {
   document.addEventListener("visibilitychange", handleVisibilityChange);
 
   on(els.btnExport, "click", exportImage);
+  on(els.btnExportFrame, "click", exportFrame);
+  on(els.exportCancel, "click", () => {
+    if (!state.videoExporting) return;
+    state.videoExportCancel = true;
+    if (els.exportProgressText) els.exportProgressText.textContent = "Cancelling…";
+  });
   on(els.btnReset, "click", resetAll);
   on(els.panelSearch, "input", () => filterControls(els.panelSearch.value));
   on(els.btnSavePreset, "click", savePreset);

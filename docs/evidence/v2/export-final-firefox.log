@@ -1,0 +1,19 @@
+PASS [export] export produces a real WEBM video: file={'suggested': 'glyphcraft.webm', 'size': 3691694} info={'codec': 'vp9', 'pix_fmt': 'yuv420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 5.966, 'format': 'matroska,webm'} want_frames=179 boxes=['\x10\x00\x00\x1f'] seek=True hashes=['f8cdb94b3a89e239', '8c85f67c45514cf9', '51361f4326c38e38']
+PASS [export] WEBM covers the clip from the playhead: playhead=2.816 export duration=5.966 frames=180
+PASS [export] WEBM export shows progress and cancel: {"present": true, "hidden": false, "text": "WEBM \u00b7 0 of 180 frames \u00b7 0:00 elapsed \u00b7 estimating Cancel", "barValue": 0, "cancel": true, "busy": true}
+PASS [export] export produces a real MP4 video: file={'suggested': 'glyphcraft.mp4', 'size': 4922759} info={'codec': 'h264', 'pix_fmt': 'yuv420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 6.0, 'format': 'mov,mp4,m4a,3gp,3g2,mj2'} want_frames=180 boxes=['ftyp', 'moov', 'mdat'] seek=True hashes=['4e4de741ec79c105', '84af267950b707d1', '9bf6f328f948b9b0']
+PASS [export] MP4 covers the clip from the playhead: playhead=2.816 export duration=6.0 frames=180
+PASS [export] MP4 export shows progress and cancel: {"present": true, "hidden": false, "text": "MP4 \u00b7 0 of 180 frames \u00b7 0:00 elapsed \u00b7 estimating Cancel", "barValue": 0, "cancel": true, "busy": true}
+PASS [export] preview state is restored after export: {"busy": false, "playing": true, "t": 5.81} playhead=2.816
+PASS [export] progress panel hides when the export finishes: {"present": true, "hidden": true, "text": "MP4 \u00b7 180 of 180 frames \u00b7 2:43 elapsed \u00b7 0:00 left Cancel", "barValue": 180, "cancel": true, "busy": false}
+PASS [export] Export Frame writes one full-size still: file={'suggested': 'glyphcraft-frame.png', 'size': 108165} size=1280x720
+PASS [export] a clip with audio shows a visible note about audio: {"hasAudio": true, "hidden": false, "width": 275, "height": 42, "text": "Audio is not included in exported videos: this browser cannot encode AAC, so the picture is exported without it."}
+PASS [export] the audio clip exports a real picture and keeps the note: streams=['video'] bytes=74380
+PASS [export] cancel stops the export and leaves the app clean: started=True ui={'present': True, 'hidden': True, 'text': 'Cancelling… Cancel', 'barValue': 1, 'cancel': True, 'busy': False} state={'busy': False, 'frames': 3, 'button': True, 'sources': 0} downloads=[]
+PASS [export] preview still renders after a cancelled export: hash=2784162208 still=2784162208
+PASS [export] Cancel is visible and clickable on a 700 px peek sheet: {"frames": 1, "snap": "half", "panel": [12, 717.5, 688, 790.5], "cancel": [622.9500122070312, 717.5, 688.0000152587891, 761.5], "hidden": false, "hitId": "export-cancel", "vw": 700, "vh": 900}
+PASS [export] the 700 px Cancel tap stops the export: clicked=True idle=True hidden=True error=
+PASS [errors] no page or console errors: []
+16 checks, 0 failure(s) [firefox]
+G22 PASS
+F_EXIT=0

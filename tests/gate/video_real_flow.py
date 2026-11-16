@@ -74,6 +74,15 @@ def make_videos() -> None:
             "-t", "6", "-c:v", "libvpx-vp9", "-deadline", "realtime",
             "-cpu-used", "8", "-b:v", "8M", "-an", str(path),
         ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    audio = WORK / "src-audio-320x180.webm"
+    if not (audio.exists() and audio.stat().st_size > 20_000):
+        subprocess.run([
+            "ffmpeg", "-y",
+            "-f", "lavfi", "-i", "testsrc2=size=320x180:rate=30:duration=2",
+            "-f", "lavfi", "-i", "sine=frequency=440:duration=2",
+            "-c:v", "libvpx-vp9", "-deadline", "realtime", "-cpu-used", "8",
+            "-b:v", "1M", "-c:a", "libopus", "-shortest", str(audio),
+        ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if not FIXTURE_IMAGE.exists():
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         import run_gate  # noqa: E402
@@ -88,7 +97,8 @@ def make_videos() -> None:
 def ffprobe(path: Path) -> dict:
     proc = subprocess.run([
         "ffprobe", "-v", "error", "-show_entries",
-        "stream=codec_name,codec_type,width,height,pix_fmt,nb_frames,duration"
+        "stream=codec_name,codec_type,width,height,pix_fmt,nb_frames,nb_read_frames,"
+        "r_frame_rate,avg_frame_rate,duration"
         ":format=format_name,duration,size",
         "-count_frames", "-of", "json", str(path),
     ], capture_output=True, text=True, check=True)
@@ -106,6 +116,49 @@ def frame_hashes(path: Path, times: list[float]) -> list[str]:
         ], capture_output=True, check=True)
         out.append(hashlib.sha256(proc.stdout).hexdigest()[:16])
     return out
+
+
+def video_summary(path: Path) -> dict:
+    """Decoded frame count, fps and duration, not just container tags."""
+    probe = ffprobe(path)
+    stream = probe["stream"]
+    fps_txt = stream.get("r_frame_rate") or "0/1"
+    num, _, den = fps_txt.partition("/")
+    fps = float(num) / float(den or 1) if float(den or 1) else 0.0
+    return {
+        "codec": stream.get("codec_name"),
+        "pix_fmt": stream.get("pix_fmt"),
+        "w": stream.get("width"),
+        "h": stream.get("height"),
+        "frames": int(stream.get("nb_read_frames") or stream.get("nb_frames") or 0),
+        "fps": round(fps, 3),
+        "duration": round(float(probe["format"].get("duration") or 0), 3),
+        "format": probe["format"].get("format_name"),
+    }
+
+
+def top_level_boxes(path: Path) -> list[str]:
+    data = path.read_bytes()
+    out: list[str] = []
+    i = 0
+    while i + 8 <= len(data):
+        size = int.from_bytes(data[i:i + 4], "big")
+        kind = data[i + 4:i + 8].decode("latin1", "replace")
+        if size == 1 and i + 16 <= len(data):
+            size = int.from_bytes(data[i + 8:i + 16], "big")
+        if size < 8:
+            break
+        out.append(kind)
+        i += size
+    return out
+
+
+def decodes_at(path: Path, t: float) -> bool:
+    proc = subprocess.run([
+        "ffmpeg", "-v", "error", "-ss", f"{t:.3f}", "-i", str(path),
+        "-frames:v", "1", "-f", "null", "-",
+    ], capture_output=True, text=True)
+    return proc.returncode == 0 and not proc.stderr.strip()
 
 
 def video_pts(path: Path) -> list[float]:
@@ -160,6 +213,8 @@ def load_video(page, path: Path, autoplay_src: bool = True):
     page.wait_for_function(
         "() => state.sourceType === 'video' && state.video && state.video.readyState >= 2",
         timeout=120000)
+    page.wait_for_function("() => state.exportSupport && state.exportSupport.key",
+                           timeout=60000)
     page.wait_for_timeout(300)
     page.evaluate("() => { state.video.pause(); stopVideoLoop(); scheduleRender(0); }")
     page.wait_for_timeout(250)
@@ -594,45 +649,278 @@ def main() -> int:
 
         # --------------------------------------------------------------- export
         if wanted("export"):
-            for fmt, ext in (("webm", "webm"), ("mp4", "mp4")):
-                present = page.evaluate("""(f) => Array.from(
-                  document.getElementById('export-format').options)
-                  .some(o => o.value === f)""", fmt)
-                if not present:
-                    record("export", f"export produces a real {fmt.upper()} video",
+            def option_state(fmt: str) -> dict:
+                return page.evaluate("""(f) => {
+                  const sel = document.getElementById('export-format');
+                  const o = Array.from(sel.options).find(x => x.value === f);
+                  return {present: !!o, disabled: !!(o && o.disabled),
+                          text: o ? o.textContent.trim() : null,
+                          note: (document.getElementById('export-format-note') || {})
+                            .textContent || '',
+                          hidden: !!(document.getElementById('export-format-note') || {})
+                            .hidden};
+                }""", fmt)
+
+            def progress_ui() -> dict:
+                return page.evaluate(r"""() => {
+                  const el = document.getElementById('export-progress');
+                  const bar = document.getElementById('export-progress-bar');
+                  const cancel = document.getElementById('export-cancel');
+                  return {
+                    present: !!el,
+                    hidden: !el || el.hidden || getComputedStyle(el).display === 'none',
+                    text: el ? el.textContent.replace(/[ \n\t]+/g, ' ').trim() : '',
+                    barValue: bar ? Number(bar.value) : null,
+                    cancel: !!cancel && !cancel.hidden,
+                    busy: !!state.videoExporting,
+                  };
+                }""")
+
+            # Start playback away from the start, so a real-time capture would
+            # produce a short or offset file. The export must still be whole.
+            seek(page, 2.4)
+            page.evaluate("() => state.video.play()")
+            page.wait_for_timeout(400)
+            playhead = page.evaluate("() => +state.video.currentTime.toFixed(3)")
+
+            for fmt, ext, codecs in (("webm", "webm", ("vp9", "vp8")),
+                                     ("mp4", "mp4", ("h264",))):
+                state = option_state(fmt)
+                if not state["present"]:
+                    record("export", f"{fmt.upper()} format is in the video list",
                            f"format option {fmt!r} is missing from the list", False)
                     continue
+                if state["disabled"]:
+                    reason = page.evaluate("""() => {
+                      const el = document.getElementById('export-format-note');
+                      return el && !el.hidden ? el.textContent.trim() : '';
+                    }""")
+                    record("export", f"{fmt.upper()} disabled with a visible reason",
+                           f"option={state} visible_reason={reason!r}", bool(reason))
+                    continue
                 page.select_option("#export-format", fmt)
-                out = WORK / f"v0-export-{tag}.{ext}"
+                out = WORK / f"v2-export-{tag}.{ext}"
                 try:
-                    meta = click_export(page, out, timeout=600000)
-                    probe = ffprobe(out)
-                    stream = probe["stream"]
-                    frames = int(stream.get("nb_frames") or 0)
-                    duration = float(probe["format"].get("duration") or 0)
+                    with page.expect_download(timeout=900000) as dl:
+                        page.click("#btn-export")
+                        ui = {}
+                        for _ in range(300):
+                            ui = progress_ui()
+                            if ui["present"] and not ui["hidden"]:
+                                break
+                            page.wait_for_timeout(100)
+                        progress_seen = ui
+                    download = dl.value
+                    download.save_as(out)
+                    meta = {"suggested": download.suggested_filename,
+                            "size": out.stat().st_size}
+                    info = video_summary(out)
+                    want_frames = round(info["duration"] * info["fps"])
+                    boxes = top_level_boxes(out)
+                    seek_ok = decodes_at(out, 2.5) and decodes_at(out, 5.6)
                     hashes = frame_hashes(out, [0.2, 2.9, 5.5])
-                    ok = (meta["size"] > 2000 and stream.get("codec_type") == "video"
-                          and frames >= 170 and abs(duration - 6) < 0.6
-                          and len(set(hashes)) >= 2)
+                    fast = (fmt != "mp4" or
+                            ("moov" in boxes and "mdat" in boxes
+                             and boxes.index("moov") < boxes.index("mdat")))
+                    ok = (meta["size"] > 2000
+                          and info["codec"] in codecs
+                          and info["pix_fmt"] in ("yuv420p", "yuvj420p")
+                          and (info["w"], info["h"]) == (1280, 720)
+                          and abs(info["frames"] - want_frames) <= 1
+                          and abs(info["duration"] - 6.0) <= 0.2
+                          and seek_ok and len(set(hashes)) >= 2 and fast)
                     record("export", f"export produces a real {fmt.upper()} video",
-                           f"file={meta} probe={probe} frames={frames} duration={duration:.2f} "
-                           f"hashes={hashes}", ok)
+                           f"file={meta} info={info} want_frames={want_frames} "
+                           f"boxes={boxes[:6]} seek={seek_ok} hashes={hashes}", ok)
+                    record("export", f"{fmt.upper()} covers the clip from the playhead",
+                           f"playhead={playhead} export duration={info['duration']} "
+                           f"frames={info['frames']}", info["duration"] >= 5.8
+                           and info["frames"] >= want_frames - 1)
+                    ok_progress = (progress_seen.get("present")
+                                   and not progress_seen.get("hidden")
+                                   and "frame" in progress_seen.get("text", "").lower()
+                                   and progress_seen.get("cancel"))
+                    record("export", f"{fmt.upper()} export shows progress and cancel",
+                           json.dumps(progress_seen), ok_progress)
                 except Exception as exc:  # noqa: BLE001
                     record("export", f"export produces a real {fmt.upper()} video",
                            f"error={exc}", False)
 
-            if page.evaluate("""() => Array.from(
-                  document.getElementById('export-format').options)
-                  .some(o => o.value === 'png')"""):
-                page.select_option("#export-format", "png")
-            out = WORK / f"v0-export-{tag}.png"
+            restored = page.evaluate("""() => ({
+              busy: !!state.videoExporting,
+              playing: !!state.video && !state.video.paused && !state.video.ended,
+              t: state.video ? +state.video.currentTime.toFixed(2) : null,
+            })""")
+            record("export", "preview state is restored after export",
+                   json.dumps(restored) + f" playhead={playhead}",
+                   not restored["busy"] and restored["playing"])
+            done_ui = progress_ui()
+            record("export", "progress panel hides when the export finishes",
+                   json.dumps(done_ui), done_ui["present"] and done_ui["hidden"]
+                   and not done_ui["busy"])
+
+            # Export Frame is a separate still action, not the video default.
+            page.evaluate("() => { state.video.pause(); }")
+            page.wait_for_timeout(300)
+            out = WORK / f"v2-frame-{tag}.png"
             try:
-                meta = click_export(page, out, timeout=60000)
-                record("export", "a still format never turns a video into one frame",
-                       f"default export={meta}", meta["size"] > 0 and out.suffix != ".webm")
+                with page.expect_download(timeout=120000) as dl:
+                    page.click("#btn-export-frame")
+                download = dl.value
+                download.save_as(out)
+                meta = {"suggested": download.suggested_filename,
+                        "size": out.stat().st_size}
+                probe = subprocess.run([
+                    "ffprobe", "-v", "error", "-show_entries", "stream=width,height",
+                    "-of", "json", str(out)], capture_output=True, text=True, check=True)
+                st = json.loads(probe.stdout)["streams"][0]
+                record("export", "Export Frame writes one full-size still",
+                       f"file={meta} size={st['width']}x{st['height']}",
+                       meta["size"] > 2000 and (st["width"], st["height"]) == (1280, 720))
             except Exception as exc:  # noqa: BLE001
-                record("export", "a still format never turns a video into one frame",
+                record("export", "Export Frame writes one full-size still",
                        f"error={exc}", False)
+
+            # Audio: the note must be visible, and the file must not claim
+            # to carry audio it does not have.
+            audio_src = WORK / "src-audio-320x180.webm"
+            page.set_input_files("#file-input", str(audio_src))
+            page.wait_for_function(
+                "() => state.sourceType === 'video' && state.video.readyState >= 2",
+                timeout=120000)
+            page.wait_for_function("() => state.exportSupport && state.exportSupport.key",
+                                   timeout=60000)
+            page.wait_for_timeout(400)
+            audio_ui = page.evaluate("""() => {
+              const note = document.getElementById('export-audio-note');
+              const r = note.getBoundingClientRect();
+              return {hasAudio: !!state.videoHasAudio, hidden: note.hidden,
+                      width: r.width, height: r.height,
+                      text: note.textContent.trim()};
+            }""")
+            record("export", "a clip with audio shows a visible note about audio",
+                   json.dumps(audio_ui), audio_ui["hasAudio"] and not audio_ui["hidden"]
+                   and audio_ui["width"] > 0 and audio_ui["height"] > 0
+                   and "audio" in audio_ui["text"].lower())
+            out = WORK / f"v2-audio-{tag}.webm"
+            try:
+                page.select_option("#export-format", "webm")
+                with page.expect_download(timeout=600000) as dl:
+                    page.click("#btn-export")
+                dl.value.save_as(out)
+                streams = subprocess.run([
+                    "ffprobe", "-v", "error", "-show_entries", "stream=codec_type",
+                    "-of", "csv=p=0", str(out)], capture_output=True, text=True,
+                    check=True).stdout.split()
+                record("export", "the audio clip exports a real picture and keeps the note",
+                       f"streams={streams} bytes={out.stat().st_size}",
+                       streams.count("video") == 1 and out.stat().st_size > 2000
+                       and "audio" in audio_ui["text"].lower())
+            except Exception as exc:  # noqa: BLE001
+                record("export", "the audio clip exports a real picture and keeps the note",
+                       f"error={exc}", False)
+
+            # Cancel must leave no partial download and no busy flag.
+            downloads = []
+            page.on("download", lambda d: downloads.append(d.suggested_filename))
+            page.set_input_files("#file-input", str(WORK / "src-3840x2160.webm"))
+            page.wait_for_function(
+                "() => state.sourceType === 'video' && state.video.readyState >= 2",
+                timeout=180000)
+            page.wait_for_function("() => state.exportSupport && state.exportSupport.key",
+                                   timeout=60000)
+            page.wait_for_timeout(500)
+            big_fmt = "webm"
+            page.select_option("#export-format", big_fmt)
+            page.click("#btn-export")
+            cancelled = False
+            for _ in range(120):
+                ui = progress_ui()
+                frames = page.evaluate("() => state.videoExportFrames || 0")
+                if ui["present"] and not ui["hidden"] and frames >= 2:
+                    page.click("#export-cancel")
+                    cancelled = True
+                    break
+                page.wait_for_timeout(250)
+            page.wait_for_timeout(1500)
+            after = progress_ui()
+            flag = page.evaluate("""() => ({
+              busy: !!state.videoExporting, frames: state.videoExportFrames || 0,
+              button: (!document.getElementById('btn-export').disabled),
+              sources: document.querySelectorAll('a[download]').length,
+            })""")
+            record("export", "cancel stops the export and leaves the app clean",
+                   f"started={cancelled} ui={after} state={flag} downloads={downloads}",
+                   cancelled and after["hidden"] and not flag["busy"]
+                   and flag["button"] and not downloads)
+            seek(page, 1.0)
+            still = still_hash(page, 1.0)
+            now = page.evaluate("() => window.__gcState()")
+            record("export", "preview still renders after a cancelled export",
+                   f"hash={now['hash']} still={still}",
+                   now["hash"] == still and now["w"] > 0)
+
+            # Cancel must also be reachable on the 700 px peek sheet.
+            page.set_viewport_size({"width": 700, "height": 900})
+            page.wait_for_timeout(400)
+            page.evaluate("() => window.__gcSetSnap && window.__gcSetSnap('peek', false)")
+            page.set_input_files("#file-input", str(WORK / "src-1280x720.webm"))
+            page.wait_for_function(
+                "() => state.sourceType === 'video' && state.video.readyState >= 2",
+                timeout=120000)
+            page.wait_for_function("() => state.exportSupport && state.exportSupport.key",
+                                   timeout=60000)
+            page.wait_for_timeout(400)
+            page.select_option("#export-format", "webm")
+            page.click("#btn-export")
+            mobile = None
+            for _ in range(120):
+                mobile = page.evaluate("""() => {
+                  const el = document.getElementById('export-progress');
+                  const btn = document.getElementById('export-cancel');
+                  const r = el.getBoundingClientRect();
+                  const b = btn.getBoundingClientRect();
+                  const hit = document.elementFromPoint(b.left + b.width / 2,
+                                                        b.top + b.height / 2);
+                  return {frames: state.videoExportFrames || 0,
+                          snap: document.querySelector('.panel').dataset.snap,
+                          panel: [r.left, r.top, r.right, r.bottom],
+                          cancel: [b.left, b.top, b.right, b.bottom],
+                          hidden: el.hidden,
+                          hitId: hit ? (hit.id || hit.className) : null,
+                          vw: innerWidth, vh: innerHeight};
+                }""")
+                if mobile["frames"] >= 1 and not mobile["hidden"]:
+                    break
+                page.wait_for_timeout(250)
+            record("export", "Cancel is visible and clickable on a 700 px peek sheet",
+                   json.dumps(mobile),
+                   mobile is not None and not mobile["hidden"]
+                   and mobile["snap"] != "peek"
+                   and mobile["panel"][1] >= 0 and mobile["panel"][3] <= mobile["vh"]
+                   and mobile["cancel"][1] >= 0 and mobile["cancel"][3] <= mobile["vh"]
+                   and mobile["hitId"] == "export-cancel")
+            clicked = False
+            tap_error = ""
+            try:
+                page.click("#export-cancel", timeout=10000)
+                clicked = True
+            except Exception as exc:  # noqa: BLE001
+                tap_error = str(exc)
+            idle = False
+            try:
+                page.wait_for_function("() => !state.videoExporting", timeout=120000)
+                idle = True
+            except Exception:  # noqa: BLE001
+                pass
+            page.wait_for_timeout(400)
+            hidden = page.evaluate(
+                "() => document.getElementById('export-progress').hidden")
+            record("export", "the 700 px Cancel tap stops the export",
+                   f"clicked={clicked} idle={idle} hidden={hidden} error={tap_error}",
+                   clicked and idle and hidden)
+            page.set_viewport_size({"width": 1440, "height": 1000})
+            page.wait_for_timeout(400)
 
         # ---------------------------------------------------------------- hitch
         if wanted("hitch"):

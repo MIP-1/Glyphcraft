@@ -1,0 +1,64 @@
+{
+ "firefox": {
+  "video": {
+   "1280x720": {
+    "avc1.640028": true,
+    "avc1.4d0028": true,
+    "avc1.42E01E": true,
+    "vp09.00.10.08": true,
+    "vp8": true
+   },
+   "1920x1080": {
+    "avc1.640028": true,
+    "avc1.4d0028": true,
+    "avc1.42E01E": true,
+    "vp09.00.10.08": true,
+    "vp8": true
+   },
+   "3840x2160": {
+    "avc1.640028": true,
+    "avc1.4d0028": true,
+    "avc1.42E01E": true,
+    "vp09.00.10.08": true,
+    "vp8": true
+   }
+  },
+  "audio": {
+   "mp4a.40.2": false,
+   "opus": true
+  },
+  "webcodecs": true,
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0"
+ },
+ "chromium": {
+  "video": {
+   "1280x720": {
+    "avc1.640028": true,
+    "avc1.4d0028": true,
+    "avc1.42E01E": false,
+    "vp09.00.10.08": true,
+    "vp8": true
+   },
+   "1920x1080": {
+    "avc1.640028": true,
+    "avc1.4d0028": true,
+    "avc1.42E01E": false,
+    "vp09.00.10.08": true,
+    "vp8": true
+   },
+   "3840x2160": {
+    "avc1.640028": false,
+    "avc1.4d0028": false,
+    "avc1.42E01E": false,
+    "vp09.00.10.08": true,
+    "vp8": true
+   }
+  },
+  "audio": {
+   "mp4a.40.2": false,
+   "opus": true
+  },
+  "webcodecs": true,
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36"
+ }
+}

@@ -1,0 +1,85 @@
+{
+  "browser": "chromium",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "rows": [
+    {
+      "case": "export",
+      "name": "export produces a real WEBM video",
+      "detail": "file={'suggested': 'glyphcraft.webm', 'size': 3725881} info={'codec': 'vp9', 'pix_fmt': 'yuv420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 5.966, 'format': 'matroska,webm'} want_frames=179 boxes=['\\x10\\x00\\x00\\x1f'] seek=True hashes=['ef3f64db8c9987f5', '27329f9a557679c1', '4b830dcf35a0c209']",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "WEBM covers the clip from the playhead",
+      "detail": "playhead=2.848 export duration=5.966 frames=180",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "WEBM export shows progress and cancel",
+      "detail": "{\"present\": true, \"hidden\": true, \"text\": \"WEBM \\u00b7 49 of 180 frames \\u00b7 0:34 elapsed \\u00b7 1:30 left Cancel\", \"barValue\": 49, \"cancel\": true, \"busy\": true}",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "export produces a real MP4 video",
+      "detail": "file={'suggested': 'glyphcraft.mp4', 'size': 4327830} info={'codec': 'h264', 'pix_fmt': 'yuvj420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 6.0, 'format': 'mov,mp4,m4a,3gp,3g2,mj2'} want_frames=180 boxes=['ftyp', 'moov', 'mdat'] seek=True hashes=['b1ec724f20600754', '16c4bf95926f1a2e', 'ebddc286249aa6f4']",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "MP4 covers the clip from the playhead",
+      "detail": "playhead=2.848 export duration=6.0 frames=180",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "MP4 export shows progress and cancel",
+      "detail": "{\"present\": true, \"hidden\": true, \"text\": \"MP4 \\u00b7 52 of 180 frames \\u00b7 0:33 elapsed \\u00b7 1:22 left Cancel\", \"barValue\": 52, \"cancel\": true, \"busy\": true}",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "preview state is restored after export",
+      "detail": "{\"busy\": false, \"playing\": true, \"t\": 0.93} playhead=2.848",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "progress panel hides when the export finishes",
+      "detail": "{\"present\": true, \"hidden\": true, \"text\": \"MP4 \\u00b7 180 of 180 frames \\u00b7 2:22 elapsed \\u00b7 0:00 left Cancel\", \"barValue\": 180, \"cancel\": true, \"busy\": false}",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "Export Frame writes one full-size still",
+      "detail": "error=Page.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"#btn-export-frame\")\n    - locator resolved to <button type=\"button\" class=\"btn btn-small\" id=\"btn-export-frame\">Export Frame (PNG)</button>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying click action\n      - waiting 100ms\n    58 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying click action\n       - waiting 500ms\n",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "cancel stops the export and leaves the app clean",
+      "detail": "started=False ui={'present': True, 'hidden': True, 'text': 'WEBM \u00b7 31 of 180 frames \u00b7 0:44 elapsed \u00b7 3:31 left Cancel', 'barValue': 31, 'cancel': True, 'busy': True} state={'busy': True, 'frames': 32, 'button': False, 'sources': 0} downloads=[]",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "preview still renders after a cancelled export",
+      "detail": "hash=2804751203 still=2804751203",
+      "ok": true
+    },
+    {
+      "case": "errors",
+      "name": "no page or console errors",
+      "detail": "[]",
+      "ok": true
+    }
+  ],
+  "problems": [
+    "[export] WEBM export shows progress and cancel: {\"present\": true, \"hidden\": true, \"text\": \"WEBM \\u00b7 49 of 180 frames \\u00b7 0:34 elapsed \\u00b7 1:30 left Cancel\", \"barValue\": 49, \"cancel\": true, \"busy\": true}",
+    "[export] export produces a real MP4 video: file={'suggested': 'glyphcraft.mp4', 'size': 4327830} info={'codec': 'h264', 'pix_fmt': 'yuvj420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 6.0, 'format': 'mov,mp4,m4a,3gp,3g2,mj2'} want_frames=180 boxes=['ftyp', 'moov', 'mdat'] seek=True hashes=['b1ec724f20600754', '16c4bf95926f1a2e', 'ebddc286249aa6f4']",
+    "[export] MP4 export shows progress and cancel: {\"present\": true, \"hidden\": true, \"text\": \"MP4 \\u00b7 52 of 180 frames \\u00b7 0:33 elapsed \\u00b7 1:22 left Cancel\", \"barValue\": 52, \"cancel\": true, \"busy\": true}",
+    "[export] Export Frame writes one full-size still: error=Page.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"#btn-export-frame\")\n    - locator resolved to <button type=\"button\" class=\"btn btn-small\" id=\"btn-export-frame\">Export Frame (PNG)</button>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not visible\n    - retrying click action\n      - waiting 100ms\n    58 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not visible\n     - retrying click action\n       - waiting 500ms\n",
+    "[export] cancel stops the export and leaves the app clean: started=False ui={'present': True, 'hidden': True, 'text': 'WEBM \u00b7 31 of 180 frames \u00b7 0:44 elapsed \u00b7 3:31 left Cancel', 'barValue': 31, 'cancel': True, 'busy': True} state={'busy': True, 'frames': 32, 'button': False, 'sources': 0} downloads=[]"
+  ]
+}

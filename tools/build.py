@@ -422,6 +422,7 @@ def build() -> int:
         html = html.replace(f'src="{name}"', f'src="{Path(name).stem}.min.js"')
     (DIST / "index.html").write_text(html, encoding="utf-8")
     shutil.copytree(ROOT / "assets", DIST / "assets")
+    shutil.copytree(ROOT / "vendor", DIST / "vendor")
     print(f"dist/ ready: JS {total_before} -> {total_after} bytes, "
           f"{len(list(DIST.rglob('*')))} paths")
     return 0

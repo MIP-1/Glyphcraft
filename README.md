@@ -2,7 +2,7 @@
 
 Glyphcraft turns images and videos into glyph art in the browser. Drop in a
 photo or a clip, tune the ramp, dithering, palette and effects, then export a
-still (PNG / JPG / WebP / SVG / TXT) or a WebM clip.
+still (PNG / JPG / WebP / SVG / TXT) or a real MP4 / WebM clip.
 
 Everything runs locally. There is no install and no server side: plain HTML,
 CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
@@ -10,15 +10,17 @@ CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
 the browser supports it. Git keeps the readable sources; `npm run build`
 writes an optional minified `dist/` for publishing.
 
-## Status — 2026-11-13
+## Status — 2026-11-16
 
 **Current status:** the owner's video-fix round is **in progress** on `main`.
 V0 (`V0-pass`) reproduced the real video defects and registered G22; V1
 (`V1-pass`) fixes the unstable/pixelated frames so every played, paused or
 seeked frame renders at the full preview size, with parity in Chromium and
-Firefox. V2–V5 (real MP4/WebM export, video control bar, output dimensions,
-image hitches) are **NOT DONE** yet. P2-3 remains complete and tagged
-`P2-3-pass`; P2-4 is still **NOT STARTED** and is not part of this pass.
+Firefox; V2 (`V2-pass`) replaces the broken capture export with a real
+frame-by-frame MP4/WebM export at the chosen size. V3–V5 (video control bar,
+output dimensions, image hitches) are **NOT DONE** yet. P2-3 remains complete
+and tagged `P2-3-pass`; P2-4 is still **NOT STARTED** and is not part of this
+pass.
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -40,7 +42,8 @@ image hitches) are **NOT DONE** yet. P2-3 remains complete and tagged
 | P2-3 fast preview + video limits | PASS | tag `P2-3-pass`, gate runs 1–3, `docs/GATE.md` P2-3 |
 | Video fix V0 | PASS | tag `V0-pass`, `docs/evidence/v0/report.md` |
 | Video fix V1 full-resolution frames | PASS | tag `V1-pass`, `docs/evidence/v1/report.md` |
-| Video fix V2–V5 | IN PROGRESS | MP4/WebM export, control bar, output sizes, hitches |
+| Video fix V2 real MP4/WebM export | PASS | tag `V2-pass`, `docs/evidence/v2/report.md` |
+| Video fix V3–V5 | IN PROGRESS | control bar, output sizes, hitches |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
 | P2-5 before/after finish | NOT STARTED | |
 | P2-6 presets finish | NOT STARTED | |
@@ -150,6 +153,36 @@ and raw data are in `docs/evidence/p2-3/perf-log.md`.
   the 1600×900 preview), and the render key costs 14–20 µs per call against a
   65–245 ms render. No code changed; both are recorded in `perf-log.md`.
 
+**Video fix V2 (complete, tag `V2-pass`)**
+
+- The export no longer uses `MediaRecorder`. Each frame is seeked, rendered
+  through the real effect pipeline at the output size, and encoded with
+  WebCodecs; `vendor/mp4-muxer.js` 5.2.2 and `vendor/webm-muxer.js` 5.1.4
+  (MIT, Vanilagy, generated from the upstream `.mjs` files, SHA-256 in
+  `vendor/README.md`) do the muxing. They are classic scripts loaded on
+  demand, so export also works from `file://`, not only over HTTP. 60/60 and
+  180/180 frames decode, with exact duration, cues and MP4 fast start.
+- `#export-format` gains MP4. The export size follows the Output rules: the
+  default preset is Original (native, rotation-aware), and a preset, Custom or
+  Fit value is used when set. The P2-3 rule "video is always native" is
+  replaced by owner decision and recorded in `docs/GATE.md`; the controls stay
+  visible and disabled until V4 turns them on.
+- Progress shows format, frames, elapsed, estimate and Cancel. Cancel stops
+  cleanly with no download; loading a new file cancels a running export. The
+  preview is paused and restored. A separate `Export Frame (PNG)` writes one
+  full-size still.
+- New G22 export subset: 16 checks, 0 failures in Chromium and Firefox.
+  `tools/v2_export_matrix.py` probes 36 cells (18 per browser: 720p, 1080p, 4K,
+  portrait, rotated, 640×360 in three Fit modes, and `dist`) with ffprobe,
+  seeking and three extracted frames; all green.
+- G21 grew from 25 to 31 checks: each fixture now asserts native size under
+  Original **and** 320×180 under the custom preset.
+- Peak browser RSS during a Chromium export: 727 → 1,432 MB for a 2 s 1080p
+  clip and 1,336 → 2,437 MB for a 1 s 4K clip.
+- Three consecutive full gate runs on the final tree (2026-11-16): G1–G21
+  PASS; G22 is red only on the V3 control-bar checks, V4's size-controls check
+  and one intermittent V5 Firefox hitch.
+
 **P2-3 Step 6–7 (complete)**
 
 - Three consecutive full gate runs passed on the final tree: 06:16–06:45,
@@ -169,17 +202,21 @@ and raw data are in `docs/evidence/p2-3/perf-log.md`.
   outside the preview canvas and the status digits (0 differing pixels in every
   file); runs 2 and 3 differ only by a 2,124 px one-capture slider reflow, which
   is listed under HUMAN-CHECK.
-- Limits: video 850 MB, image 40 MB, both named constants. Video export is
-  always the source's native pixel size, proven with ffprobe on six sources.
-- Full evidence and decisions: `docs/GATE.md` P2-3.
+- Limits: video 850 MB, image 40 MB, both named constants. P2-3 exported
+  video at the source's native pixel size only; the owner replaced that rule
+  in V2 with the Output controls (default Original), proven with ffprobe on
+  36 cells.
+- Full evidence and decisions: `docs/GATE.md` P2-3 and P2-3 video fix V2.
 
 **Next steps**
 
-1. P2-3 is PASS. Owner hand-check (fresh reload in both themes, one real video
-   over 100 MB, one phone).
-2. After the owner confirms P2-3: P2-4 undo/redo/history, then P2-5
-   before/after finish and P2-6 presets. Do not start P2-4 in this pass.
-3. Mobile landscape refinement (height <500 px): the sheet and controls work
+1. V2 is PASS. Next tasks in the video-fix round: V3 video control bar, V4
+   Output Size controls enabled for video, V5 image hitches and closeout.
+2. Owner hand-check: fresh reload in both themes, one real video over 100 MB,
+   one phone.
+3. After V5: P2-4 undo/redo/history, then P2-5 before/after finish and P2-6
+   presets. Do not start P2-4 in this pass.
+4. Mobile landscape refinement (height <500 px): the sheet and controls work
    today, but add a landscape-specific snap once real-device testing is available.
 
 **HUMAN-CHECK**
@@ -278,7 +315,9 @@ python tests/test_suite.py        # 170 checks, headless Chromium via Playwright
 python tests/test_contrast.py     # WCAG contrast audit, both themes, 2 widths
 python tests/gate/p2_2_check.py   # worker acceptance (also permanent G19)
 python tests/gate/golden_check.py # 200 effect/mode/input canvas hashes (also G20)
-python tests/gate/video_p2_3_check.py # 850 MB split, no whole-file read, native export (G21)
+python tests/gate/video_p2_3_check.py # 850 MB split, no whole-file read, video size rules (G21)
+python tests/gate/video_real_flow.py   # real video flow, control bar, seek, export (G22)
+python tools/v2_export_matrix.py       # 36-cell MP4/WebM size matrix, both browsers
 python tests/gate/video_large.py  # closeout only: one real 838 MB 4K video load/play/export
 python tests/gate/p2_2_breakit.py # six hostile worker cases
 python tools/dist_smoke.py        # publish build renders the same canvas
@@ -298,6 +337,24 @@ optional Google Fonts stylesheet and the Crimson Text faces it selects; the
 page falls back to Goodmountain/Georgia/serif if they are blocked. JetBrains
 Mono is served from this origin; its SIL OFL 1.1 licence sits next to it in
 `assets/fonts/JetBrainsMono-OFL.txt`.
+
+## Limits
+
+- **Video export has no audio.** Neither headless Chromium nor Firefox can
+  encode AAC (measured with `AudioEncoder.isConfigSupported`), so an exported
+  file carries the picture only. The app shows a visible note when the source
+  has audio; it is never dropped silently.
+- **Chromium cannot encode H.264 at 3840×2160** in this build. At that size the
+  MP4 option stays visible but disabled, with the reason shown next to it; WebM
+  works. Firefox encodes 4K H.264.
+- **A Firefox MP4 starts at 67 ms.** Its encoder emits B-frames, and the
+  vendored muxer writes no edit list, so the presentation timeline is shifted
+  by the reorder delay. All frames decode; Chromium MP4s start at 0.
+- **Export memory** is well above the output size: a 1 s 4K clip peaked at
+  2.4 GB of browser RSS in Chromium. Long 4K exports are slow and heavy; the
+  source seek dominates (a 6 s 4K source at 640×360 took 281 s).
+- The vendored muxers are the only third-party code shipped besides the
+  self-hosted font; no network access is needed at runtime or at build time.
 
 ## Browser support
 

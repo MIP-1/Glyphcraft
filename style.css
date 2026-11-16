@@ -582,6 +582,7 @@ h1, h2, h3, h4, h5, h6, .section-title, .logo, .btn {
   border-bottom: 1px solid var(--border-subtle);
 }
 .panel-actionbar .btn { flex: 1; min-height: 44px; min-width: 44px; }
+#export-progress, #export-progress * { scroll-margin-top: 76px; }
 
 .panel-search {
   width: 100%;
@@ -1200,6 +1201,20 @@ body.reorder-active * { cursor: grabbing !important; }
 .output-warning { color: var(--accent-text); font-size: 12px; }
 .output-note { color: var(--menu-muted); font-size: 12px; }
 
+.export-progress-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-2); margin-bottom: var(--space-2);
+}
+.export-progress-text { color: var(--text-secondary); font-size: 12px; }
+#export-progress progress {
+  width: 100%; height: 6px; appearance: none; border: 0;
+  border-radius: var(--radius-md); overflow: hidden;
+  background: var(--surface-input);
+}
+#export-progress progress::-webkit-progress-bar { background: var(--surface-input); }
+#export-progress progress::-webkit-progress-value { background: var(--accent); }
+#export-progress progress::-moz-progress-bar { background: var(--accent); }
+
 /* Toast */
 .toast {
   position: fixed;
@@ -1434,6 +1449,7 @@ body.reorder-active * { cursor: grabbing !important; }
     min-height: 60px;
   }
   .panel-actionbar .btn { min-height: 44px; }
+  #export-progress, #export-progress * { scroll-margin-top: 68px; }
   .section-header { min-height: 44px; cursor: pointer; }
   .section-title { font-size: 16px; color: var(--text-primary); padding: var(--space-2) 0; }
   .section-title::before { color: var(--text-secondary); }

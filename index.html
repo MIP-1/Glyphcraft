@@ -35,7 +35,7 @@
           <button class="menu-btn" id="menu-file" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="dropdown-file">File</button>
           <div class="menu-dropdown" id="dropdown-file" role="menu" aria-label="File">
             <button class="menu-item" type="button" role="menuitem" data-action="open"><span>Open file…</span><kbd class="menu-key">Ctrl O</kbd></button>
-            <button class="menu-item" type="button" role="menuitem" data-action="export"><span>Export Image…</span><kbd class="menu-key">E</kbd></button>
+            <button class="menu-item" type="button" role="menuitem" data-action="export"><span id="menu-export-label">Export Image…</span><kbd class="menu-key">E</kbd></button>
             <button class="menu-item" type="button" role="menuitem" data-action="reset"><span>Reset All</span><kbd class="menu-key">R</kbd></button>
           </div>
         </div>
@@ -435,6 +435,22 @@
                 <option value="webm">WebM Video</option>
               </select>
             </div>
+            <div class="control hidden" id="export-format-note">
+              <span class="output-warning" id="export-format-note-text"></span>
+            </div>
+            <div class="control hidden" id="export-frame-row">
+              <button class="btn btn-small" id="btn-export-frame" type="button">Export Frame (PNG)</button>
+            </div>
+            <div class="control hidden" id="export-audio-note">
+              <span class="output-note" id="export-audio-note-text"></span>
+            </div>
+            <div class="control hidden" id="export-progress" role="status" aria-live="polite">
+              <div class="export-progress-head">
+                <span class="export-progress-text" id="export-progress-text">Preparing…</span>
+                <button class="btn btn-small" id="export-cancel" type="button">Cancel</button>
+              </div>
+              <progress id="export-progress-bar" max="1" value="0" aria-label="Export progress"></progress>
+            </div>
             <div class="control" id="jpg-quality-control" hidden>
               <label class="control-label" for="jpg-quality">JPG Quality <span class="control-unit">%</span></label>
               <div class="control-input-wrap">
@@ -484,6 +500,9 @@
                   <input type="checkbox" id="output-lock-ratio" checked> Lock Ratio
                 </label>
               </div>
+            </div>
+            <div class="control hidden" id="output-size-line">
+              <span class="output-note" id="output-size-text"></span>
             </div>
             <div class="control hidden" id="output-video-note">
               <span class="output-note">Video exports at the original resolution. Size controls are disabled for video.</span>

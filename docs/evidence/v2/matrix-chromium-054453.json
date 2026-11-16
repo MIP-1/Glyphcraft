@@ -1,0 +1,34 @@
+[
+ {
+  "kind": "matrix",
+  "name": "orig-1280x720-original-webm",
+  "ok": true,
+  "file": {
+   "suggested": "glyphcraft.webm",
+   "size": 1229313,
+   "seconds": 39.8,
+   "peakMB": null
+  },
+  "format": "webm",
+  "codec": "vp9",
+  "pix_fmt": "yuv420p",
+  "width": 1280,
+  "height": 720,
+  "frames": 59,
+  "want_frames": 60,
+  "duration": 1.966,
+  "start": 0.0,
+  "seek": true,
+  "fast_start": true,
+  "cues": true,
+  "frame_diff_min": 6.81,
+  "effects_diff": 29.05,
+  "bytes": 1229313
+ },
+ {
+  "kind": "errors",
+  "name": "chromium source page",
+  "ok": true,
+  "errors": []
+ }
+]

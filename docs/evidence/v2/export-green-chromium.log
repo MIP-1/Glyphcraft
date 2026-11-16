@@ -1,0 +1,14 @@
+PASS [export] export produces a real WEBM video: file={'suggested': 'glyphcraft.webm', 'size': 3725881} info={'codec': 'vp9', 'pix_fmt': 'yuv420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 5.966, 'format': 'matroska,webm'} want_frames=179 boxes=['\x10\x00\x00\x1f'] seek=True hashes=['ef3f64db8c9987f5', '27329f9a557679c1', '4b830dcf35a0c209']
+PASS [export] WEBM covers the clip from the playhead: playhead=2.813 export duration=5.966 frames=180
+PASS [export] WEBM export shows progress and cancel: {"present": true, "hidden": false, "text": "WEBM \u00b7 0 of 180 frames \u00b7 0:00 elapsed \u00b7 estimating Cancel", "barValue": 0, "cancel": true, "busy": true}
+PASS [export] export produces a real MP4 video: file={'suggested': 'glyphcraft.mp4', 'size': 4326538} info={'codec': 'h264', 'pix_fmt': 'yuvj420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 6.0, 'format': 'mov,mp4,m4a,3gp,3g2,mj2'} want_frames=180 boxes=['ftyp', 'moov', 'mdat'] seek=True hashes=['84eaef6b4867819e', '32d7749b65ba6a92', 'd5e136f2c915e38a']
+PASS [export] MP4 covers the clip from the playhead: playhead=2.813 export duration=6.0 frames=180
+PASS [export] MP4 export shows progress and cancel: {"present": true, "hidden": false, "text": "MP4 \u00b7 0 of 180 frames \u00b7 0:00 elapsed \u00b7 estimating Cancel", "barValue": 0, "cancel": true, "busy": true}
+PASS [export] preview state is restored after export: {"busy": false, "playing": true, "t": 0.03} playhead=2.813
+PASS [export] progress panel hides when the export finishes: {"present": true, "hidden": true, "text": "MP4 \u00b7 180 of 180 frames \u00b7 2:09 elapsed \u00b7 0:00 left Cancel", "barValue": 180, "cancel": true, "busy": false}
+PASS [export] Export Frame writes one full-size still: file={'suggested': 'glyphcraft-frame.png', 'size': 96717} size=1280x720
+PASS [export] cancel stops the export and leaves the app clean: started=True ui={'present': True, 'hidden': True, 'text': 'Cancelling… Cancel', 'barValue': 1, 'cancel': True, 'busy': False} state={'busy': False, 'frames': 3, 'button': True, 'sources': 0} downloads=[]
+PASS [export] preview still renders after a cancelled export: hash=2804751203 still=2804751203
+PASS [errors] no page or console errors: []
+12 checks, 0 failure(s) [chromium]
+G22 PASS

@@ -1,0 +1,75 @@
+{
+  "browser": "chromium",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "rows": [
+    {
+      "case": "export",
+      "name": "export produces a real WEBM video",
+      "detail": "file={'suggested': 'glyphcraft.webm', 'size': 2088652} info={'codec': 'vp9', 'pix_fmt': 'yuv420p', 'w': 1280, 'h': 720, 'frames': 0, 'fps': 0.0, 'duration': 0.0, 'format': 'matroska,webm'} want_frames=0 boxes=['\\x9fB\\x86\\x81'] seek=True hashes=['af69f21b0ac21a11', '12257660192e086f', 'cc4a437f374fe3d0']",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "WEBM covers the clip from the playhead",
+      "detail": "playhead=2.855 export duration=0.0 frames=0",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "WEBM export shows progress and cancel",
+      "detail": "{\"present\": false, \"hidden\": true, \"text\": \"\", \"barValue\": null, \"cancel\": false, \"busy\": false}",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "MP4 format is in the video list",
+      "detail": "format option 'mp4' is missing from the list",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "preview state is restored after export",
+      "detail": "{\"busy\": false, \"playing\": true, \"t\": 2.19} playhead=2.855",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "progress panel hides when the export finishes",
+      "detail": "{\"present\": false, \"hidden\": true, \"text\": \"\", \"barValue\": null, \"cancel\": false, \"busy\": false}",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "Export Frame writes one full-size still",
+      "detail": "error=Page.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"#btn-export-frame\")\n",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "cancel stops the export and leaves the app clean",
+      "detail": "started=False ui={'present': False, 'hidden': True, 'text': '', 'barValue': None, 'cancel': False, 'busy': True} state={'busy': True, 'frames': 136, 'button': False, 'sources': 0} downloads=[]",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "preview still renders after a cancelled export",
+      "detail": "hash=2149884384 still=2149884384",
+      "ok": true
+    },
+    {
+      "case": "errors",
+      "name": "no page or console errors",
+      "detail": "[]",
+      "ok": true
+    }
+  ],
+  "problems": [
+    "[export] export produces a real WEBM video: file={'suggested': 'glyphcraft.webm', 'size': 2088652} info={'codec': 'vp9', 'pix_fmt': 'yuv420p', 'w': 1280, 'h': 720, 'frames': 0, 'fps': 0.0, 'duration': 0.0, 'format': 'matroska,webm'} want_frames=0 boxes=['\\x9fB\\x86\\x81'] seek=True hashes=['af69f21b0ac21a11', '12257660192e086f', 'cc4a437f374fe3d0']",
+    "[export] WEBM covers the clip from the playhead: playhead=2.855 export duration=0.0 frames=0",
+    "[export] WEBM export shows progress and cancel: {\"present\": false, \"hidden\": true, \"text\": \"\", \"barValue\": null, \"cancel\": false, \"busy\": false}",
+    "[export] MP4 format is in the video list: format option 'mp4' is missing from the list",
+    "[export] progress panel hides when the export finishes: {\"present\": false, \"hidden\": true, \"text\": \"\", \"barValue\": null, \"cancel\": false, \"busy\": false}",
+    "[export] Export Frame writes one full-size still: error=Page.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"#btn-export-frame\")\n",
+    "[export] cancel stops the export and leaves the app clean: started=False ui={'present': False, 'hidden': True, 'text': '', 'barValue': None, 'cancel': False, 'busy': True} state={'busy': True, 'frames': 136, 'button': False, 'sources': 0} downloads=[]"
+  ]
+}

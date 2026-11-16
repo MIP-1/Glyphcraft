@@ -1,0 +1,81 @@
+{
+  "browser": "firefox",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0",
+  "rows": [
+    {
+      "case": "export",
+      "name": "export produces a real WEBM video",
+      "detail": "file={'suggested': 'glyphcraft.webm', 'size': 3684742} info={'codec': 'vp9', 'pix_fmt': 'yuv420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 5.966, 'format': 'matroska,webm'} want_frames=179 boxes=['\\x10\\x00\\x00\\x1f'] seek=True hashes=['f8cdb94b3a89e239', '8c85f67c45514cf9', '7997772f5d87f348']",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "WEBM covers the clip from the playhead",
+      "detail": "playhead=2.805 export duration=5.966 frames=180",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "WEBM export shows progress and cancel",
+      "detail": "{\"present\": true, \"hidden\": false, \"text\": \"WEBM \\u00b7 0 of 180 frames \\u00b7 0:00 elapsed \\u00b7 estimating Cancel\", \"barValue\": 0, \"cancel\": true, \"busy\": true}",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "export produces a real MP4 video",
+      "detail": "file={'suggested': 'glyphcraft.mp4', 'size': 4916716} info={'codec': 'h264', 'pix_fmt': 'yuv420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 6.0, 'format': 'mov,mp4,m4a,3gp,3g2,mj2'} want_frames=180 boxes=['ftyp', 'moov', 'mdat'] seek=False hashes=['c51959eaecb8701e', '9620657193cd054d', 'f5cebb4d3593a4e1']",
+      "ok": false
+    },
+    {
+      "case": "export",
+      "name": "MP4 covers the clip from the playhead",
+      "detail": "playhead=2.805 export duration=6.0 frames=180",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "MP4 export shows progress and cancel",
+      "detail": "{\"present\": true, \"hidden\": false, \"text\": \"MP4 \\u00b7 0 of 180 frames \\u00b7 0:00 elapsed \\u00b7 estimating Cancel\", \"barValue\": 0, \"cancel\": true, \"busy\": true}",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "preview state is restored after export",
+      "detail": "{\"busy\": false, \"playing\": true, \"t\": 3.55} playhead=2.805",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "progress panel hides when the export finishes",
+      "detail": "{\"present\": true, \"hidden\": true, \"text\": \"MP4 \\u00b7 180 of 180 frames \\u00b7 2:36 elapsed \\u00b7 0:00 left Cancel\", \"barValue\": 180, \"cancel\": true, \"busy\": false}",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "Export Frame writes one full-size still",
+      "detail": "file={'suggested': 'glyphcraft-frame.png', 'size': 106930} size=1280x720",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "cancel stops the export and leaves the app clean",
+      "detail": "started=True ui={'present': True, 'hidden': True, 'text': 'Cancelling\u2026 Cancel', 'barValue': 1, 'cancel': True, 'busy': False} state={'busy': False, 'frames': 3, 'button': True, 'sources': 0} downloads=[]",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "preview still renders after a cancelled export",
+      "detail": "hash=2784162208 still=2784162208",
+      "ok": true
+    },
+    {
+      "case": "errors",
+      "name": "no page or console errors",
+      "detail": "[]",
+      "ok": true
+    }
+  ],
+  "problems": [
+    "[export] export produces a real MP4 video: file={'suggested': 'glyphcraft.mp4', 'size': 4916716} info={'codec': 'h264', 'pix_fmt': 'yuv420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 6.0, 'format': 'mov,mp4,m4a,3gp,3g2,mj2'} want_frames=180 boxes=['ftyp', 'moov', 'mdat'] seek=False hashes=['c51959eaecb8701e', '9620657193cd054d', 'f5cebb4d3593a4e1']"
+  ]
+}
