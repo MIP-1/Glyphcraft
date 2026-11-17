@@ -1,0 +1,11 @@
+PASS fixtures are reused, not regenerated: ['src-1280x720.webm', 'src-1920x1080.webm']
+PASS DPR1 zoom 1.12 sharpness is measured from the real canvas: backing=[1600, 900] need=[1493.3, 840] covers=True
+FAIL DPR1 zoom 2.0 sharpness is measured from the real canvas: backing=[1600, 900] need=[1920, 1080] covers=False
+PASS the render wrapper counts the video loop: renders=20 rvfc=20 p50=159.7
+PASS pause samples resume playback afterwards: pauses=[158.5, 12.4, 9.6] playing=True
+FAIL DPR2 zoom 1 uses devicePixelRatio from the context: dpr=2 backing=[1600, 900] need=[1920, 1080] covers=False
+PASS 720p backing is never raised above the source: backing=[1280, 720] source need=[1280, 720]
+PASS light theme renders through the same wrapper: renders=24 p50=97.5 theme=light
+PASS worker=0 path still renders: hash=720560626
+PASS no page errors in any probe: []
+10 probes, 2 failure(s)

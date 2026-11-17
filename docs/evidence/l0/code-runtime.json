@@ -1,0 +1,490 @@
+{
+  "files": [
+    {
+      "file": "app.js",
+      "lines": 3796,
+      "bytes": 142500,
+      "gzip": 35726,
+      "brotli": 29294,
+      "minified": 130207
+    },
+    {
+      "file": "engine.js",
+      "lines": 835,
+      "bytes": 36884,
+      "gzip": 8298,
+      "brotli": 7276,
+      "minified": 33790
+    },
+    {
+      "file": "effects.js",
+      "lines": 814,
+      "bytes": 30677,
+      "gzip": 8020,
+      "brotli": 7156,
+      "minified": 28076
+    },
+    {
+      "file": "reorder.js",
+      "lines": 289,
+      "bytes": 9972,
+      "gzip": 2515,
+      "brotli": 2182,
+      "minified": 8376
+    },
+    {
+      "file": "render-worker.js",
+      "lines": 71,
+      "bytes": 2662,
+      "gzip": 1093,
+      "brotli": 930,
+      "minified": 2514
+    },
+    {
+      "file": "style.css",
+      "lines": 1480,
+      "bytes": 47715,
+      "gzip": 9200,
+      "brotli": 8012,
+      "minified": 43668
+    },
+    {
+      "file": "index.html",
+      "lines": 525,
+      "bytes": 33132,
+      "gzip": 5564,
+      "brotli": 4637,
+      "minified": 26353
+    },
+    {
+      "file": "vendor/mp4-muxer.js",
+      "lines": 1883,
+      "bytes": 69375,
+      "gzip": 14597,
+      "brotli": 12564,
+      "minified": 58280
+    },
+    {
+      "file": "vendor/webm-muxer.js",
+      "lines": 1453,
+      "bytes": 65311,
+      "gzip": 11995,
+      "brotli": 10324,
+      "minified": 58244
+    }
+  ],
+  "tools": [
+    {
+      "file": "tools/build.py",
+      "lines": 438,
+      "bytes": 13297
+    },
+    {
+      "file": "tools/codec_probe.py",
+      "lines": 98,
+      "bytes": 3261
+    },
+    {
+      "file": "tools/dist_smoke.py",
+      "lines": 97,
+      "bytes": 3531
+    },
+    {
+      "file": "tools/l0_measure.py",
+      "lines": 1129,
+      "bytes": 45858
+    },
+    {
+      "file": "tools/v2_decoded_frames.py",
+      "lines": 48,
+      "bytes": 2179
+    },
+    {
+      "file": "tools/v2_export_matrix.py",
+      "lines": 443,
+      "bytes": 17775
+    },
+    {
+      "file": "tools/vendor_muxers.py",
+      "lines": 53,
+      "bytes": 1985
+    }
+  ],
+  "tests": [
+    {
+      "file": "tests/bench/bench.py",
+      "lines": 450,
+      "bytes": 18372
+    },
+    {
+      "file": "tests/bench/bench_lib.py",
+      "lines": 350,
+      "bytes": 13578
+    },
+    {
+      "file": "tests/bench/breakit_p2_3.py",
+      "lines": 618,
+      "bytes": 26859
+    },
+    {
+      "file": "tests/bench/breakit_v2.py",
+      "lines": 264,
+      "bytes": 11517
+    },
+    {
+      "file": "tests/bench/golden_gen.py",
+      "lines": 75,
+      "bytes": 2454
+    },
+    {
+      "file": "tests/bench/overhead_probe.py",
+      "lines": 108,
+      "bytes": 5008
+    },
+    {
+      "file": "tests/bench/parity_engine.py",
+      "lines": 160,
+      "bytes": 8168
+    },
+    {
+      "file": "tests/bench/speed_adjust.py",
+      "lines": 169,
+      "bytes": 7605
+    },
+    {
+      "file": "tests/bench/speed_dither.py",
+      "lines": 169,
+      "bytes": 7500
+    },
+    {
+      "file": "tests/bench/speed_effect.py",
+      "lines": 165,
+      "bytes": 7207
+    },
+    {
+      "file": "tests/bench/speed_page.py",
+      "lines": 189,
+      "bytes": 7839
+    },
+    {
+      "file": "tests/gate/compare_check.py",
+      "lines": 845,
+      "bytes": 37412
+    },
+    {
+      "file": "tests/gate/effects_sweep.py",
+      "lines": 662,
+      "bytes": 29196
+    },
+    {
+      "file": "tests/gate/effects_ui.py",
+      "lines": 231,
+      "bytes": 10494
+    },
+    {
+      "file": "tests/gate/golden_check.py",
+      "lines": 90,
+      "bytes": 3261
+    },
+    {
+      "file": "tests/gate/golden_lib.py",
+      "lines": 69,
+      "bytes": 2538
+    },
+    {
+      "file": "tests/gate/load_check.py",
+      "lines": 549,
+      "bytes": 23366
+    },
+    {
+      "file": "tests/gate/p2_1_breakit.py",
+      "lines": 251,
+      "bytes": 9592
+    },
+    {
+      "file": "tests/gate/p2_2_breakit.py",
+      "lines": 305,
+      "bytes": 11221
+    },
+    {
+      "file": "tests/gate/p2_2_check.py",
+      "lines": 350,
+      "bytes": 13214
+    },
+    {
+      "file": "tests/gate/run_gate.py",
+      "lines": 2865,
+      "bytes": 138316
+    },
+    {
+      "file": "tests/gate/video_check.py",
+      "lines": 938,
+      "bytes": 47780
+    },
+    {
+      "file": "tests/gate/video_large.py",
+      "lines": 176,
+      "bytes": 7518
+    },
+    {
+      "file": "tests/gate/video_p2_3_check.py",
+      "lines": 307,
+      "bytes": 14173
+    },
+    {
+      "file": "tests/gate/video_real_flow.py",
+      "lines": 1007,
+      "bytes": 49497
+    },
+    {
+      "file": "tests/test_contrast.py",
+      "lines": 272,
+      "bytes": 9715
+    },
+    {
+      "file": "tests/test_suite.py",
+      "lines": 1165,
+      "bytes": 62718
+    }
+  ],
+  "largest_functions": {
+    "app.js": {
+      "count": 169,
+      "largest": [
+        {
+          "name": "setupEventListeners",
+          "lines": 514,
+          "bytes": 23635
+        },
+        {
+          "name": "renderEffectsList",
+          "lines": 216,
+          "bytes": 8517
+        },
+        {
+          "name": "initEls",
+          "lines": 138,
+          "bytes": 5837
+        },
+        {
+          "name": "exportVideo",
+          "lines": 152,
+          "bytes": 5756
+        },
+        {
+          "name": "loadFile",
+          "lines": 123,
+          "bytes": 4605
+        },
+        {
+          "name": "render",
+          "lines": 100,
+          "bytes": 3739
+        },
+        {
+          "name": "exportStillVideo",
+          "lines": 84,
+          "bytes": 3143
+        },
+        {
+          "name": "attachStepper",
+          "lines": 65,
+          "bytes": 2541
+        },
+        {
+          "name": "renderPresetList",
+          "lines": 52,
+          "bytes": 2399
+        },
+        {
+          "name": "syncUIFromState",
+          "lines": 50,
+          "bytes": 2169
+        },
+        {
+          "name": "syncExportControls",
+          "lines": 52,
+          "bytes": 2072
+        },
+        {
+          "name": "renderPaletteBuilder",
+          "lines": 51,
+          "bytes": 1759
+        }
+      ]
+    },
+    "effects.js": {
+      "count": 47,
+      "largest": [
+        {
+          "name": "fxConvolve",
+          "lines": 62,
+          "bytes": 2795
+        },
+        {
+          "name": "fxOil",
+          "lines": 46,
+          "bytes": 1731
+        },
+        {
+          "name": "applyEffects",
+          "lines": 53,
+          "bytes": 1676
+        },
+        {
+          "name": "fxSketch",
+          "lines": 33,
+          "bytes": 1397
+        },
+        {
+          "name": "fxBlur",
+          "lines": 31,
+          "bytes": 1308
+        },
+        {
+          "name": "fxEdges",
+          "lines": 32,
+          "bytes": 1214
+        },
+        {
+          "name": "fxCRT",
+          "lines": 29,
+          "bytes": 1098
+        },
+        {
+          "name": "fxPixelSort",
+          "lines": 28,
+          "bytes": 1085
+        },
+        {
+          "name": "fxMatrix",
+          "lines": 23,
+          "bytes": 1015
+        },
+        {
+          "name": "autoLevels",
+          "lines": 27,
+          "bytes": 992
+        },
+        {
+          "name": "fxHalftone",
+          "lines": 24,
+          "bytes": 792
+        },
+        {
+          "name": "fxVHS",
+          "lines": 24,
+          "bytes": 791
+        }
+      ]
+    },
+    "engine.js": {
+      "count": 26,
+      "largest": [
+        {
+          "name": "applyAdjustments",
+          "lines": 75,
+          "bytes": 2897
+        },
+        {
+          "name": "canvasToSvg",
+          "lines": 55,
+          "bytes": 2698
+        },
+        {
+          "name": "renderDither",
+          "lines": 68,
+          "bytes": 2658
+        },
+        {
+          "name": "renderScript",
+          "lines": 67,
+          "bytes": 2583
+        },
+        {
+          "name": "extractPalette",
+          "lines": 44,
+          "bytes": 1727
+        },
+        {
+          "name": "errorDiffusionDither",
+          "lines": 49,
+          "bytes": 1722
+        },
+        {
+          "name": "canvasToTxt",
+          "lines": 43,
+          "bytes": 1646
+        },
+        {
+          "name": "halftoneDither",
+          "lines": 34,
+          "bytes": 1415
+        },
+        {
+          "name": "blueNoiseDither",
+          "lines": 24,
+          "bytes": 910
+        },
+        {
+          "name": "measureGlyphDensities",
+          "lines": 25,
+          "bytes": 866
+        },
+        {
+          "name": "buildRamp",
+          "lines": 17,
+          "bytes": 746
+        },
+        {
+          "name": "orderedDither",
+          "lines": 20,
+          "bytes": 707
+        }
+      ]
+    }
+  },
+  "parse_compile": {
+    "main_thread_compile_ms_by_script": {
+      "app.js": {
+        "ms": 0.08,
+        "events": 1
+      },
+      "effects.js": {
+        "ms": 1.29,
+        "events": 2
+      },
+      "engine.js": {
+        "ms": 1.33,
+        "events": 2
+      },
+      "index.html": {
+        "ms": 0.26,
+        "events": 1
+      },
+      "render-worker.js": {
+        "ms": 0.38,
+        "events": 1
+      },
+      "reorder.js": {
+        "ms": 0.04,
+        "events": 1
+      }
+    },
+    "main_thread_compile_total_ms": 3.38,
+    "background_compile_total_ms": 20.18,
+    "script_duration_s": 0.054,
+    "task_duration_s": 0.59,
+    "errors": []
+  },
+  "transfer_source": {
+    "bytes": 438228,
+    "gzip": 94774,
+    "brotli": 75491
+  },
+  "transfer_dist": {
+    "bytes": 619136,
+    "gzip": 185188,
+    "brotli": 138117
+  }
+}

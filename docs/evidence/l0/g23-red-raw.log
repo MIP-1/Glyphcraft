@@ -1,0 +1,18 @@
+PASS [smooth] chromium zero-effect control runs: p50=37.6ms fps=15.0 late=0.9 advance=5.0s
+FAIL [smooth] chromium light stack keeps playback fluid: p50=61.7ms(budget 60.0) delta=24.1ms p95=79.4ms late=1.0(budget 0.25) fps=12.4(min 3.0) longest_task=228ms control p50=37.6ms
+PASS [smooth] chromium light stack keeps input responsive: pause median=6.5ms(budget 150.0) max=11.4ms(budget 300.0) samples=[11.4, 6.5, 6.7, 5.7, 5.4]
+PASS [smooth] chromium playback has no page errors: []
+PASS [smooth] firefox zero-effect control runs: p50=58ms fps=16.2 late=0.9 advance=5.1s
+FAIL [smooth] firefox light stack keeps playback fluid: p50=117ms(budget 80.0) delta=59ms p95=260ms late=1.0(budget 0.25) fps=7.6(min 3.0) longest_task=0ms control p50=58ms
+FAIL [smooth] firefox light stack keeps input responsive: pause median=400.9ms(budget 150.0) max=548.2ms(budget 300.0) samples=[548.2, 401.6, 238.9, 384.6, 400.9]
+PASS [smooth] firefox playback has no page errors: []
+PASS [sharp] DPR 1 zoom 0.79 covers display pixels: backing=[1600, 900] css=[1053.3, 592.5] need=[1053.3, 592.5] source=[1920, 1080] caps=1600px/2.56MP
+PASS [sharp] DPR 1 zoom 1 covers display pixels: backing=[1600, 900] css=[1333.3, 750] need=[1333.3, 750] source=[1920, 1080] caps=1600px/2.56MP
+PASS [sharp] DPR 1 zoom 1.12 covers display pixels: backing=[1600, 900] css=[1493.3, 840] need=[1493.3, 840] source=[1920, 1080] caps=1600px/2.56MP
+FAIL [sharp] DPR 1 zoom 2 covers display pixels: backing=[1600, 900] css=[2666.7, 1500] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+FAIL [sharp] DPR 2 zoom 0.79 covers display pixels: backing=[1600, 900] css=[1053.3, 592.5] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+FAIL [sharp] DPR 2 zoom 1 covers display pixels: backing=[1600, 900] css=[1333.3, 750] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+FAIL [sharp] DPR 2 zoom 1.12 covers display pixels: backing=[1600, 900] css=[1493.3, 840] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+FAIL [sharp] DPR 2 zoom 2 covers display pixels: backing=[1600, 900] css=[2666.7, 1500] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+16 checks, 8 failure(s) [G23]
+G23 FAIL

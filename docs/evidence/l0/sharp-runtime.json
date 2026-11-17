@@ -1,0 +1,821 @@
+{
+  "cases": {
+    "video-720p-dpr1.0-z0.79": {
+      "type": "video",
+      "source": [
+        1280,
+        720
+      ],
+      "full": [
+        1280,
+        720
+      ],
+      "preview": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "css": [
+        1011.2,
+        568.8
+      ],
+      "dpr": 1,
+      "zoom": 0.79,
+      "scale": 0.79,
+      "need": [
+        1011.2,
+        568.8
+      ],
+      "covers": true,
+      "ratio": 1.266,
+      "imageRendering": "auto",
+      "dpr_requested": 1.0
+    },
+    "video-720p-dpr1.0-z1.0": {
+      "type": "video",
+      "source": [
+        1280,
+        720
+      ],
+      "full": [
+        1280,
+        720
+      ],
+      "preview": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "css": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "zoom": 1,
+      "scale": 1,
+      "need": [
+        1280,
+        720
+      ],
+      "covers": true,
+      "ratio": 1,
+      "imageRendering": "auto",
+      "dpr_requested": 1.0
+    },
+    "video-720p-dpr1.0-z1.12": {
+      "type": "video",
+      "source": [
+        1280,
+        720
+      ],
+      "full": [
+        1280,
+        720
+      ],
+      "preview": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "css": [
+        1433.6,
+        806.4
+      ],
+      "dpr": 1,
+      "zoom": 1.12,
+      "scale": 1.12,
+      "need": [
+        1280,
+        720
+      ],
+      "covers": true,
+      "ratio": 1,
+      "imageRendering": "pixelated",
+      "dpr_requested": 1.0
+    },
+    "video-720p-dpr1.0-z2.0": {
+      "type": "video",
+      "source": [
+        1280,
+        720
+      ],
+      "full": [
+        1280,
+        720
+      ],
+      "preview": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "css": [
+        2560,
+        1440
+      ],
+      "dpr": 1,
+      "zoom": 2,
+      "scale": 2,
+      "need": [
+        1280,
+        720
+      ],
+      "covers": true,
+      "ratio": 1,
+      "imageRendering": "pixelated",
+      "dpr_requested": 1.0
+    },
+    "video-1080p-dpr1.0-z0.79": {
+      "type": "video",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1053.3,
+        592.5
+      ],
+      "dpr": 1,
+      "zoom": 0.79,
+      "scale": 0.6583,
+      "need": [
+        1053.3,
+        592.5
+      ],
+      "covers": true,
+      "ratio": 1.519,
+      "imageRendering": "auto",
+      "dpr_requested": 1.0
+    },
+    "video-1080p-dpr1.0-z1.0": {
+      "type": "video",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1333.3,
+        750
+      ],
+      "dpr": 1,
+      "zoom": 1,
+      "scale": 0.8333,
+      "need": [
+        1333.3,
+        750
+      ],
+      "covers": true,
+      "ratio": 1.2,
+      "imageRendering": "auto",
+      "dpr_requested": 1.0
+    },
+    "video-1080p-dpr1.0-z1.12": {
+      "type": "video",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1493.3,
+        840
+      ],
+      "dpr": 1,
+      "zoom": 1.12,
+      "scale": 0.9333,
+      "need": [
+        1493.3,
+        840
+      ],
+      "covers": true,
+      "ratio": 1.071,
+      "imageRendering": "pixelated",
+      "dpr_requested": 1.0
+    },
+    "video-1080p-dpr1.0-z2.0": {
+      "type": "video",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        2666.7,
+        1500
+      ],
+      "dpr": 1,
+      "zoom": 2,
+      "scale": 1.6667,
+      "need": [
+        1920,
+        1080
+      ],
+      "covers": false,
+      "ratio": 0.833,
+      "imageRendering": "pixelated",
+      "dpr_requested": 1.0
+    },
+    "image-1080p-dpr1.0-z0.79": {
+      "type": "image",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1053.3,
+        592.5
+      ],
+      "dpr": 1,
+      "zoom": 0.79,
+      "scale": 0.6583,
+      "need": [
+        1053.3,
+        592.5
+      ],
+      "covers": true,
+      "ratio": 1.519,
+      "imageRendering": "auto",
+      "dpr_requested": 1.0
+    },
+    "image-1080p-dpr1.0-z1.0": {
+      "type": "image",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1333.3,
+        750
+      ],
+      "dpr": 1,
+      "zoom": 1,
+      "scale": 0.8333,
+      "need": [
+        1333.3,
+        750
+      ],
+      "covers": true,
+      "ratio": 1.2,
+      "imageRendering": "auto",
+      "dpr_requested": 1.0
+    },
+    "image-1080p-dpr1.0-z1.12": {
+      "type": "image",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1493.3,
+        840
+      ],
+      "dpr": 1,
+      "zoom": 1.12,
+      "scale": 0.9333,
+      "need": [
+        1493.3,
+        840
+      ],
+      "covers": true,
+      "ratio": 1.071,
+      "imageRendering": "pixelated",
+      "dpr_requested": 1.0
+    },
+    "image-1080p-dpr1.0-z2.0": {
+      "type": "image",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        2666.7,
+        1500
+      ],
+      "dpr": 1,
+      "zoom": 2,
+      "scale": 1.6667,
+      "need": [
+        1920,
+        1080
+      ],
+      "covers": false,
+      "ratio": 0.833,
+      "imageRendering": "pixelated",
+      "dpr_requested": 1.0
+    },
+    "video-720p-dpr2.0-z0.79": {
+      "type": "video",
+      "source": [
+        1280,
+        720
+      ],
+      "full": [
+        1280,
+        720
+      ],
+      "preview": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "css": [
+        1011.2,
+        568.8
+      ],
+      "dpr": 2,
+      "zoom": 0.79,
+      "scale": 0.79,
+      "need": [
+        1280,
+        720
+      ],
+      "covers": true,
+      "ratio": 1,
+      "imageRendering": "auto",
+      "dpr_requested": 2.0
+    },
+    "video-720p-dpr2.0-z1.0": {
+      "type": "video",
+      "source": [
+        1280,
+        720
+      ],
+      "full": [
+        1280,
+        720
+      ],
+      "preview": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "css": [
+        1280,
+        720
+      ],
+      "dpr": 2,
+      "zoom": 1,
+      "scale": 1,
+      "need": [
+        1280,
+        720
+      ],
+      "covers": true,
+      "ratio": 1,
+      "imageRendering": "auto",
+      "dpr_requested": 2.0
+    },
+    "video-720p-dpr2.0-z1.12": {
+      "type": "video",
+      "source": [
+        1280,
+        720
+      ],
+      "full": [
+        1280,
+        720
+      ],
+      "preview": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "css": [
+        1433.6,
+        806.4
+      ],
+      "dpr": 2,
+      "zoom": 1.12,
+      "scale": 1.12,
+      "need": [
+        1280,
+        720
+      ],
+      "covers": true,
+      "ratio": 1,
+      "imageRendering": "pixelated",
+      "dpr_requested": 2.0
+    },
+    "video-720p-dpr2.0-z2.0": {
+      "type": "video",
+      "source": [
+        1280,
+        720
+      ],
+      "full": [
+        1280,
+        720
+      ],
+      "preview": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "css": [
+        2560,
+        1440
+      ],
+      "dpr": 2,
+      "zoom": 2,
+      "scale": 2,
+      "need": [
+        1280,
+        720
+      ],
+      "covers": true,
+      "ratio": 1,
+      "imageRendering": "pixelated",
+      "dpr_requested": 2.0
+    },
+    "video-1080p-dpr2.0-z0.79": {
+      "type": "video",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1053.3,
+        592.5
+      ],
+      "dpr": 2,
+      "zoom": 0.79,
+      "scale": 0.6583,
+      "need": [
+        1920,
+        1080
+      ],
+      "covers": false,
+      "ratio": 0.833,
+      "imageRendering": "auto",
+      "dpr_requested": 2.0
+    },
+    "video-1080p-dpr2.0-z1.0": {
+      "type": "video",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1333.3,
+        750
+      ],
+      "dpr": 2,
+      "zoom": 1,
+      "scale": 0.8333,
+      "need": [
+        1920,
+        1080
+      ],
+      "covers": false,
+      "ratio": 0.833,
+      "imageRendering": "auto",
+      "dpr_requested": 2.0
+    },
+    "video-1080p-dpr2.0-z1.12": {
+      "type": "video",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1493.3,
+        840
+      ],
+      "dpr": 2,
+      "zoom": 1.12,
+      "scale": 0.9333,
+      "need": [
+        1920,
+        1080
+      ],
+      "covers": false,
+      "ratio": 0.833,
+      "imageRendering": "pixelated",
+      "dpr_requested": 2.0
+    },
+    "video-1080p-dpr2.0-z2.0": {
+      "type": "video",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        2666.7,
+        1500
+      ],
+      "dpr": 2,
+      "zoom": 2,
+      "scale": 1.6667,
+      "need": [
+        1920,
+        1080
+      ],
+      "covers": false,
+      "ratio": 0.833,
+      "imageRendering": "pixelated",
+      "dpr_requested": 2.0
+    },
+    "image-1080p-dpr2.0-z0.79": {
+      "type": "image",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1053.3,
+        592.5
+      ],
+      "dpr": 2,
+      "zoom": 0.79,
+      "scale": 0.6583,
+      "need": [
+        1920,
+        1080
+      ],
+      "covers": false,
+      "ratio": 0.833,
+      "imageRendering": "auto",
+      "dpr_requested": 2.0
+    },
+    "image-1080p-dpr2.0-z1.0": {
+      "type": "image",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1333.3,
+        750
+      ],
+      "dpr": 2,
+      "zoom": 1,
+      "scale": 0.8333,
+      "need": [
+        1920,
+        1080
+      ],
+      "covers": false,
+      "ratio": 0.833,
+      "imageRendering": "auto",
+      "dpr_requested": 2.0
+    },
+    "image-1080p-dpr2.0-z1.12": {
+      "type": "image",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        1493.3,
+        840
+      ],
+      "dpr": 2,
+      "zoom": 1.12,
+      "scale": 0.9333,
+      "need": [
+        1920,
+        1080
+      ],
+      "covers": false,
+      "ratio": 0.833,
+      "imageRendering": "pixelated",
+      "dpr_requested": 2.0
+    },
+    "image-1080p-dpr2.0-z2.0": {
+      "type": "image",
+      "source": [
+        1920,
+        1080
+      ],
+      "full": [
+        1920,
+        1080
+      ],
+      "preview": [
+        1600,
+        900
+      ],
+      "backing": [
+        1600,
+        900
+      ],
+      "css": [
+        2666.7,
+        1500
+      ],
+      "dpr": 2,
+      "zoom": 2,
+      "scale": 1.6667,
+      "need": [
+        1920,
+        1080
+      ],
+      "covers": false,
+      "ratio": 0.833,
+      "imageRendering": "pixelated",
+      "dpr_requested": 2.0
+    }
+  },
+  "errors": []
+}

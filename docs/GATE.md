@@ -3768,3 +3768,56 @@ counted.
 - Real GPU/Zen encode speed, real Safari and player-specific start behaviour
   are unverified; all numbers are headless.
 - The owner's real 4K camera files are not used here.
+
+### G23 — playback smoothness and preview sharpness (L0, 2026-11-17)
+
+G23 is new in the lag and performance round. It is a permanent check
+(`tests/gate/perf_check.py`) with two independent axes:
+
+1. **Smoothness** — a light two-effect stack played for 5 s windows, paired
+   with a zero-effect control measured immediately before it in the same
+   session, in Chromium and Firefox. Every bound is paired so a busy desktop
+   moves both windows. Reported: render p50/p95, inter-render interval p95,
+   share of intervals above 50 ms, long tasks, pause-click latency, rendered
+   frames and how far the clip advanced.
+2. **Sharpness** — a 1920×1080 video at DPR 1 and 2 and zoom 79/100/112/200 %.
+   The backing store must be at least `min(source native, CSS display × DPR)`.
+   The check prints the active caps (`PREVIEW_MAX`, `MAX_PREVIEW_PIXELS`) with
+   every row.
+
+Budgets, written before any fix from the L0 baseline
+(`docs/evidence/l0/playback-*.json`, `sharp-runtime.json`):
+
+| Metric | L0 baseline | Budget |
+|---|---|---|
+| light render p50 above paired control | Chromium +29.0 ms, Firefox +109.0 ms | ≤ +20 / +30 ms |
+| light fps / control fps | Chromium 0.67, Firefox 0.07 | ≥ 0.60 |
+| light interval p50 above control | Chromium +17.4 ms | ≤ +50 ms |
+| pause latency, median / max | Firefox 930 / 1235 ms | ≤ 150 / 300 ms |
+| rendered frames per 5 s | Chromium 49, Firefox 20 | ≥ 15 |
+| video advance per 5 s | 5.0 s | ≥ 4.5 s |
+| 1080p backing, DPR 2, zoom 100 % | 1600 < 1920 required | covers |
+| 1080p backing, DPR 1, zoom 200 % | 1600 < 1920 required | covers |
+
+The first written version used an absolute "intervals above 50 ms ≤ 25 %"
+bound. The paired RED run (`g23-red-raw.log`) falsified it as a measure of the
+machine, not the app: the zero-effect control itself renders at 15.0 fps
+(Chromium interval p50 66.8 ms) and 16.2 fps (Firefox interval p50 53.0 ms) in
+the headless software raster, so it cannot meet a 50 ms absolute gap even with
+no effects. The second pre-fix RED run measured the Chromium control at 61.5 ms
+p50 where the first measured 37.6 ms — absolute per-frame time moves with the
+machine, while the paired delta stays on the app. The final bounds are
+therefore per-pair (control window immediately before the light window): added
+p50, fps ratio and added interval p50. Light and control p50 are still printed
+with every row. Both revisions happened **before any fix**, and the old rules,
+new rules and measured reasons are recorded here as required. No existing gate
+threshold changed.
+
+State on the V2 tree: **RED**, and red only through these measurements. The
+smoothness failures are the light-stack render cost and the resulting pause
+queueing; the sharpness failures are the 1600 px / 2.56 MP caps. This is not a
+weakened test: it is a new, falsifiable check with a fixed target.
+
+The first GREEN run and the before/after table are recorded in
+`docs/evidence/l1/report.md`. G23 runs after G22 and adds roughly two minutes
+to the gate.

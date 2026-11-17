@@ -1,0 +1,187 @@
+{
+  "source": [
+    {
+      "file": "app.js",
+      "bytes": 142500,
+      "gzip": 35726,
+      "brotli": 29294
+    },
+    {
+      "file": "engine.js",
+      "bytes": 36884,
+      "gzip": 8298,
+      "brotli": 7276
+    },
+    {
+      "file": "effects.js",
+      "bytes": 30677,
+      "gzip": 8020,
+      "brotli": 7156
+    },
+    {
+      "file": "reorder.js",
+      "bytes": 9972,
+      "gzip": 2515,
+      "brotli": 2182
+    },
+    {
+      "file": "render-worker.js",
+      "bytes": 2662,
+      "gzip": 1093,
+      "brotli": 930
+    },
+    {
+      "file": "style.css",
+      "bytes": 47715,
+      "gzip": 9200,
+      "brotli": 8012
+    },
+    {
+      "file": "index.html",
+      "bytes": 33132,
+      "gzip": 5564,
+      "brotli": 4637
+    },
+    {
+      "file": "vendor/mp4-muxer.js",
+      "bytes": 69375,
+      "gzip": 14597,
+      "brotli": 12564
+    },
+    {
+      "file": "vendor/webm-muxer.js",
+      "bytes": 65311,
+      "gzip": 11995,
+      "brotli": 10324
+    }
+  ],
+  "dist": [
+    {
+      "file": "app.min.js",
+      "bytes": 130207,
+      "gzip": 34198,
+      "brotli": 28141
+    },
+    {
+      "file": "assets/fonts/Goodmountain-Regular.woff2",
+      "bytes": 31292,
+      "gzip": 31320,
+      "brotli": 31296
+    },
+    {
+      "file": "assets/fonts/JetBrainsMono-OFL.txt",
+      "bytes": 4560,
+      "gzip": 2024,
+      "brotli": 1469
+    },
+    {
+      "file": "assets/fonts/JetBrainsMono-latin.woff2",
+      "bytes": 31432,
+      "gzip": 31460,
+      "brotli": 31436
+    },
+    {
+      "file": "effects.min.js",
+      "bytes": 28076,
+      "gzip": 7669,
+      "brotli": 6830
+    },
+    {
+      "file": "engine.min.js",
+      "bytes": 33790,
+      "gzip": 7955,
+      "brotli": 7018
+    },
+    {
+      "file": "index.html",
+      "bytes": 33152,
+      "gzip": 5568,
+      "brotli": 4633
+    },
+    {
+      "file": "render-worker.min.js",
+      "bytes": 2514,
+      "gzip": 1061,
+      "brotli": 898
+    },
+    {
+      "file": "reorder.min.js",
+      "bytes": 8376,
+      "gzip": 2386,
+      "brotli": 2076
+    },
+    {
+      "file": "style.min.css",
+      "bytes": 43668,
+      "gzip": 8138,
+      "brotli": 7110
+    },
+    {
+      "file": "vendor/README.md",
+      "bytes": 1298,
+      "gzip": 711,
+      "brotli": 561
+    },
+    {
+      "file": "vendor/mp4-muxer.LICENSE.txt",
+      "bytes": 1065,
+      "gzip": 645,
+      "brotli": 470
+    },
+    {
+      "file": "vendor/mp4-muxer.js",
+      "bytes": 69375,
+      "gzip": 14597,
+      "brotli": 12564
+    },
+    {
+      "file": "vendor/mp4-muxer.mjs",
+      "bytes": 69011,
+      "gzip": 14366,
+      "brotli": 12419
+    },
+    {
+      "file": "vendor/webm-muxer.LICENSE.txt",
+      "bytes": 1065,
+      "gzip": 644,
+      "brotli": 470
+    },
+    {
+      "file": "vendor/webm-muxer.js",
+      "bytes": 65311,
+      "gzip": 11995,
+      "brotli": 10324
+    },
+    {
+      "file": "vendor/webm-muxer.mjs",
+      "bytes": 64944,
+      "gzip": 11756,
+      "brotli": 10177
+    }
+  ],
+  "worker_transfer": {
+    "worker": {
+      "present": true,
+      "stats": {
+        "enabled": true,
+        "ready": true,
+        "sourceReady": true,
+        "fontsReady": true,
+        "inFlight": false,
+        "pending": false,
+        "posted": 0,
+        "drawn": 0,
+        "cancelled": 0,
+        "errors": 0
+      },
+      "minPixels": null,
+      "minEffects": null
+    },
+    "opts_payload": {
+      "json": 2552,
+      "effects": 22,
+      "keys": 36
+    }
+  },
+  "history": null
+}

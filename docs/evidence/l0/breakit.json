@@ -1,0 +1,52 @@
+[
+  {
+    "name": "fixtures are reused, not regenerated",
+    "detail": "['src-1280x720.webm', 'src-1920x1080.webm']",
+    "ok": true
+  },
+  {
+    "name": "DPR1 zoom 1.12 sharpness is measured from the real canvas",
+    "detail": "backing=[1600, 900] need=[1493.3, 840] covers=True",
+    "ok": true
+  },
+  {
+    "name": "DPR1 zoom 2.0 sharpness is measured from the real canvas",
+    "detail": "backing=[1600, 900] need=[1920, 1080] covers=False",
+    "ok": false
+  },
+  {
+    "name": "the render wrapper counts the video loop",
+    "detail": "renders=20 rvfc=20 p50=159.7",
+    "ok": true
+  },
+  {
+    "name": "pause samples resume playback afterwards",
+    "detail": "pauses=[158.5, 12.4, 9.6] playing=True",
+    "ok": true
+  },
+  {
+    "name": "DPR2 zoom 1 uses devicePixelRatio from the context",
+    "detail": "dpr=2 backing=[1600, 900] need=[1920, 1080] covers=False",
+    "ok": false
+  },
+  {
+    "name": "720p backing is never raised above the source",
+    "detail": "backing=[1280, 720] source need=[1280, 720]",
+    "ok": true
+  },
+  {
+    "name": "light theme renders through the same wrapper",
+    "detail": "renders=24 p50=97.5 theme=light",
+    "ok": true
+  },
+  {
+    "name": "worker=0 path still renders",
+    "detail": "hash=720560626",
+    "ok": true
+  },
+  {
+    "name": "no page errors in any probe",
+    "detail": "[]",
+    "ok": true
+  }
+]

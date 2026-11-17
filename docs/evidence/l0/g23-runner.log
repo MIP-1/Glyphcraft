@@ -1,0 +1,10 @@
+runner ok: False
+runner detail: 16 checks, 8 failure(s) [G23] (91.0s)
+RUNNER- FAIL [smooth] chromium light stack keeps playback fluid: p50=85.2ms(control 49.9 delta 35.3 budget 20.0) p95=103.8ms fps=9.0(control 13.4 ratio 0.7 budget 0.6) interval p50=117.0ms(control 68.8 extra 48.2 budget 50.0) longest_task=115ms pairs=[(35.3, 0.667, 48.2), (32.7, 0.672, 47.9)]
+RUNNER- FAIL [smooth] firefox light stack keeps playback fluid: p50=97ms(control 65 delta 33 budget 30.0) p95=139ms fps=10.4(control 15.4 ratio 0.7 budget 0.6) interval p50=99ms(control 66 extra 34 budget 50.0) longest_task=0ms pairs=[(29, 0.675, 30), (33, 0.645, 34)]
+RUNNER- FAIL [smooth] firefox light stack keeps input responsive: pause median=312.4ms(budget 150.0) max=438.9ms(budget 300.0) samples=[361.8, 218.3, 309.3, 312.4, 438.9]
+RUNNER- FAIL [sharp] DPR 1 zoom 2 covers display pixels: backing=[1600, 900] css=[2666.7, 1500] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+RUNNER- FAIL [sharp] DPR 2 zoom 0.79 covers display pixels: backing=[1600, 900] css=[1053.3, 592.5] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+RUNNER- FAIL [sharp] DPR 2 zoom 1 covers display pixels: backing=[1600, 900] css=[1333.3, 750] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+RUNNER- FAIL [sharp] DPR 2 zoom 1.12 covers display pixels: backing=[1600, 900] css=[1493.3, 840] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+RUNNER- FAIL [sharp] DPR 2 zoom 2 covers display pixels: backing=[1600, 900] css=[2666.7, 1500] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
