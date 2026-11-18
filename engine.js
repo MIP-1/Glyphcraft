@@ -279,20 +279,31 @@ function renderScript(sourceCanvas, destCtx, destW, destH, opts) {
   const { offset, ramp, transparentBg, bgColor, colorMode, palette } = opts;
   const { cols, cellW, cellH, fontPx, rows } = scriptMetrics(destW, destH, opts.depth);
 
-  const tmpCanvas = gcScratch("stage", destW, destH);
-  tmpCanvas.width = destW;
-  tmpCanvas.height = destH;
-  const tmpCtx = tmpCanvas.getContext("2d", { willReadFrequently: true });
-  tmpCtx.setTransform(1, 0, 0, 1, 0, 0);
-  tmpCtx.globalAlpha = 1;
-  tmpCtx.globalCompositeOperation = "source-over";
-  tmpCtx.filter = "none";
-  tmpCtx.clearRect(0, 0, destW, destH);
-  tmpCtx.drawImage(sourceCanvas, 0, 0, destW, destH);
-  if (!opts.preApplied) applyAdjustments(tmpCtx, destW, destH, opts.adj);
-  if (opts.autoLevels) autoLevels(tmpCanvas);
+  let imgData;
+  const handed = opts.imageData;
+  if (handed && handed.width === destW && handed.height === destH) {
+    imgData = handed;
+    if (opts.autoLevels && !opts.imageDataAuto) autoLevelsData(imgData.data);
+  } else if (opts.preApplied && sourceCanvas.width === destW && sourceCanvas.height === destH) {
+    imgData = sourceCanvas.getContext("2d", { willReadFrequently: true })
+      .getImageData(0, 0, destW, destH);
+    if (opts.autoLevels) autoLevelsData(imgData.data);
+  } else {
+    const tmpCanvas = gcScratch("stage", destW, destH);
+    tmpCanvas.width = destW;
+    tmpCanvas.height = destH;
+    const tmpCtx = tmpCanvas.getContext("2d", { willReadFrequently: true });
+    tmpCtx.setTransform(1, 0, 0, 1, 0, 0);
+    tmpCtx.globalAlpha = 1;
+    tmpCtx.globalCompositeOperation = "source-over";
+    tmpCtx.filter = "none";
+    tmpCtx.clearRect(0, 0, destW, destH);
+    tmpCtx.drawImage(sourceCanvas, 0, 0, destW, destH);
+    if (!opts.preApplied) applyAdjustments(tmpCtx, destW, destH, opts.adj);
+    imgData = tmpCtx.getImageData(0, 0, destW, destH);
+    if (opts.autoLevels) autoLevelsData(imgData.data);
+  }
 
-  const imgData = tmpCtx.getImageData(0, 0, destW, destH);
   const data = imgData.data;
 
   destCtx.clearRect(0, 0, destW, destH);
@@ -353,6 +364,13 @@ function prepareBase(source, destW, destH, opts, baseKey) {
   gcSourceDrawMs = performance.now() - drawStart;
   if (opts.adj) applyAdjustments(ctx, destW, destH, opts.adj);
   const processed = applyEffects(canvas, opts.effects || [], baseKey);
+  const pending = processed.__gcPixels;
+  if (pending && opts.mode === "script" && pending.width === destW
+      && pending.height === destH) {
+    if (opts.autoLevels) { autoLevelsData(pending.data); processed.__gcAuto = true; }
+  } else if (pending) {
+    delete processed.__gcPixels;
+  }
   return processed;
 }
 

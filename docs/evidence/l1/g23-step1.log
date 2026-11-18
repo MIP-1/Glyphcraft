@@ -1,0 +1,18 @@
+PASS [smooth] chromium zero-effect control runs: p50=37.6ms fps=15.0 interval p50=66.1ms advance=5.0s
+FAIL [smooth] chromium light stack keeps playback fluid: p50=71.8ms(control 37.6 delta 34.2 budget 20.0) p95=124.3ms fps=10.2(control 15.0 ratio 0.7 budget 0.6) interval p50=100.0ms(control 66.1 extra 35.2 budget 50.0) longest_task=185ms pairs=[(24.9, 0.68, 29.7), (34.2, 0.671, 35.2)]
+PASS [smooth] chromium light stack keeps input responsive: pause median=20.4ms(budget 150.0) max=88.8ms(budget 300.0) samples=[12.0, 88.8, 20.4, 75.4, 6.2]
+PASS [smooth] chromium playback has no page errors: []
+PASS [smooth] firefox zero-effect control runs: p50=164ms fps=16.2 interval p50=173ms advance=5.1s
+FAIL [smooth] firefox light stack keeps playback fluid: p50=260ms(control 164 delta 96 budget 30.0) p95=562ms fps=5.4(control 16.2 ratio 0.7 budget 0.6) interval p50=270ms(control 173 extra 97 budget 50.0) longest_task=0ms pairs=[(55, 0.333, 54), (96, 0.667, 97)]
+FAIL [smooth] firefox light stack keeps input responsive: pause median=713.1ms(budget 150.0) max=809.7ms(budget 300.0) samples=[809.7, 499.9, 462.8, 781.3, 713.1]
+PASS [smooth] firefox playback has no page errors: []
+PASS [sharp] DPR 1 zoom 0.79 covers display pixels: backing=[1600, 900] css=[1053.3, 592.5] need=[1053.3, 592.5] source=[1920, 1080] caps=1600px/2.56MP
+PASS [sharp] DPR 1 zoom 1 covers display pixels: backing=[1600, 900] css=[1333.3, 750] need=[1333.3, 750] source=[1920, 1080] caps=1600px/2.56MP
+PASS [sharp] DPR 1 zoom 1.12 covers display pixels: backing=[1600, 900] css=[1493.3, 840] need=[1493.3, 840] source=[1920, 1080] caps=1600px/2.56MP
+FAIL [sharp] DPR 1 zoom 2 covers display pixels: backing=[1600, 900] css=[2666.7, 1500] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+FAIL [sharp] DPR 2 zoom 0.79 covers display pixels: backing=[1600, 900] css=[1053.3, 592.5] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+FAIL [sharp] DPR 2 zoom 1 covers display pixels: backing=[1600, 900] css=[1333.3, 750] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+FAIL [sharp] DPR 2 zoom 1.12 covers display pixels: backing=[1600, 900] css=[1493.3, 840] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+FAIL [sharp] DPR 2 zoom 2 covers display pixels: backing=[1600, 900] css=[2666.7, 1500] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP
+16 checks, 8 failure(s) [G23]
+G23 FAIL

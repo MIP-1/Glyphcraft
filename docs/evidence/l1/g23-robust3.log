@@ -1,0 +1,18 @@
+PASS [smooth] chromium zero-effect control runs: p50=33.3ms fps=16.0 interval p50=50.6ms advance=5.0s
+PASS [smooth] chromium light stack keeps playback fluid: p50=45.5ms(control 33.3 delta 12.6 budget 20.0) p95=54.6ms fps=14.8(control 16.0 ratio 0.9 budget 0.6) interval p50=66.4ms(control 50.6 extra 15.9 budget 50.0) longest_task=89ms pairs=[(12.6, 0.897, 15.9), (12.8, 0.893, 15.9), (12.1, 0.925, 14.7)]
+PASS [smooth] chromium light stack keeps input responsive: pause p90=57.2ms(control 14.4 delta 42.8 budget 150.0) max=107.5ms(control 48.0 delta 59.5 budget 300.0) mean=32.9/13.8 median=12.9/10.8 samples=[8.9, 6.6, 55.6, 12.0, 56.9, 54.9, 56.1, 57.5, 107.5, 11.2, 57.2, 8.7, 54.0, 10.3, 11.4, 4.8, 9.3, 55.6, 13.9, 5.3] control_samples=[14.4, 10.9, 11.3, 47.9, 48.0, 10.7, 5.7, 10.1, 11.3, 11.8, 11.6, 6.8, 7.9, 11.3, 9.0, 10.5, 10.0, 12.5, 5.4, 9.7]
+PASS [smooth] chromium playback has no page errors: []
+PASS [smooth] firefox zero-effect control runs: p50=66ms fps=14.8 interval p50=68ms advance=5.1s
+PASS [smooth] firefox light stack keeps playback fluid: p50=83ms(control 66 delta 17 budget 30.0) p95=87ms fps=12.2(control 14.8 ratio 0.8 budget 0.6) interval p50=84ms(control 68 extra 16 budget 50.0) longest_task=0ms pairs=[(14, 0.838, 14), (17, 0.813, 17), (17, 0.824, 16)]
+PASS [smooth] firefox light stack keeps input responsive: pause p90=274.8ms(control 242.5 delta 32.3 budget 150.0) max=354.9ms(control 281.2 delta 73.7 budget 300.0) mean=223.9/208.7 median=221.8/216.4 samples=[274.8, 190.5, 259.5, 269.4, 180.4, 243.0, 270.4, 285.5, 107.8, 182.9, 188.8, 263.5, 107.6, 268.0, 180.7, 186.4, 194.1, 200.6, 354.9, 270.1] control_samples=[242.5, 228.8, 281.2, 216.1, 161.6, 216.4, 216.3, 209.1, 280.4, 215.7, 158.1, 224.5, 152.4, 220.5, 230.0, 151.4, 157.7, 223.9, 230.6, 155.9]
+PASS [smooth] firefox playback has no page errors: []
+PASS [sharp] DPR 1 zoom 0.79 covers display pixels: backing=[1600, 900] css=[1053.3, 592.5] need=[1053.3, 592.5] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px
+PASS [sharp] DPR 1 zoom 1 covers display pixels: backing=[1600, 900] css=[1333.3, 750] need=[1333.3, 750] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px
+PASS [sharp] DPR 1 zoom 1.12 covers display pixels: backing=[1600, 900] css=[1493.3, 840] need=[1493.3, 840] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px
+PASS [sharp] DPR 1 zoom 2 covers display pixels: backing=[1920, 1080] css=[2666.7, 1500] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px
+PASS [sharp] DPR 2 zoom 0.79 covers display pixels: backing=[1920, 1080] css=[1053.3, 592.5] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px
+PASS [sharp] DPR 2 zoom 1 covers display pixels: backing=[1920, 1080] css=[1333.3, 750] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px
+PASS [sharp] DPR 2 zoom 1.12 covers display pixels: backing=[1920, 1080] css=[1493.3, 840] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px
+PASS [sharp] DPR 2 zoom 2 covers display pixels: backing=[1920, 1080] css=[2666.7, 1500] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px
+16 checks, 0 failure(s) [G23]
+G23 PASS

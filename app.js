@@ -203,6 +203,7 @@ const VIDEO_CODECS = {
 
 const PREVIEW_MAX = 1600;
 const MAX_PREVIEW_PIXELS = 1600 * 1600;
+const PREVIEW_NEED_MAX = 1920;
 const PLAYBACK_MIN_INTERVAL = 1000 / 40;
 const GC_APP_SRC = (document.currentScript && document.currentScript.src) || location.href;
 const GC_WORKER_URL = GC_APP_SRC.replace(/app(\.min)?\.js(\?.*)?$/, (m, min, q) => "render-worker" + (min || "") + ".js" + (q || ""));
@@ -632,6 +633,23 @@ function previewSize(full, extraScale) {
   return { w: Math.max(1, Math.round(full.w * scale)), h: Math.max(1, Math.round(full.h * scale)), scale };
 }
 
+function renderPreviewSize(full) {
+  const pv = previewSize(full);
+  if (!full.w || !full.h || !state.source) return pv;
+  const zoom = Math.max(0.01, state.zoom || 1);
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  const cssW = pv.w * zoom * (pv.w / full.w);
+  const cssH = pv.h * zoom * (pv.h / full.h);
+  const needW = Math.min(full.w, cssW * dpr);
+  const needH = Math.min(full.h, cssH * dpr);
+  let scale = Math.max(pv.scale, needW / full.w, needH / full.h);
+  scale = Math.min(scale, PREVIEW_NEED_MAX / full.w, PREVIEW_NEED_MAX / full.h);
+  scale = Math.min(scale, Math.sqrt(MAX_PREVIEW_PIXELS / (full.w * full.h)));
+  if (!(scale > pv.scale + 1e-6)) return pv;
+  return { w: Math.max(1, Math.round(full.w * scale)),
+           h: Math.max(1, Math.round(full.h * scale)), scale };
+}
+
 function videoIsPlaying() {
   const v = state.video;
   return !!(v && state.sourceType === "video" && !v.paused && !v.ended
@@ -683,7 +701,11 @@ function requestRenderFrame() {
 }
 
 function renderToContext(base, ctx, w, h, opts) {
-  if (opts.mode === "script") renderScript(base, ctx, w, h, { ...opts, preApplied: true });
+  const pending = base.__gcPixels && base.__gcPixels.width === w && base.__gcPixels.height === h
+    ? base.__gcPixels : null;
+  const auto = pending && base.__gcAuto ? true : false;
+  if (pending) { delete base.__gcPixels; delete base.__gcAuto; }
+  if (opts.mode === "script") renderScript(base, ctx, w, h, { ...opts, preApplied: true, imageData: pending, imageDataAuto: auto });
   else if (opts.mode === "dither") renderDither(base, ctx, w, h, { ...opts, preApplied: true });
   else ctx.drawImage(base, 0, 0, w, h);
 }
@@ -732,7 +754,7 @@ function render(interactive) {
   const playing = videoIsPlaying();
   if (playing && state.playback.sig !== playbackEffectSig()) resetPlaybackScale();
   const full = computeOutputSize(state.sourceW, state.sourceH, state.opts.outputPreset, state.opts.outputWidth, state.opts.outputHeight, state.opts.outputFit);
-  const pv = previewSize(full);
+  const pv = renderPreviewSize(full);
   const opts = renderOpts();
   const optsKey = JSON.stringify(opts);
   const still = state.sourceType !== "video" && !state.videoExporting && !state.cacheDisabled;
@@ -1248,6 +1270,9 @@ function setZoom(zoom, anchor) {
   applyTransform();
   applyZoomUI();
   updateStatus();
+  const { full } = outputMeta();
+  const want = renderPreviewSize(full);
+  if (want.w !== els.canvas.width || want.h !== els.canvas.height) scheduleRender(0);
 }
 
 function zoomBy(factor) { setZoom(state.zoom * factor); }

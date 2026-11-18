@@ -26,14 +26,43 @@ Budgets are the target for "smooth", all paired against the zero-effect control
 measured immediately before the light window in the same session: the light
 stack may add at most 20 ms (Chromium) / 30 ms (Firefox) to render p50, must
 keep at least 60 % of the control's frame rate, and may raise the inter-render
-interval p50 by at most 50 ms, with pause input under 150 ms median / 300 ms
-max. Absolute p50 and gap budgets were falsified as machine measurements by the
-paired RED runs: the zero-effect control itself varied from 37.6 ms to 61.5 ms
-p50 between runs, and headless software raster presents video at 11 to 19 fps
-with no effects at all. They sit below the L0 measurement on purpose: this
-check is RED on the V2 tree and goes GREEN only when the measured cause is
-removed. A machine that cannot run the zero-effect control at all is reported
-as a machine problem, not an app pass.
+interval p50 by at most 50 ms, with pause input no more than 150 ms above the
+paired control p90 and 300 ms above its max. Absolute p50, gap and pause
+budgets were falsified as machine measurements by the paired RED runs: the
+zero-effect control itself varied from 37.6 ms to 61.5 ms p50 between runs,
+headless software raster presents video at 11 to 19 fps with no effects at all,
+and after the L1 fixes a zero-effect Firefox click still took a 164.4 ms median
+(299.0 ms max) to reach `state.video.paused`, over the original 150 ms absolute
+pause budget with no effects enabled at all. The original 150/300 ms numbers
+are kept as paired deltas, at p90 and max: the click phase is bimodal (a click
+lands either inside or between renders), so the 9-sample median flipped between
+modes and a 50 ms mean-delta rule sat inside its own ~35 ms standard error
+(Chromium 50.7 and Firefox 56.5 ms in two L1 runs, -0.7 and 40.0 ms in others).
+The V2 tree still fails this: L0 measured a 930 ms Firefox pause median and
+1235 ms max, i.e. a p90 delta of about 1 s against the same control. They sit
+below the L0 measurement on purpose: this check is RED on the V2 tree and goes
+GREEN only when the measured cause is removed. A machine that cannot run the
+zero-effect control at all is reported as a machine problem, not an app pass.
+
+Estimator fix, same budgets: `median()` averaged the two middle values for an
+even sample only after L1 (before it returned the upper of the two windows,
+`xs[n // 2]`, which is not a median and biased every two-window aggregate
+toward the worse window). With two pairs, a 24/31 ms Firefox delta was reported
+as 31; the true median is 27.5. The V2 tree is still RED with the fixed
+estimator (Chromium L0 pairs 24.9/34.2 -> 29.6 > 20, Firefox 55/96 -> 75.5 > 30).
+
+Sample count, same budgets (variance, not threshold): the gate runs on a
+working desktop, and a blank page with no app code stalled for 149.8 ms in
+Firefox (one frame in 20 s) while Chromium was clean, so external stalls are
+real. Two consecutive full-gate runs failed on exactly one such stall each:
+a single stalled 5 s window of two (the median of two is their mean, so it
+could not be discarded) and two 700 ms+ clicks among nine (p90 of nine is the
+second-worst value). The harness now takes three control/light pairs, whose
+median discards one stalled window, and twenty pause clicks per side, whose p90
+is the 18th of 20 and discards two stalls. Every budget is unchanged, and the
+V2 tree still fails in every window it was measured in (Chromium 24.9/34.2
+against 20, Firefox 55/96 against 30, pause p90 delta about 1 s against 150),
+so no median or quantile of its samples can pass.
 """
 from __future__ import annotations
 
@@ -57,8 +86,8 @@ LIGHT = ["posterize", "duotone"]
 DELTA_P50_BUDGET = {"chromium": 20.0, "firefox": 30.0}
 FPS_RATIO_BUDGET = 0.60          # light fps / control fps
 INTERVAL_EXTRA_BUDGET = 50.0     # ms above the paired control interval p50
-PAUSE_MEDIAN_BUDGET = 150.0
-PAUSE_MAX_BUDGET = 300.0
+PAUSE_P90_EXTRA_BUDGET = 150.0   # ms above the paired control pause p90
+PAUSE_MAX_EXTRA_BUDGET = 300.0   # ms above the paired control pause max
 MIN_RENDERS = 15                  # in a 5 s window
 MIN_VIDEO_ADVANCE = 4.5          # seconds in a 5 s window
 MIN_CONTROL_RENDERS = 20
@@ -138,8 +167,24 @@ def pct(xs, p):
 
 
 def median(xs):
+    xs = sorted(x for x in xs if x is not None)
+    if not xs:
+        return None
+    n = len(xs)
+    mid = n // 2
+    # True median: an even sample has no middle element, so average the two
+    # middle values. Returning xs[n // 2] (the upper of two windows) used to
+    # bias the paired G23 deltas toward the worse window.
+    return round(xs[mid] if n % 2 else (xs[mid - 1] + xs[mid]) / 2, 1)
+
+
+def mean(xs):
     xs = [x for x in xs if x is not None]
-    return round(sorted(xs)[len(xs) // 2], 1) if xs else None
+    return round(sum(xs) / len(xs), 1) if xs else None
+
+
+def pctr(xs, p):
+    return pct([x for x in xs if x is not None], p)
 
 
 def load_video(page, path: Path) -> None:
@@ -247,6 +292,7 @@ SHARP_JS = r"""
            +Math.min(state.sourceH, r.height * dpr).toFixed(1)],
     previewMax: PREVIEW_MAX,
     previewMaxPixels: MAX_PREVIEW_PIXELS,
+    needMax: PREVIEW_NEED_MAX,
   };
 }
 """
@@ -275,12 +321,12 @@ def main() -> int:
             errors: list[str] = []
             page.on("pageerror", lambda e: errors.append(str(e)))
             page.goto(srv.url + "/index.html", wait_until="load")
-            page.wait_for_timeout(500)
+            page.wait_for_timeout(3000)
             page.evaluate(INIT_JS)
             load_video(page, WORK / "src-1280x720.webm")
 
             pairs = []
-            for _ in range(2):
+            for _ in range(3):
                 for label, ids in (("control", []), ("light", LIGHT)):
                     set_effects(page, ids)
                     seek_paused(page, 0.3)
@@ -318,14 +364,31 @@ def main() -> int:
             light["fps_ratio"] = median([x["fps_ratio"] for x in paired])
             light["interval_extra"] = median([x["interval_extra"] for x in paired])
 
-            # Pause input sampled inside the light window.
-            set_effects(page, LIGHT)
-            seek_paused(page, 0.3)
-            page.evaluate("() => { state.video.play().catch(() => {}); }")
-            page.wait_for_timeout(800)
-            pauses = [pause_latency(page) for _ in range(5)]
+            # Pause input sampled inside the light window and in the
+            # zero-effect control measured just before it (paired).
+            def sample_pauses(ids):
+                set_effects(page, ids)
+                seek_paused(page, 0.3)
+                page.evaluate("() => { state.video.play().catch(() => {}); }")
+                page.wait_for_timeout(800)
+                vals = [pause_latency(page) for _ in range(20)]
+                page.evaluate("() => { state.video.pause(); stopVideoLoop(); }")
+                page.wait_for_timeout(250)
+                return vals
+
+            control_pauses = sample_pauses([])
+            pauses = sample_pauses(LIGHT)
+            cm = median(control_pauses)
+            cmu = mean(control_pauses)
+            c90 = pctr(control_pauses, 0.9)
+            cmax = max((v for v in control_pauses if v is not None), default=None)
             pm = median(pauses)
+            pmu = mean(pauses)
+            p90 = pctr(pauses, 0.9)
             pmax = max((v for v in pauses if v is not None), default=None)
+            pause_delta_mean = round(pmu - cmu, 1) if pmu is not None and cmu is not None else None
+            pause_delta_p90 = round(p90 - c90, 1) if p90 is not None and c90 is not None else None
+            pause_delta_max = round(pmax - cmax, 1) if pmax is not None and cmax is not None else None
 
             record("smooth", f"{browser_name} zero-effect control runs",
                    f"p50={ctrl['p50']}ms fps={ctrl['fps']} "
@@ -351,10 +414,15 @@ def main() -> int:
                    and light["interval_extra"] <= INTERVAL_EXTRA_BUDGET
                    and light["advance"] >= MIN_VIDEO_ADVANCE)
             record("smooth", f"{browser_name} light stack keeps input responsive",
-                   f"pause median={pm}ms(budget {PAUSE_MEDIAN_BUDGET}) "
-                   f"max={pmax}ms(budget {PAUSE_MAX_BUDGET}) samples={pauses}",
-                   pm is not None and pm <= PAUSE_MEDIAN_BUDGET
-                   and pmax <= PAUSE_MAX_BUDGET)
+                   f"pause p90={p90}ms(control {c90} delta {pause_delta_p90} "
+                   f"budget {PAUSE_P90_EXTRA_BUDGET}) "
+                   f"max={pmax}ms(control {cmax} delta {pause_delta_max} "
+                   f"budget {PAUSE_MAX_EXTRA_BUDGET}) mean={pmu}/{cmu} "
+                   f"median={pm}/{cm} samples={pauses} control_samples={control_pauses}",
+                   p90 is not None and c90 is not None
+                   and pause_delta_p90 <= PAUSE_P90_EXTRA_BUDGET
+                   and pmax is not None and cmax is not None
+                   and pause_delta_max <= PAUSE_MAX_EXTRA_BUDGET)
             record("smooth", f"{browser_name} playback has no page errors",
                    repr(errors[:4]), not errors)
             browser.close()
@@ -381,7 +449,8 @@ def main() -> int:
                 record("sharp", f"DPR {dpr:g} zoom {zoom:g} covers display pixels",
                        f"backing={s['backing']} css={s['css']} need={s['need']} "
                        f"source={s['source']} caps={s['previewMax']}px/"
-                       f"{s['previewMaxPixels'] / 1e6:.2f}MP",
+                       f"{s['previewMaxPixels'] / 1e6:.2f}MP "
+                       f"needCap={s['needMax']}px",
                        covers)
             browser.close()
 
@@ -389,8 +458,8 @@ def main() -> int:
               "budgets": {"delta_p50": DELTA_P50_BUDGET,
                           "fps_ratio": FPS_RATIO_BUDGET,
                           "interval_extra_ms": INTERVAL_EXTRA_BUDGET,
-                          "pause_median": PAUSE_MEDIAN_BUDGET,
-                          "pause_max": PAUSE_MAX_BUDGET,
+                          "pause_p90_extra_ms": PAUSE_P90_EXTRA_BUDGET,
+                          "pause_max_extra_ms": PAUSE_MAX_EXTRA_BUDGET,
                           "min_renders_5s": MIN_RENDERS},
               "windows": window_log}
     (EVIDENCE / "g23.json").write_text(json.dumps(result, indent=2), encoding="utf-8")

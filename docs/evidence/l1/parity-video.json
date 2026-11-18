@@ -1,0 +1,137 @@
+{
+  "cases": [
+    {
+      "stack": "light2",
+      "time": 0.5,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 1013211012,
+      "plain": 1013211012,
+      "ok": true
+    },
+    {
+      "stack": "light2",
+      "time": 2.0,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 1260533558,
+      "plain": 1260533558,
+      "ok": true
+    },
+    {
+      "stack": "light2",
+      "time": 5.0,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 813195422,
+      "plain": 813195422,
+      "ok": true
+    },
+    {
+      "stack": "posterize",
+      "time": 0.5,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 4039164521,
+      "plain": 4039164521,
+      "ok": true
+    },
+    {
+      "stack": "posterize",
+      "time": 2.0,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 182620259,
+      "plain": 182620259,
+      "ok": true
+    },
+    {
+      "stack": "posterize",
+      "time": 5.0,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 492460739,
+      "plain": 492460739,
+      "ok": true
+    },
+    {
+      "stack": "duotone",
+      "time": 0.5,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 2023190206,
+      "plain": 2023190206,
+      "ok": true
+    },
+    {
+      "stack": "duotone",
+      "time": 2.0,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 982175651,
+      "plain": 982175651,
+      "ok": true
+    },
+    {
+      "stack": "duotone",
+      "time": 5.0,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 2396986128,
+      "plain": 2396986128,
+      "ok": true
+    },
+    {
+      "stack": "light2+autoLevels-off",
+      "time": 0.5,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 655492492,
+      "plain": 655492492,
+      "ok": true
+    },
+    {
+      "stack": "light2+autoLevels-off",
+      "time": 2.0,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 3076499367,
+      "plain": 3076499367,
+      "ok": true
+    },
+    {
+      "stack": "light2+autoLevels-off",
+      "time": 5.0,
+      "size": [
+        1280,
+        720
+      ],
+      "fused": 497821318,
+      "plain": 497821318,
+      "ok": true
+    }
+  ],
+  "failures": []
+}

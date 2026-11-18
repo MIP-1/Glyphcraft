@@ -68,6 +68,8 @@ function fxPoolClear() {
 }
 
 function fxPrepareContext(c) {
+  delete c.__gcPixels;
+  delete c.__gcAuto;
   const ctx = c.getContext("2d", { willReadFrequently: true });
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalAlpha = 1;
@@ -335,25 +337,28 @@ function fxVignette(c, p) {
   return out;
 }
 
-function fxDuotone(c, p) {
-  const out = fxClone(c);
-  const img = fxData(out), d = img.data;
-  const a = fxHex(p.dark), b = fxHex(p.light);
-  for (let i = 0; i < d.length; i += 4) {
-    const l = fxLuma(d[i], d[i + 1], d[i + 2]) / 255;
-    d[i] = a[0] + (b[0] - a[0]) * l;
-    d[i + 1] = a[1] + (b[1] - a[1]) * l;
-    d[i + 2] = a[2] + (b[2] - a[2]) * l;
-  }
-  fxContext(out).putImageData(img, 0, 0);
-  return out;
-}
+const PIXEL_RUNNERS = {
+  duotone(d, p) {
+    const a = fxHex(p.dark), b = fxHex(p.light);
+    for (let i = 0; i < d.length; i += 4) {
+      const l = fxLuma(d[i], d[i + 1], d[i + 2]) / 255;
+      d[i] = a[0] + (b[0] - a[0]) * l;
+      d[i + 1] = a[1] + (b[1] - a[1]) * l;
+      d[i + 2] = a[2] + (b[2] - a[2]) * l;
+    }
+  },
+  posterize(d, p) {
+    const lut = posterizeLut(p);
+    for (let i = 0; i < d.length; i += 4) {
+      d[i] = lut[d[i]];
+      d[i + 1] = lut[d[i + 1]];
+      d[i + 2] = lut[d[i + 2]];
+    }
+  },
+};
 
 const POSTERIZE_LUTS = new Map();
-
-function fxPosterize(c, p) {
-  const out = fxClone(c);
-  const img = fxData(out), d = img.data;
+function posterizeLut(p) {
   const levels = Math.round(fxNum(p.levels, 2, 16, 5)), step = 255 / (levels - 1);
   let lut = POSTERIZE_LUTS.get(levels);
   if (!lut) {
@@ -361,11 +366,51 @@ function fxPosterize(c, p) {
     for (let v = 0; v < 256; v++) lut[v] = Math.round(v / step) * step;
     POSTERIZE_LUTS.set(levels, lut);
   }
-  for (let i = 0; i < d.length; i += 4) {
-    d[i] = lut[d[i]];
-    d[i + 1] = lut[d[i + 1]];
-    d[i + 2] = lut[d[i + 2]];
-  }
+  return lut;
+}
+
+// One loop for a duotone/posterize batch. The byte stores keep the same
+// Uint8ClampedArray rounding as the two standalone passes, and the second op
+// reads the stored bytes back, so the result is bit-identical.
+const PIXEL_PAIRS = {
+  "duotone|posterize"(d, p1, p2) {
+    const a = fxHex(p1.dark), b = fxHex(p1.light), lut = posterizeLut(p2);
+    for (let i = 0; i < d.length; i += 4) {
+      const l = fxLuma(d[i], d[i + 1], d[i + 2]) / 255;
+      d[i] = a[0] + (b[0] - a[0]) * l;
+      d[i + 1] = a[1] + (b[1] - a[1]) * l;
+      d[i + 2] = a[2] + (b[2] - a[2]) * l;
+      d[i] = lut[d[i]];
+      d[i + 1] = lut[d[i + 1]];
+      d[i + 2] = lut[d[i + 2]];
+    }
+  },
+  "posterize|duotone"(d, p1, p2) {
+    const a = fxHex(p2.dark), b = fxHex(p2.light), lut = posterizeLut(p1);
+    for (let i = 0; i < d.length; i += 4) {
+      d[i] = lut[d[i]];
+      d[i + 1] = lut[d[i + 1]];
+      d[i + 2] = lut[d[i + 2]];
+      const l = fxLuma(d[i], d[i + 1], d[i + 2]) / 255;
+      d[i] = a[0] + (b[0] - a[0]) * l;
+      d[i + 1] = a[1] + (b[1] - a[1]) * l;
+      d[i + 2] = a[2] + (b[2] - a[2]) * l;
+    }
+  },
+};
+
+function fxDuotone(c, p) {
+  const out = fxClone(c);
+  const img = fxData(out);
+  PIXEL_RUNNERS.duotone(img.data, p);
+  fxContext(out).putImageData(img, 0, 0);
+  return out;
+}
+
+function fxPosterize(c, p) {
+  const out = fxClone(c);
+  const img = fxData(out);
+  PIXEL_RUNNERS.posterize(img.data, p);
   fxContext(out).putImageData(img, 0, 0);
   return out;
 }
@@ -746,6 +791,24 @@ function applyEffects(sourceCanvas, effects, baseKey) {
   let chainKey = cacheable ? baseKey : null;
   let owned = null;
   let index = 0;
+  const fusePixels = !cacheable && typeof state !== "undefined"
+    && state.sourceType === "video";
+  let batch = null;
+  const flushBatch = () => {
+    if (!batch) return;
+    const img = fxData(batch.src);
+    const ops = batch.ops;
+    const pair = ops.length === 2 && PIXEL_PAIRS[ops[0][0] + "|" + ops[1][0]];
+    if (pair) pair(img.data, ops[0][2], ops[1][2]);
+    else for (const op of ops) op[1](img.data, op[2]);
+    const out = fxCanvas(batch.src.width, batch.src.height);
+    fxContext(out).putImageData(img, 0, 0);
+    out.__gcPixels = img;
+    if (owned && owned !== out) { fxRelease(owned); owned = null; }
+    current = out;
+    if (fxPoolArmed && out !== sourceCanvas) owned = out;
+    batch = null;
+  };
   for (const fx of effects || []) {
     if (!fx.enabled) continue;
     const run = EFFECT_RUNNERS[fx.id];
@@ -765,6 +828,13 @@ function applyEffects(sourceCanvas, effects, baseKey) {
       index++;
       continue;
     }
+    if (fusePixels && PIXEL_RUNNERS[fx.id]) {
+      if (!batch) batch = { src: current, ops: [] };
+      batch.ops.push([fx.id, PIXEL_RUNNERS[fx.id], params]);
+      index++;
+      continue;
+    }
+    if (batch) flushBatch();
     try {
       const next = run(current, params);
       if (owned && owned !== next) { fxRelease(owned); owned = null; }
@@ -775,6 +845,7 @@ function applyEffects(sourceCanvas, effects, baseKey) {
     } catch (e) { console.warn("effect failed:", fx.id, e); chainKey = null; }
     index++;
   }
+  if (batch) flushBatch();
   if (fxPoolArmed) {
     lastPooledOutput = owned;
   } else {
@@ -784,11 +855,7 @@ function applyEffects(sourceCanvas, effects, baseKey) {
   return current;
 }
 
-function autoLevels(canvas) {
-  const ctx = fxContext(canvas);
-  const w = canvas.width, h = canvas.height;
-  const img = ctx.getImageData(0, 0, w, h);
-  const d = img.data;
+function autoLevelsData(d) {
   const hist = new Uint32Array(256);
   const step = Math.max(1, Math.floor(d.length / 4 / 20000));
   let total = 0;
@@ -796,19 +863,26 @@ function autoLevels(canvas) {
     const l = Math.round(fxLuma(d[i], d[i + 1], d[i + 2]));
     hist[l]++; total++;
   }
-  if (!total) return canvas;
+  if (!total) return false;
   let lo = 0, hi = 255, acc = 0;
   for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc > total * 0.01) { lo = i; break; } }
   acc = 0;
   for (let i = 255; i >= 0; i--) { acc += hist[i]; if (acc > total * 0.01) { hi = i; break; } }
-  if (hi - lo < 8) return canvas;
+  if (hi - lo < 8) return false;
   const scale = 255 / (hi - lo);
   for (let i = 0; i < d.length; i += 4) {
     d[i] = fxClamp((d[i] - lo) * scale);
     d[i + 1] = fxClamp((d[i + 1] - lo) * scale);
     d[i + 2] = fxClamp((d[i + 2] - lo) * scale);
   }
-  ctx.putImageData(img, 0, 0);
+  return true;
+}
+
+function autoLevels(canvas) {
+  const ctx = fxContext(canvas);
+  const w = canvas.width, h = canvas.height;
+  const img = ctx.getImageData(0, 0, w, h);
+  if (autoLevelsData(img.data)) ctx.putImageData(img, 0, 0);
   return canvas;
 }
 

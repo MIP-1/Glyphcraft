@@ -36,7 +36,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE = ROOT / "docs" / "evidence" / "l0"
+EVIDENCE = ROOT / "docs" / "evidence" / os.environ.get("GATE_TASK", "l0")
 WORK = Path("/tmp/opencode/glyphcraft_l0")
 FIXTURE_IMAGE = Path("/tmp/glyphcraft_gate_fixture.png")
 SIZES = {"720p": (1280, 720), "1080p": (1920, 1080)}
@@ -968,11 +968,11 @@ def part_playback(browser_name: str) -> dict:
 # part: stages
 # ---------------------------------------------------------------------------
 
-def part_stages() -> dict:
+def part_stages(browser_name: str = "chromium") -> dict:
     make_fixtures()
-    result = {"browser": "chromium", "cases": {}, "errors": []}
+    result = {"browser": browser_name, "cases": {}, "errors": []}
     with Server() as srv, sync_playwright() as p:
-        browser, ctx, page, errors = new_page(p, "chromium", viewport=(1440, 1000))
+        browser, ctx, page, errors = new_page(p, browser_name, viewport=(1440, 1000))
         open_app(page, srv)
         page.evaluate(DETAIL_JS)
         page.evaluate(STAGE_HOOKS)
@@ -1290,12 +1290,13 @@ def main() -> int:
         elif part == "sharp":
             data = part_sharp()
         elif part == "stages":
-            data = part_stages()
+            data = part_stages(args.browser)
         elif part == "memory":
             data = part_memory()
         else:
             data = part_playback(args.browser)
-        out = EVIDENCE / f"{part}-{args.browser if part == 'playback' else 'runtime'}.json"
+        suffix = args.browser if (part == "playback" or args.browser != "chromium") else "runtime"
+        out = EVIDENCE / f"{part}-{suffix}.json"
         out.write_text(json.dumps(data, indent=2), encoding="utf-8")
         print(f"wrote {out.relative_to(ROOT)} ({time.time() - started:.1f}s)", flush=True)
     return 0

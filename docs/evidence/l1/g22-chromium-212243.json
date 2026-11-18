@@ -1,0 +1,205 @@
+{
+  "browser": "chromium",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "rows": [
+    {
+      "case": "seek",
+      "name": "video control bar exists",
+      "detail": "{\"video-toggle\": {\"w\": 48, \"h\": 48, \"hidden\": false, \"type\": \"button\"}, \"video-seek\": null, \"video-back\": null, \"video-forward\": null}",
+      "ok": false
+    },
+    {
+      "case": "seek",
+      "name": "seek bar is a range input",
+      "detail": "null",
+      "ok": false
+    },
+    {
+      "case": "seek",
+      "name": "jump buttons meet 44px touch target",
+      "detail": "{\"video-back\": null, \"video-forward\": null}",
+      "ok": false
+    },
+    {
+      "case": "parity",
+      "name": "paused and seeked frames equal a fresh still render",
+      "detail": "20/20 timestamps, backing=[(1280, 720)], mismatches=[]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "a seek repaints the preview without a test render",
+      "detail": "5/5 seeks, stale=[]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "paused preview uses the full preview size",
+      "detail": "canvas=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playback never lowers render resolution",
+      "detail": "paused=1280x720 playing=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playing frame keeps full preview backing",
+      "detail": "playing=1280x720 preview=1280x720",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "frames shown during playback match a fresh still render",
+      "detail": "28 distinct on-screen frames, exact=28, unmatched=[], glitches=[], offsets=[0.0], span=4.167s, retried=[], backsteps=0/27 (rVFC runs ahead of the starved clock; measured, not gated), times=[0.333, 0.5, 0.7, 0.9, 1.067, 1.267, 1.433, 1.567, 1.733, 1.867, 2.033, 2.167, 2.3, 2.433, 2.567, 2.767, 2.9, 3.033, 3.167, 3.3, 3.433, 3.567, 3.7, 3.833, 4.033, 4.167, 4.333, 4.5]",
+      "ok": true
+    },
+    {
+      "case": "parity",
+      "name": "playback never shrinks the backing store",
+      "detail": "widths=[1280]",
+      "ok": true
+    },
+    {
+      "case": "output",
+      "name": "size controls are enabled for video",
+      "detail": "{\"output-preset-trigger\": true, \"output-width\": true, \"output-height\": true, \"output-fit\": true, \"output-lock-ratio\": true}",
+      "ok": false
+    },
+    {
+      "case": "output",
+      "name": "video format list offers MP4 and WebM",
+      "detail": "[\"mp4\", \"webm\"]",
+      "ok": true
+    },
+    {
+      "case": "output",
+      "name": "main button says Export Video",
+      "detail": "'Export Video'",
+      "ok": true
+    },
+    {
+      "case": "output",
+      "name": "Export Frame is a separate action",
+      "detail": "present=True",
+      "ok": true
+    },
+    {
+      "case": "output",
+      "name": "default output size line shows the native size",
+      "detail": "'Output size: 1280\u00d7720'",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "export produces a real WEBM video",
+      "detail": "file={'suggested': 'glyphcraft.webm', 'size': 3725881} info={'codec': 'vp9', 'pix_fmt': 'yuv420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 5.966, 'format': 'matroska,webm'} want_frames=179 boxes=['\\x10\\x00\\x00\\x1f'] seek=True hashes=['ef3f64db8c9987f5', '27329f9a557679c1', '4b830dcf35a0c209']",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "WEBM covers the clip from the playhead",
+      "detail": "playhead=2.815 export duration=5.966 frames=180",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "WEBM export shows progress and cancel",
+      "detail": "{\"present\": true, \"hidden\": false, \"text\": \"WEBM \\u00b7 0 of 180 frames \\u00b7 0:00 elapsed \\u00b7 estimating Cancel\", \"barValue\": 0, \"cancel\": true, \"busy\": true}",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "export produces a real MP4 video",
+      "detail": "file={'suggested': 'glyphcraft.mp4', 'size': 4319886} info={'codec': 'h264', 'pix_fmt': 'yuvj420p', 'w': 1280, 'h': 720, 'frames': 180, 'fps': 30.0, 'duration': 6.0, 'format': 'mov,mp4,m4a,3gp,3g2,mj2'} want_frames=180 boxes=['ftyp', 'moov', 'mdat'] seek=True hashes=['0e026617cb93c6ff', 'c2c172325f0f8abd', '9c0baf61fc30424f']",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "MP4 covers the clip from the playhead",
+      "detail": "playhead=2.815 export duration=6.0 frames=180",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "MP4 export shows progress and cancel",
+      "detail": "{\"present\": true, \"hidden\": false, \"text\": \"MP4 \\u00b7 0 of 180 frames \\u00b7 0:00 elapsed \\u00b7 estimating Cancel\", \"barValue\": 0, \"cancel\": true, \"busy\": true}",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "preview state is restored after export",
+      "detail": "{\"busy\": false, \"playing\": true, \"t\": 1.43} playhead=2.815",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "progress panel hides when the export finishes",
+      "detail": "{\"present\": true, \"hidden\": true, \"text\": \"MP4 \\u00b7 180 of 180 frames \\u00b7 2:27 elapsed \\u00b7 0:00 left Cancel\", \"barValue\": 180, \"cancel\": true, \"busy\": false}",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "Export Frame writes one full-size still",
+      "detail": "file={'suggested': 'glyphcraft-frame.png', 'size': 107349} size=1280x720",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "a clip with audio shows a visible note about audio",
+      "detail": "{\"hasAudio\": true, \"hidden\": false, \"width\": 275, \"height\": 42, \"text\": \"Audio is not included in exported videos: this browser cannot encode AAC, so the picture is exported without it.\"}",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "the audio clip exports a real picture and keeps the note",
+      "detail": "streams=['video'] bytes=84353",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "cancel stops the export and leaves the app clean",
+      "detail": "started=True ui={'present': True, 'hidden': True, 'text': 'Cancelling\u2026 Cancel', 'barValue': 1, 'cancel': True, 'busy': False} state={'busy': False, 'frames': 3, 'button': True, 'sources': 0} downloads=[]",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "preview still renders after a cancelled export",
+      "detail": "hash=2804751203 still=2804751203",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "Cancel is visible and clickable on a 700 px peek sheet",
+      "detail": "{\"frames\": 1, \"snap\": \"half\", \"panel\": [12, 774, 688, 847], \"cancel\": [628.546875, 774, 688, 818], \"hidden\": false, \"hitId\": \"export-cancel\", \"vw\": 700, \"vh\": 900}",
+      "ok": true
+    },
+    {
+      "case": "export",
+      "name": "the 700 px Cancel tap stops the export",
+      "detail": "clicked=True idle=True hidden=True error=",
+      "ok": true
+    },
+    {
+      "case": "hitch",
+      "name": "compare drag stays responsive on a 4K image with 6 effects",
+      "detail": "{\"longtasks\": 0, \"longtaskMs\": 0, \"worstLong\": 0, \"median\": 16.70000000001164, \"p95\": 33.29999999998836, \"max\": 33.29999999998836}",
+      "ok": false
+    },
+    {
+      "case": "errors",
+      "name": "no page or console errors",
+      "detail": "[]",
+      "ok": true
+    }
+  ],
+  "problems": [
+    "[seek] video control bar exists: {\"video-toggle\": {\"w\": 48, \"h\": 48, \"hidden\": false, \"type\": \"button\"}, \"video-seek\": null, \"video-back\": null, \"video-forward\": null}",
+    "[seek] seek bar is a range input: null",
+    "[seek] jump buttons meet 44px touch target: {\"video-back\": null, \"video-forward\": null}",
+    "[output] size controls are enabled for video: {\"output-preset-trigger\": true, \"output-width\": true, \"output-height\": true, \"output-fit\": true, \"output-lock-ratio\": true}",
+    "[hitch] compare drag stays responsive on a 4K image with 6 effects: {\"longtasks\": 0, \"longtaskMs\": 0, \"worstLong\": 0, \"median\": 16.70000000001164, \"p95\": 33.29999999998836, \"max\": 33.29999999998836}"
+  ]
+}

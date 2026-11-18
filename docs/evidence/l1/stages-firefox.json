@@ -1,0 +1,490 @@
+{
+  "browser": "firefox",
+  "cases": {
+    "720p-none": {
+      "render": [
+        160,
+        77,
+        77,
+        73,
+        70
+      ],
+      "stage": {
+        "applyAdjustments": {
+          "n": 1,
+          "ms": 0
+        },
+        "applyEffects": {
+          "n": 1,
+          "ms": 0.8
+        },
+        "prepareBase": {
+          "n": 1,
+          "ms": 9.8
+        },
+        "renderScript": {
+          "n": 1,
+          "ms": 80.6
+        },
+        "renderToContext": {
+          "n": 1,
+          "ms": 80.8
+        },
+        "updateCompareUI": {
+          "n": 2,
+          "ms": 0
+        },
+        "applyTransform": {
+          "n": 1,
+          "ms": 0.2
+        },
+        "applyZoomUI": {
+          "n": 1,
+          "ms": 0
+        },
+        "updateStatus": {
+          "n": 1,
+          "ms": 0.2
+        }
+      },
+      "canvasOps": {
+        "getImageData": {
+          "n": 1,
+          "ms": 3.8
+        },
+        "putImageData": {
+          "n": 0,
+          "ms": 0
+        },
+        "drawImage": {
+          "n": 1,
+          "ms": 7.8
+        },
+        "fillText": {
+          "n": 2240,
+          "ms": 16.2
+        }
+      },
+      "renderAvg": 91.4,
+      "source_draw_ms": 4,
+      "effects": [],
+      "size": "720p"
+    },
+    "720p-light2": {
+      "render": [
+        143,
+        78,
+        80,
+        83,
+        82
+      ],
+      "stage": {
+        "applyAdjustments": {
+          "n": 1,
+          "ms": 0
+        },
+        "applyEffects": {
+          "n": 1,
+          "ms": 27.2
+        },
+        "prepareBase": {
+          "n": 1,
+          "ms": 68.4
+        },
+        "renderScript": {
+          "n": 1,
+          "ms": 24.4
+        },
+        "renderToContext": {
+          "n": 1,
+          "ms": 24.4
+        },
+        "updateCompareUI": {
+          "n": 2,
+          "ms": 0
+        },
+        "applyTransform": {
+          "n": 1,
+          "ms": 0
+        },
+        "applyZoomUI": {
+          "n": 1,
+          "ms": 0
+        },
+        "updateStatus": {
+          "n": 1,
+          "ms": 0
+        }
+      },
+      "canvasOps": {
+        "getImageData": {
+          "n": 1,
+          "ms": 3.4
+        },
+        "putImageData": {
+          "n": 1,
+          "ms": 1.4
+        },
+        "drawImage": {
+          "n": 1,
+          "ms": 7
+        },
+        "fillText": {
+          "n": 2240,
+          "ms": 12.6
+        }
+      },
+      "renderAvg": 93.2,
+      "source_draw_ms": 3,
+      "effects": [
+        "posterize",
+        "duotone"
+      ],
+      "size": "720p"
+    },
+    "720p-heavy7": {
+      "render": [
+        1278,
+        1273,
+        1233,
+        1228,
+        1226
+      ],
+      "stage": {
+        "applyAdjustments": {
+          "n": 1,
+          "ms": 0
+        },
+        "fx:edges": {
+          "n": 1,
+          "ms": 33.8
+        },
+        "fx:sketch": {
+          "n": 1,
+          "ms": 42
+        },
+        "fx:oil": {
+          "n": 1,
+          "ms": 903
+        },
+        "fx:emboss": {
+          "n": 1,
+          "ms": 71.4
+        },
+        "fx:blur": {
+          "n": 1,
+          "ms": 39.4
+        },
+        "fx:sharpen": {
+          "n": 1,
+          "ms": 76.2
+        },
+        "applyEffects": {
+          "n": 1,
+          "ms": 1181
+        },
+        "prepareBase": {
+          "n": 1,
+          "ms": 1188.8
+        },
+        "renderScript": {
+          "n": 1,
+          "ms": 58.6
+        },
+        "renderToContext": {
+          "n": 1,
+          "ms": 58.6
+        },
+        "updateCompareUI": {
+          "n": 2,
+          "ms": 0
+        },
+        "applyTransform": {
+          "n": 1,
+          "ms": 0
+        },
+        "applyZoomUI": {
+          "n": 1,
+          "ms": 0
+        },
+        "updateStatus": {
+          "n": 1,
+          "ms": 0
+        }
+      },
+      "canvasOps": {
+        "getImageData": {
+          "n": 8,
+          "ms": 17.6
+        },
+        "putImageData": {
+          "n": 7,
+          "ms": 7.8
+        },
+        "drawImage": {
+          "n": 12,
+          "ms": 39.8
+        },
+        "fillText": {
+          "n": 2240,
+          "ms": 13
+        }
+      },
+      "renderAvg": 1247.6,
+      "source_draw_ms": 4,
+      "effects": [
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "sharpen",
+        "oil"
+      ],
+      "size": "720p"
+    },
+    "1080p-none": {
+      "render": [
+        133,
+        94,
+        98,
+        100,
+        101
+      ],
+      "stage": {
+        "applyAdjustments": {
+          "n": 1,
+          "ms": 0
+        },
+        "applyEffects": {
+          "n": 1,
+          "ms": 0
+        },
+        "prepareBase": {
+          "n": 1,
+          "ms": 19.8
+        },
+        "renderScript": {
+          "n": 1,
+          "ms": 84.8
+        },
+        "renderToContext": {
+          "n": 1,
+          "ms": 84.8
+        },
+        "updateCompareUI": {
+          "n": 2,
+          "ms": 0
+        },
+        "applyTransform": {
+          "n": 1,
+          "ms": 0
+        },
+        "applyZoomUI": {
+          "n": 1,
+          "ms": 0.4
+        },
+        "updateStatus": {
+          "n": 1,
+          "ms": 0
+        }
+      },
+      "canvasOps": {
+        "getImageData": {
+          "n": 1,
+          "ms": 4.2
+        },
+        "putImageData": {
+          "n": 0,
+          "ms": 0
+        },
+        "drawImage": {
+          "n": 1,
+          "ms": 18.4
+        },
+        "fillText": {
+          "n": 2240,
+          "ms": 14.4
+        }
+      },
+      "renderAvg": 105.2,
+      "source_draw_ms": 12,
+      "effects": [],
+      "size": "1080p"
+    },
+    "1080p-light2": {
+      "render": [
+        142,
+        125,
+        121,
+        120,
+        122
+      ],
+      "stage": {
+        "applyAdjustments": {
+          "n": 1,
+          "ms": 0
+        },
+        "applyEffects": {
+          "n": 1,
+          "ms": 27.8
+        },
+        "prepareBase": {
+          "n": 1,
+          "ms": 95.6
+        },
+        "renderScript": {
+          "n": 1,
+          "ms": 29.8
+        },
+        "renderToContext": {
+          "n": 1,
+          "ms": 30
+        },
+        "updateCompareUI": {
+          "n": 2,
+          "ms": 0
+        },
+        "applyTransform": {
+          "n": 1,
+          "ms": 0.2
+        },
+        "applyZoomUI": {
+          "n": 1,
+          "ms": 0.2
+        },
+        "updateStatus": {
+          "n": 1,
+          "ms": 0
+        }
+      },
+      "canvasOps": {
+        "getImageData": {
+          "n": 1,
+          "ms": 3.6
+        },
+        "putImageData": {
+          "n": 1,
+          "ms": 1.6
+        },
+        "drawImage": {
+          "n": 1,
+          "ms": 16.2
+        },
+        "fillText": {
+          "n": 2240,
+          "ms": 12.6
+        }
+      },
+      "renderAvg": 126,
+      "source_draw_ms": 12,
+      "effects": [
+        "posterize",
+        "duotone"
+      ],
+      "size": "1080p"
+    },
+    "1080p-heavy7": {
+      "render": [
+        1915,
+        1765,
+        1760,
+        1755,
+        1742
+      ],
+      "stage": {
+        "applyAdjustments": {
+          "n": 1,
+          "ms": 0
+        },
+        "fx:edges": {
+          "n": 1,
+          "ms": 43.2
+        },
+        "fx:sketch": {
+          "n": 1,
+          "ms": 63
+        },
+        "fx:oil": {
+          "n": 1,
+          "ms": 1274.4
+        },
+        "fx:emboss": {
+          "n": 1,
+          "ms": 109.4
+        },
+        "fx:blur": {
+          "n": 1,
+          "ms": 61
+        },
+        "fx:sharpen": {
+          "n": 1,
+          "ms": 113.2
+        },
+        "applyEffects": {
+          "n": 1,
+          "ms": 1685.2
+        },
+        "prepareBase": {
+          "n": 1,
+          "ms": 1702.8
+        },
+        "renderScript": {
+          "n": 1,
+          "ms": 84.6
+        },
+        "renderToContext": {
+          "n": 1,
+          "ms": 84.6
+        },
+        "updateCompareUI": {
+          "n": 2,
+          "ms": 0
+        },
+        "applyTransform": {
+          "n": 1,
+          "ms": 0
+        },
+        "applyZoomUI": {
+          "n": 1,
+          "ms": 0
+        },
+        "updateStatus": {
+          "n": 1,
+          "ms": 0
+        }
+      },
+      "canvasOps": {
+        "getImageData": {
+          "n": 8,
+          "ms": 26.8
+        },
+        "putImageData": {
+          "n": 7,
+          "ms": 13.2
+        },
+        "drawImage": {
+          "n": 12,
+          "ms": 66
+        },
+        "fillText": {
+          "n": 2240,
+          "ms": 13.8
+        }
+      },
+      "renderAvg": 1787.4,
+      "source_draw_ms": 11,
+      "effects": [
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "sharpen",
+        "oil"
+      ],
+      "size": "1080p"
+    }
+  },
+  "errors": []
+}

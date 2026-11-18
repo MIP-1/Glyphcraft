@@ -9,6 +9,7 @@ to be FAIL before the fix and PASS after it.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -18,7 +19,7 @@ from perf_check import (INIT_JS, LIGHT, WORK, Server, load_video, make_fixtures,
                         pct, seek_paused, set_effects)
 from playwright.sync_api import sync_playwright
 
-OUT = Path(__file__).resolve().parents[1] / "docs" / "evidence" / "l0"
+OUT = Path(__file__).resolve().parents[1] / "docs" / "evidence" / os.environ.get("GATE_TASK", "l0")
 FIXTURE_IMAGE = Path("/tmp/glyphcraft_gate_fixture.png")
 rows: list[dict] = []
 

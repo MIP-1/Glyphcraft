@@ -1,0 +1,690 @@
+{
+  "rows": [
+    {
+      "case": "smooth",
+      "name": "chromium zero-effect control runs",
+      "detail": "p50=34.2ms fps=15.2 interval p50=59.7ms advance=5.0s",
+      "ok": true
+    },
+    {
+      "case": "smooth",
+      "name": "chromium light stack keeps playback fluid",
+      "detail": "p50=60.7ms(control 34.2 delta 26.5 budget 20.0) p95=147.9ms fps=9.6(control 15.2 ratio 0.6 budget 0.6) interval p50=75.9ms(control 59.7 extra 16.2 budget 50.0) longest_task=225ms pairs=[(26.5, 0.615, 16.2), (11.6, 0.882, 13.6), (33.9, 0.629, 33.5)]",
+      "ok": false
+    },
+    {
+      "case": "smooth",
+      "name": "chromium light stack keeps input responsive",
+      "detail": "pause p90=77.0ms(control 71.0 delta 6.0 budget 150.0) max=103.0ms(control 91.7 delta 11.3 budget 300.0) mean=37.9/37.9 median=15.2/33.0 samples=[14.7, 15.7, 11.2, 11.2, 71.0, 12.4, 103.0, 13.4, 72.2, 13.6, 12.4, 68.9, 67.0, 83.4, 15.8, 5.9, 6.1, 13.1, 77.0, 69.2] control_samples=[12.3, 19.0, 14.4, 60.4, 72.9, 51.8, 9.5, 51.4, 45.0, 16.9, 14.4, 64.5, 7.5, 49.9, 71.0, 21.1, 69.9, 5.9, 7.7, 91.7]",
+      "ok": true
+    },
+    {
+      "case": "smooth",
+      "name": "chromium playback has no page errors",
+      "detail": "[]",
+      "ok": true
+    },
+    {
+      "case": "smooth",
+      "name": "firefox zero-effect control runs",
+      "detail": "p50=127ms fps=8.0 interval p50=117ms advance=5.2s",
+      "ok": true
+    },
+    {
+      "case": "smooth",
+      "name": "firefox light stack keeps playback fluid",
+      "detail": "p50=165ms(control 127 delta 35 budget 30.0) p95=227ms fps=6.0(control 8.0 ratio 0.8 budget 0.6) interval p50=166ms(control 117 extra 30 budget 50.0) longest_task=0ms pairs=[(88, 0.667, 99), (3, 0.85, 17), (35, 0.789, 30)]",
+      "ok": false
+    },
+    {
+      "case": "smooth",
+      "name": "firefox light stack keeps input responsive",
+      "detail": "pause p90=488.2ms(control 641.5 delta -153.3 budget 150.0) max=540.7ms(control 755.2 delta -214.5 budget 300.0) mean=360.1/397.3 median=357.9/378.4 samples=[460.6, 209.4, 358.8, 275.4, 366.4, 268.0, 413.2, 300.4, 385.8, 450.7, 267.0, 361.8, 206.6, 356.3, 356.9, 349.4, 252.1, 540.7, 533.5, 488.2] control_samples=[358.1, 195.3, 253.4, 302.3, 197.2, 618.3, 501.5, 210.0, 168.2, 135.2, 391.8, 428.8, 365.0, 239.0, 641.5, 516.4, 755.2, 531.8, 398.1, 738.0]",
+      "ok": true
+    },
+    {
+      "case": "smooth",
+      "name": "firefox playback has no page errors",
+      "detail": "[]",
+      "ok": true
+    },
+    {
+      "case": "sharp",
+      "name": "DPR 1 zoom 0.79 covers display pixels",
+      "detail": "backing=[1600, 900] css=[1053.3, 592.5] need=[1053.3, 592.5] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px",
+      "ok": true
+    },
+    {
+      "case": "sharp",
+      "name": "DPR 1 zoom 1 covers display pixels",
+      "detail": "backing=[1600, 900] css=[1333.3, 750] need=[1333.3, 750] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px",
+      "ok": true
+    },
+    {
+      "case": "sharp",
+      "name": "DPR 1 zoom 1.12 covers display pixels",
+      "detail": "backing=[1600, 900] css=[1493.3, 840] need=[1493.3, 840] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px",
+      "ok": true
+    },
+    {
+      "case": "sharp",
+      "name": "DPR 1 zoom 2 covers display pixels",
+      "detail": "backing=[1920, 1080] css=[2666.7, 1500] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px",
+      "ok": true
+    },
+    {
+      "case": "sharp",
+      "name": "DPR 2 zoom 0.79 covers display pixels",
+      "detail": "backing=[1920, 1080] css=[1053.3, 592.5] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px",
+      "ok": true
+    },
+    {
+      "case": "sharp",
+      "name": "DPR 2 zoom 1 covers display pixels",
+      "detail": "backing=[1920, 1080] css=[1333.3, 750] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px",
+      "ok": true
+    },
+    {
+      "case": "sharp",
+      "name": "DPR 2 zoom 1.12 covers display pixels",
+      "detail": "backing=[1920, 1080] css=[1493.3, 840] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px",
+      "ok": true
+    },
+    {
+      "case": "sharp",
+      "name": "DPR 2 zoom 2 covers display pixels",
+      "detail": "backing=[1920, 1080] css=[2666.7, 1500] need=[1920, 1080] source=[1920, 1080] caps=1600px/2.56MP needCap=1920px",
+      "ok": true
+    }
+  ],
+  "problems": [
+    "[smooth] chromium light stack keeps playback fluid: p50=60.7ms(control 34.2 delta 26.5 budget 20.0) p95=147.9ms fps=9.6(control 15.2 ratio 0.6 budget 0.6) interval p50=75.9ms(control 59.7 extra 16.2 budget 50.0) longest_task=225ms pairs=[(26.5, 0.615, 16.2), (11.6, 0.882, 13.6), (33.9, 0.629, 33.5)]",
+    "[smooth] firefox light stack keeps playback fluid: p50=165ms(control 127 delta 35 budget 30.0) p95=227ms fps=6.0(control 8.0 ratio 0.8 budget 0.6) interval p50=166ms(control 117 extra 30 budget 50.0) longest_task=0ms pairs=[(88, 0.667, 99), (3, 0.85, 17), (35, 0.789, 30)]"
+  ],
+  "budgets": {
+    "delta_p50": {
+      "chromium": 20.0,
+      "firefox": 30.0
+    },
+    "fps_ratio": 0.6,
+    "interval_extra_ms": 50.0,
+    "pause_p90_extra_ms": 150.0,
+    "pause_max_extra_ms": 300.0,
+    "min_renders_5s": 15
+  },
+  "windows": [
+    {
+      "browser": "chromium",
+      "label": "control",
+      "renders": 78,
+      "longtasks": [
+        51,
+        61,
+        53,
+        85,
+        52,
+        50,
+        74,
+        108,
+        61
+      ],
+      "rvfc": 78,
+      "videoTime": 6.243,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 15.6,
+      "p50": 34.2,
+      "p95": 52.2,
+      "interval_p50": 59.7,
+      "interval_p95": 83.5,
+      "late_share": 0.727,
+      "longest_task": 108,
+      "longtask_ms": 595,
+      "advance": 5.0
+    },
+    {
+      "browser": "chromium",
+      "label": "light",
+      "renders": 48,
+      "longtasks": [
+        65,
+        56,
+        51,
+        54,
+        64,
+        61,
+        50,
+        54,
+        62,
+        63,
+        59,
+        57,
+        60,
+        67,
+        53,
+        77,
+        54,
+        51,
+        139,
+        76,
+        51,
+        71,
+        73,
+        105,
+        143,
+        71,
+        130,
+        293,
+        157,
+        254,
+        129,
+        78,
+        90,
+        110,
+        91,
+        132,
+        137,
+        156,
+        65,
+        82,
+        54
+      ],
+      "rvfc": 48,
+      "videoTime": 5.839,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 9.6,
+      "p50": 60.7,
+      "p95": 147.9,
+      "interval_p50": 75.9,
+      "interval_p95": 296,
+      "late_share": 0.979,
+      "longest_task": 293,
+      "longtask_ms": 3745,
+      "advance": 4.59
+    },
+    {
+      "browser": "chromium",
+      "label": "control",
+      "renders": 76,
+      "longtasks": [
+        73,
+        129,
+        66,
+        132,
+        62,
+        51,
+        51,
+        63,
+        72,
+        202,
+        78,
+        52,
+        50
+      ],
+      "rvfc": 76,
+      "videoTime": 6.249,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 15.2,
+      "p50": 34.1,
+      "p95": 66.2,
+      "interval_p50": 53.1,
+      "interval_p95": 91.7,
+      "late_share": 0.667,
+      "longest_task": 202,
+      "longtask_ms": 1081,
+      "advance": 5.01
+    },
+    {
+      "browser": "chromium",
+      "label": "light",
+      "renders": 67,
+      "longtasks": [
+        55,
+        54,
+        58,
+        55,
+        57,
+        60,
+        51,
+        59,
+        65,
+        53,
+        60,
+        53,
+        56,
+        58,
+        163,
+        61,
+        57,
+        62,
+        53,
+        50,
+        51,
+        54,
+        52,
+        51,
+        53,
+        58,
+        50,
+        196,
+        84,
+        64,
+        53
+      ],
+      "rvfc": 67,
+      "videoTime": 6.242,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 13.4,
+      "p50": 45.7,
+      "p95": 59.4,
+      "interval_p50": 66.7,
+      "interval_p95": 100.2,
+      "late_share": 0.97,
+      "longest_task": 196,
+      "longtask_ms": 2006,
+      "advance": 5.0
+    },
+    {
+      "browser": "chromium",
+      "label": "control",
+      "renders": 62,
+      "longtasks": [
+        126,
+        67,
+        68,
+        53,
+        60,
+        52,
+        91,
+        89,
+        92,
+        129,
+        97,
+        77,
+        76,
+        67,
+        73,
+        72,
+        103,
+        58,
+        63,
+        53,
+        57,
+        67,
+        72,
+        107,
+        71,
+        99,
+        99,
+        55,
+        60,
+        57,
+        65,
+        107,
+        53,
+        63,
+        103,
+        76,
+        58,
+        60,
+        57,
+        61,
+        56,
+        61,
+        61,
+        64,
+        64,
+        50,
+        68,
+        62,
+        57,
+        142
+      ],
+      "rvfc": 62,
+      "videoTime": 6.497,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 12.4,
+      "p50": 53,
+      "p95": 101.2,
+      "interval_p50": 77.4,
+      "interval_p95": 130.3,
+      "late_share": 0.951,
+      "longest_task": 142,
+      "longtask_ms": 3698,
+      "advance": 5.0
+    },
+    {
+      "browser": "chromium",
+      "label": "light",
+      "renders": 39,
+      "longtasks": [
+        97,
+        96,
+        75,
+        93,
+        118,
+        210,
+        90,
+        92,
+        98,
+        67,
+        174,
+        89,
+        73,
+        199,
+        129,
+        217,
+        172,
+        105,
+        98,
+        191,
+        173,
+        118,
+        124,
+        110,
+        105,
+        80,
+        225,
+        99,
+        95,
+        93,
+        93,
+        88,
+        90,
+        85,
+        69,
+        91,
+        60,
+        67,
+        62
+      ],
+      "rvfc": 39,
+      "videoTime": 6.307,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 7.8,
+      "p50": 86.9,
+      "p95": 193.8,
+      "interval_p50": 110.9,
+      "interval_p95": 224.9,
+      "late_share": 1.0,
+      "longest_task": 225,
+      "longtask_ms": 4410,
+      "advance": 5.01
+    },
+    {
+      "browser": "firefox",
+      "label": "control",
+      "renders": 45,
+      "longtasks": [],
+      "rvfc": 45,
+      "videoTime": 6.017,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 9.0,
+      "p50": 80,
+      "p95": 242,
+      "interval_p50": 81,
+      "interval_p95": 248,
+      "late_share": 1.0,
+      "longest_task": 0,
+      "longtask_ms": 0,
+      "advance": 4.77
+    },
+    {
+      "browser": "firefox",
+      "label": "light",
+      "renders": 30,
+      "longtasks": [],
+      "rvfc": 30,
+      "videoTime": 6.333,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 6.0,
+      "p50": 168,
+      "p95": 227,
+      "interval_p50": 180,
+      "interval_p95": 232,
+      "late_share": 1.0,
+      "longest_task": 0,
+      "longtask_ms": 0,
+      "advance": 5.17
+    },
+    {
+      "browser": "firefox",
+      "label": "control",
+      "renders": 40,
+      "longtasks": [],
+      "rvfc": 40,
+      "videoTime": 6.367,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 8.0,
+      "p50": 127,
+      "p95": 190,
+      "interval_p50": 117,
+      "interval_p95": 191,
+      "late_share": 1.0,
+      "longest_task": 0,
+      "longtask_ms": 0,
+      "advance": 5.15
+    },
+    {
+      "browser": "firefox",
+      "label": "light",
+      "renders": 34,
+      "longtasks": [],
+      "rvfc": 34,
+      "videoTime": 6.359,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 6.8,
+      "p50": 130,
+      "p95": 224,
+      "interval_p50": 134,
+      "interval_p95": 225,
+      "late_share": 1.0,
+      "longest_task": 0,
+      "longtask_ms": 0,
+      "advance": 5.13
+    },
+    {
+      "browser": "firefox",
+      "label": "control",
+      "renders": 38,
+      "longtasks": [],
+      "rvfc": 38,
+      "videoTime": 6.561,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 7.6,
+      "p50": 130,
+      "p95": 187,
+      "interval_p50": 136,
+      "interval_p95": 198,
+      "late_share": 1.0,
+      "longest_task": 0,
+      "longtask_ms": 0,
+      "advance": 5.21
+    },
+    {
+      "browser": "firefox",
+      "label": "light",
+      "renders": 30,
+      "longtasks": [],
+      "rvfc": 30,
+      "videoTime": 6.22,
+      "backing": [
+        1280,
+        720
+      ],
+      "paused": false,
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "wall": 5.0,
+      "fps": 6.0,
+      "p50": 165,
+      "p95": 258,
+      "interval_p50": 166,
+      "interval_p95": 269,
+      "late_share": 1.0,
+      "longest_task": 0,
+      "longtask_ms": 0,
+      "advance": 5.04
+    }
+  ]
+}
