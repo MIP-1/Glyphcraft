@@ -196,9 +196,9 @@ FINAL-GATE-RESULTS-PLACEHOLDER
 
 | # | Window | Log | G1–G21 | G22 | G23 | Note |
 |---|---|---|---|---|---|---|
-| 1 | 15:59–16:45 | `gate-run1.log` | all PASS | known V3/V4/V5 reds | **16/16 PASS** | load 2.14 → 3.26 |
-| 2 | 17:57–18:47 | `gate-run2.log` | all PASS | known V3/V4/V5 reds | **16/16 PASS** | load 2.26 → 4.61 |
-| 3 | 19:22–20:10 | `gate-run3.log` | all PASS | known V3/V4/V5 reds | 2 reds | load 1.69 → **9.44**; both light windows degraded (Chromium p50 60.7 vs control 34.2, p95 147.9; Firefox 165 vs 127) |
+| 1 | 15:59–16:45 | `set3-run1-pass.log` | all PASS | known V3/V4/V5 reds | **16/16 PASS** | load 2.14 → 3.26 |
+| 2 | 17:57–18:47 | `set3-run2-pass.log` | all PASS | known V3/V4/V5 reds | **16/16 PASS** | load 2.26 → 4.61 |
+| 3 | 19:22–20:10 | `set3-run3-g23-load.log` | all PASS | known V3/V4/V5 reds | 2 reds | load 1.69 → **9.44**; both light windows degraded (Chromium p50 60.7 vs control 34.2, p95 147.9; Firefox 165 vs 127) |
 
 Runs 1 and 2 are a complete green pass of every check this task owns. Run 3 is
 the machine: its own load log climbs from 1.69 to 9.44 during the run, and the
@@ -206,9 +206,26 @@ G23 light windows degrade while their control windows do not. A high-weight
 cgroup (`systemd-run --user --scope -p CPUWeight=10000 -p IOWeight=10000`) was
 tried as an isolation measure and **rejected**: with load 10.7 the Chromium delta
 was still 23.2 ms (`g23-cgroup.log`), so priority does not remove the
-interference. A new three-run set is queued to start only when the blank-page
-canary is clean, because "three consecutive" must be three clean runs, not two
-clean runs plus one excuse.
+interference.
+
+### Set 4 and the detached runner
+
+Overnight the same machine produced one more complete green run
+(`set4-run1-pass.log`, 00:01, G22 red only on the four per-browser V3/V4 rows,
+G23 16/16) and then three attempts that never reached a verdict because load
+stayed above 6 for two minutes (`attempt-1118-2212-load-abort.log`,
+`attempt-1119-0007-load-abort.log`, `attempt-1119-0100-load-abort.log`). A
+streak of three therefore kept restarting, and two harness restarts killed
+shell-owned drivers mid-set.
+
+The runner is now `tools/gate_set.py`, started as a detached systemd user unit so
+a harness restart cannot kill it: it waits for load < 2.2 for two minutes and a
+clean `tools/machine_canary.py`, aborts a run only when load stays above 8.0 for
+three minutes, classifies every attempt against the known V3/V4/V5 rows, and
+keeps exactly the three consecutive valid runs as `gate-run1..3.log`. Progress is
+`gate-progress.txt`, hashes are `code-hashes.txt`, and every non-valid attempt is
+kept as `attempt-<stamp>-<reason>.log`. The final three-run result is appended
+below when the unit finishes.
 
 ## 8. Break-it (10 probes) and build
 
