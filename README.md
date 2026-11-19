@@ -10,7 +10,7 @@ CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
 the browser supports it. Git keeps the readable sources; `npm run build`
 writes an optional minified `dist/` for publishing.
 
-## Status — 2026-11-16
+## Status — 2026-11-19
 
 **Current status:** the owner's video-fix round is **in progress** on `main`.
 V0 (`V0-pass`) reproduced the real video defects and registered G22; V1
@@ -21,6 +21,15 @@ frame-by-frame MP4/WebM export at the chosen size. V3–V5 (video control bar,
 output dimensions, image hitches) are **NOT DONE** yet. P2-3 remains complete
 and tagged `P2-3-pass`; P2-4 is still **NOT STARTED** and is not part of this
 pass.
+
+The lag and performance round (`docs/prompts/lag_performance_round.md`) is at
+**L1**: L0 measured the lag, the soft preview and the memory floor (`L0-pass`),
+and L1's fixes are committed in `6dd7aa1` — one effects buffer instead of four
+reads, a bit-identical fused posterize/duotone pass, and a preview backing store
+that follows the display up to 1920 px. G23 is 16/16 three times standalone and
+G20 is 200/200 exact. The last open item is three consecutive full-gate runs;
+two are green and the third was lost to a load spike on the owner's machine,
+which is recorded rather than excused in `docs/evidence/l1/report.md` §7.
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -43,6 +52,8 @@ pass.
 | Video fix V0 | PASS | tag `V0-pass`, `docs/evidence/v0/report.md` |
 | Video fix V1 full-resolution frames | PASS | tag `V1-pass`, `docs/evidence/v1/report.md` |
 | Video fix V2 real MP4/WebM export | PASS | tag `V2-pass`, `docs/evidence/v2/report.md` |
+| Lag/perf L0 measure lag, softness, memory | PASS | tag `L0-pass`, `docs/evidence/l0/report.md` |
+| Lag/perf L1 one buffer + sharp preview | IN PROGRESS (gate set pending) | commit `6dd7aa1`, `docs/evidence/l1/report.md` |
 | Video fix V3–V5 | IN PROGRESS | control bar, output sizes, hitches |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
 | P2-5 before/after finish | NOT STARTED | |
@@ -208,19 +219,52 @@ and raw data are in `docs/evidence/p2-3/perf-log.md`.
   36 cells.
 - Full evidence and decisions: `docs/GATE.md` P2-3 and P2-3 video fix V2.
 
+**L1 — done in this step (measurements complete, gate set pending)**
+
+- Light-stack 720p frame: `getImageData` 4 → **1** (30.2 → 7.6 ms),
+  `putImageData` 3 → **1** (4.0 → 1.2 ms), `renderScript` 37.1 → **14.2 ms**,
+  whole render 88.7 → **49.4 ms**; 1080p 97.3 → 77.4 ms. Same ramp, same
+  per-cell sampling, same glyph count.
+- The saving is bit-exact, not approximate: auto-levels runs on the single
+  effects buffer and that `ImageData` is handed to the scan, and posterize +
+  duotone share one loop with the same `Uint8ClampedArray` store/read order.
+  `tools/l1_parity.py` renders the same paused frame through the fused and the
+  old paths: **12/12 hashes identical**; G20 stays **200/200 exact**.
+- Preview sharpness: `renderPreviewSize()` follows `min(source native, CSS × DPR)`
+  when that is larger than the old preview size, capped at 1920 px and the
+  unchanged 2.56 MP cap. G23 sharpness went 4/8 → **8/8** cells, and layout plus
+  golden hashes still use the old size, so nothing moved.
+- G23's own measurements are now variance-robust without moving a budget: three
+  control/light pairs, twenty pause clicks per side, true median, 3 s warm-up.
+  The V2 tree still fails in every window it was measured in.
+- Build: JS 226,369 → 206,019 bytes; `dist_smoke` source hash equals dist hash.
+- Evidence, rejected variants and the failed-attempt log:
+  `docs/evidence/l1/report.md`.
+
 **Next steps**
 
-1. V2 is PASS. Next tasks in the video-fix round: V3 video control bar, V4
-   Output Size controls enabled for video, V5 image hitches and closeout.
-2. Owner hand-check: fresh reload in both themes, one real video over 100 MB,
-   one phone.
-3. After V5: P2-4 undo/redo/history, then P2-5 before/after finish and P2-6
+1. Finish L1's gate set (three consecutive clean full-gate runs) and tag
+   `L1-pass`, then L2 (dead code, allocations, idle cost, load cost and
+   compression experiments) and L3 (audit and closeout).
+2. V2 is PASS. After the lag round: V3 video control bar, V4 Output Size
+   controls enabled for video, V5 image hitches and closeout.
+3. Owner hand-check: fresh reload in both themes, one real video over 100 MB,
+   one phone; and the L1 items under HUMAN-CHECK below.
+4. After V5: P2-4 undo/redo/history, then P2-5 before/after finish and P2-6
    presets. Do not start P2-4 in this pass.
-4. Mobile landscape refinement (height <500 px): the sheet and controls work
+5. Mobile landscape refinement (height <500 px): the sheet and controls work
    today, but add a landscape-specific snap once real-device testing is available.
 
 **HUMAN-CHECK**
 
+- L1 playback feel on the owner's real Zen browser and GPU: every G23 number is
+  headless software raster; the direction is a measured 4→1 read and 3→1 write
+  reduction, the felt result is not measured here.
+- L1 sharpness at DPR 2 above ~140 % zoom on a 4K source: the 1920 px backing cap
+  is reached, so the preview is the best the cap allows but below CSS × DPR.
+- L1 real CPU and RAM on the owner's machine, and a long (multi-minute) clip:
+  memory was flat at 35.1 MB in L0 and L1 adds no retained buffer, but that is a
+  headless measurement.
 - Real-device frame rate, real GPU playback and real Safari: the worker's
   long-task numbers come from headless Chromium and are not a real-device
   claim.
