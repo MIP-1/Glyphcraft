@@ -165,7 +165,9 @@ listed in §9; it is not a gate cell.
 `GATE_TASK=l1 npm run gate` on the frozen tree, logs `gate-run1.log` …
 `gate-run3.log`, ledger `gate-runs.txt`, per-run load samples
 `gate-run{1,2,3}-load.txt`. Runtime and test files are hashed before the set
-and after each run (`/tmp/opencode/l1_code_*.txt`); the hashes must match.
+and after each run (`code-hashes.txt`); the hashes must match. The screenshot
+matrix is hashed after every attempt (`shots-run{1,2,3}.sha256`) because the
+gate overwrites it.
 
 Attempt history, kept rather than deleted, because each cost a full run:
 
