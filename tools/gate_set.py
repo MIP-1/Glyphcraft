@@ -85,12 +85,16 @@ def wait_quiet(deadline: float) -> bool:
 
 def run_gate(path: Path) -> tuple[int, str]:
     env = dict(os.environ, GATE_TASK="l1")
-    with path.open("w") as fh:
+    loads = OUT / "gate-load.txt"
+    with path.open("w") as fh, loads.open("w") as lh:
         proc = subprocess.Popen(["npm", "run", "gate"], cwd=ROOT, env=env,
                                 stdout=fh, stderr=subprocess.STDOUT,
                                 start_new_session=True)
         above = 0
         while proc.poll() is None:
+            la = Path("/proc/loadavg").read_text().split()[:3]
+            lh.write(f"{datetime.now():%H:%M:%S} {' '.join(la)}\n")
+            lh.flush()
             above = above + 1 if load1() > ABORT_LOAD else 0
             if above >= ABORT_SAMPLES:
                 log(f"load {load1():.2f} above {ABORT_LOAD} for 3 min: aborting run")
@@ -190,6 +194,13 @@ def main() -> int:
         shot_tag = f"run{slot}" if ok else f"attempt-{stamp}"
         count, digest = shots(shot_tag)
         log(f"screenshots {count} files sha256 {digest} -> shots-{shot_tag}.sha256")
+        load_log = OUT / "gate-load.txt"
+        if load_log.exists():
+            dest = OUT / (f"gate-run{slot}-load.txt" if ok
+                          else f"attempt-{stamp}-load.txt")
+            shutil.copy(str(load_log), str(dest))
+            load_log.unlink()
+            log(f"load samples -> {dest.name}")
     log("DONE: three consecutive valid runs" if valid >= 3 else "STOPPED without three valid runs")
     return 0 if valid >= 3 else 2
 
