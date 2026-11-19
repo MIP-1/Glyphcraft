@@ -134,6 +134,22 @@ def manifest() -> str:
                           text=True).stdout
 
 
+def shots(tag: str) -> tuple[int, str]:
+    """Hash the screenshot matrix so three runs can be diffed after the fact.
+
+    The gate rewrites docs/evidence/l1/*.png on every run, so the only way to
+    prove two runs are identical outside the live canvas is to snapshot the
+    hashes while the files are still that run's. Returns (files, digest).
+    """
+    files = sorted(OUT.glob("*.png"))
+    lines = []
+    for path in files:
+        lines.append(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}")
+    data = "\n".join(lines) + "\n"
+    (OUT / f"shots-{tag}.sha256").write_text(data)
+    return len(files), hashlib.sha256(data.encode()).hexdigest()[:16]
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     PROGRESS.write_text("")
@@ -171,6 +187,9 @@ def main() -> int:
         (OUT / "code-hashes.txt").write_text(data)
         log(f"manifest sha256 {hashlib.sha256(data.encode()).hexdigest()[:16]} "
             f"files {len(data.splitlines())}")
+        shot_tag = f"run{slot}" if ok else f"attempt-{stamp}"
+        count, digest = shots(shot_tag)
+        log(f"screenshots {count} files sha256 {digest} -> shots-{shot_tag}.sha256")
     log("DONE: three consecutive valid runs" if valid >= 3 else "STOPPED without three valid runs")
     return 0 if valid >= 3 else 2
 

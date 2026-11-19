@@ -1,3 +1,7 @@
 run1 exit=1
 run2 exit=1
 run3 exit=1
+attempt-1118-2212 invalid:load-abort
+gate-run1.log valid
+attempt-1119-0007 invalid:load-abort
+attempt-1119-0100 invalid:load-abort
