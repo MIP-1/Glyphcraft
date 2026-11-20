@@ -51,8 +51,8 @@ FIREFOX_KNOWN = CHROME_KNOWN | {
 QUIET_LOAD = 2.2
 ABORT_LOAD = 8.0
 ABORT_SAMPLES = 12          # 12 x 15 s = 3 min above ABORT_LOAD
-MAX_RUNS = 14
-MAX_HOURS = 14
+MAX_RUNS = 20
+MAX_HOURS = 24
 
 
 def log(msg: str) -> None:
