@@ -1,1 +1,14 @@
-2026-11-20T08:19:15 driver start; load 4.78; max 14 runs / 14 h
+2026-11-20T08:43:45 driver start; load 7.86; max 20 runs / 24 h
+2026-11-20T09:29:08 quiet + canary clean: canary chromium: frames=3601 worst=16.8ms over40=0 load=1.86 2.62 3.77 | canary firefox: frames=3597 worst=33.4ms over40=0 load=1.69 2.40 3.60
+2026-11-20T09:29:08 attempt 1 for slot 1; load 1.69
+2026-11-20T10:17:08 load 9.25 above 8.0 for 3 min: aborting run
+2026-11-20T10:17:18 INVALID (load-abort) rc=-15 in 48 min: streak reset
+2026-11-20T10:17:18 manifest sha256 c61ef811c9472438 files 63
+2026-11-20T10:17:18 screenshots 68 files sha256 ab1aa8a7535c19c3 -> shots-attempt-1120-0929.sha256
+2026-11-20T10:17:18 load samples -> attempt-1120-0929-load.txt
+2026-11-20T10:46:39 quiet + canary clean: canary chromium: frames=3600 worst=33.3ms over40=0 load=2.10 2.97 4.03 | canary firefox: frames=3606 worst=33.4ms over40=0 load=2.17 2.81 3.90
+2026-11-20T10:46:39 attempt 2 for slot 1; load 2.17
+2026-11-20T11:34:55 VALID rc=1 in 48 min: 1/3 consecutive -> gate-run1.log
+2026-11-20T11:34:55 manifest sha256 c61ef811c9472438 files 63
+2026-11-20T11:34:55 screenshots 68 files sha256 440eb75682a9c575 -> shots-run1.sha256
+2026-11-20T11:34:55 load samples -> gate-run1-load.txt
