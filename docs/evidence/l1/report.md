@@ -193,6 +193,7 @@ Attempt history, kept rather than deleted, because each cost a full run:
 | 20 Nov 14:18 | `attempt-1120-1418-load-abort.log` | — (killed) | — | — | third run of the set, aborted at 43 min when load held at 8.34 for 3 min |
 | 20 Nov 15:36 | `attempt-1120-1536-load-abort.log` | — (killed) | — | — | aborted at 37 min when load reached 10.84 and held above 8.0 |
 | 20 Nov 16:27 | `attempt-1120-1627-g23.log` | all PASS | known V3/V4/V5 reds | 1 red | Firefox render p50 delta 33 ms against 30; load was 9.6 at the end of the run, fps ratio 0.80 and interval +28 ms still passed |
+| 20 Nov 17:50 | `attempt-1120-1750-load-abort.log` | — (killed) | — | — | aborted at 23 min, load above 8.0 for 3 min |
 
 After the sampling revision (§4) G23 passed 16/16 three times in a row on the
 same tree: `g23-robust1.log` … `g23-robust3.log`, Chromium p50 deltas

@@ -45,3 +45,10 @@
 2026-11-20T17:16:23 manifest sha256 c61ef811c9472438 files 63
 2026-11-20T17:16:23 screenshots 68 files sha256 e6c345a00cd9d04f -> shots-attempt-1120-1627.sha256
 2026-11-20T17:16:23 load samples -> attempt-1120-1627-load.txt
+2026-11-20T17:50:48 quiet + canary clean: canary chromium: frames=3601 worst=16.8ms over40=0 load=2.17 2.84 4.19 | canary firefox: frames=3605 worst=33.5ms over40=0 load=2.13 2.72 4.06
+2026-11-20T17:50:48 attempt 7 for slot 1; load 2.13
+2026-11-20T18:13:48 load 12.05 above 8.0 for 3 min: aborting run
+2026-11-20T18:13:59 INVALID (load-abort) rc=-15 in 23 min: streak reset
+2026-11-20T18:13:59 manifest sha256 c61ef811c9472438 files 63
+2026-11-20T18:13:59 screenshots 68 files sha256 c26f38760ecd80de -> shots-attempt-1120-1750.sha256
+2026-11-20T18:13:59 load samples -> attempt-1120-1750-load.txt
