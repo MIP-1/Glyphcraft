@@ -18,3 +18,17 @@
 2026-11-20T12:48:34 manifest sha256 c61ef811c9472438 files 63
 2026-11-20T12:48:34 screenshots 68 files sha256 fcbd33e8b5367469 -> shots-run2.sha256
 2026-11-20T12:48:34 load samples -> gate-run2-load.txt
+2026-11-20T13:13:54 canary dirty: canary chromium: frames=3601 worst=16.8ms over40=0 load=2.25 2.38 2.84 | canary firefox: frames=3630 worst=49.5ms over40=1 load=2.15 2.35 2.80
+2026-11-20T13:19:15 canary dirty: canary chromium: frames=3600 worst=33.4ms over40=0 load=2.26 2.32 2.68 | canary firefox: frames=3638 worst=47.8ms over40=1 load=3.50 2.70 2.78
+2026-11-20T13:49:39 canary dirty: canary chromium: frames=3601 worst=16.8ms over40=0 load=1.84 2.53 3.71 | canary firefox: frames=3635 worst=50.5ms over40=1 load=1.64 2.32 3.54
+2026-11-20T13:54:59 canary dirty: canary chromium: frames=3601 worst=16.8ms over40=0 load=1.67 1.98 3.11 | canary firefox: frames=3647 worst=49.5ms over40=1 load=2.34 2.07 3.05
+2026-11-20T14:00:20 canary dirty: canary chromium: frames=3601 worst=16.8ms over40=0 load=1.79 1.91 2.75 | canary firefox: frames=3622 worst=69.2ms over40=2 load=2.02 1.93 2.69
+2026-11-20T14:06:40 canary dirty: canary chromium: frames=3601 worst=16.8ms over40=0 load=2.09 1.93 2.46 | canary firefox: frames=3597 worst=49.9ms over40=1 load=2.63 2.09 2.48
+2026-11-20T14:13:00 canary dirty: canary chromium: frames=3601 worst=16.8ms over40=0 load=1.99 1.95 2.29 | canary firefox: frames=3634 worst=50ms over40=1 load=1.80 1.91 2.26
+2026-11-20T14:18:20 quiet + canary clean: canary chromium: frames=3601 worst=16.8ms over40=0 load=1.94 1.98 2.19 | canary firefox: frames=3599 worst=33.5ms over40=0 load=1.68 1.93 2.16
+2026-11-20T14:18:20 attempt 4 for slot 3; load 1.68
+2026-11-20T15:01:20 load 8.34 above 8.0 for 3 min: aborting run
+2026-11-20T15:01:31 INVALID (load-abort) rc=-15 in 43 min: streak reset
+2026-11-20T15:01:32 manifest sha256 c61ef811c9472438 files 63
+2026-11-20T15:01:34 screenshots 68 files sha256 d291efb49de5ce4b -> shots-attempt-1120-1418.sha256
+2026-11-20T15:01:34 load samples -> attempt-1120-1418-load.txt
