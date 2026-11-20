@@ -1,0 +1,2 @@
+npm notice run glyphcraft@1.0.0 gate
+npm notice run python tests/gate/run_gate.py

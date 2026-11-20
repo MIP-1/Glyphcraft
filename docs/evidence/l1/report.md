@@ -189,6 +189,7 @@ Attempt history, kept rather than deleted, because each cost a full run:
 | 19 Nov 21:45 | `attempt-1119-2145-load-abort.log` | — (killed) | — | — | load 13.95 for 3 min at 22:27, aborted at 41 min |
 | 19 Nov 18:05–20:47 | `gate-progress.txt` | — (not started) | — | — | eight canaries rejected: Firefox worst 49.6–64.7 ms, once 292.7 ms |
 | 19 Nov 23:48 | `attempt-1119-2348-interrupted.log` | — (killed) | — | — | machine shut down at 00:05, 17 min into the run; no verdict, does not count |
+| 20 Nov 09:29 | `attempt-1120-0929-load-abort.log` | — (killed) | — | — | load rose to 9.25 and held above 8.0 for 3 min; aborted at 48 min |
 
 After the sampling revision (§4) G23 passed 16/16 three times in a row on the
 same tree: `g23-robust1.log` … `g23-robust3.log`, Chromium p50 deltas
