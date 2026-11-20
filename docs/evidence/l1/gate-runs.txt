@@ -5,3 +5,12 @@ attempt-1118-2212 invalid:load-abort
 gate-run1.log valid
 attempt-1119-0007 invalid:load-abort
 attempt-1119-0100 invalid:load-abort
+gate-run1.log valid (51 min, load 3.18)
+attempt-1119-1237 invalid:load-abort (31 min)
+attempt-1119-1337 invalid:g22-unknown:chromium:paused and seeked frames equal a fresh still render (48 min)
+attempt-1119-1521 invalid:g23 (48 min)
+attempt-1119-1709 invalid:g22-unknown:chromium:compare drag stays responsive on a 4K image with 6 effects (47 min)
+gate-run1.log valid (48 min, load 2.97)
+attempt-1119-2145 invalid:load-abort (41 min)
+attempt-1119-2348 invalid:interrupted (17 min, machine shut down 00:05)
+set5-run1-pass.log valid standalone (48 min, load 2.97)

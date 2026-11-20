@@ -180,6 +180,15 @@ Attempt history, kept rather than deleted, because each cost a full run:
 | 18 Nov 12:27 | `gate-set2-run1-pass.log` | all PASS | known V3/V4/V5 reds | 16/16 PASS | a complete green run, but not part of a set: the next run failed |
 | 18 Nov 13:20 | `gate-set2-run2-g19.log` | G19 red | known V3/V4/V5 reds | 16/16 PASS | G19 heavy drag: one 74 ms long task (budget 50) among 133 posted worker updates |
 | 18 Nov 14:09 | `gate-set2-run3-g22-g23.log` | all PASS | known reds + Chromium hitch (p95 33.4 ms) | 1 red | one 132 ms stall inside one of the two Chromium light windows: pair deltas 16.0 and 27.0, median 21.5 against budget 20 |
+| 19 Nov 11:39 | `gate-run1.log` (overwritten 21:40) | all PASS | known V3/V4/V5 reds | 16/16 PASS | valid standalone run, 51 min, load 3.18; the slot-1 name was reused by the next streak |
+| 19 Nov 12:37 | `attempt-1119-1237-load-abort.log` | — (killed) | — | — | load 11.69 for 3 min at 13:07, aborted at 31 min |
+| 19 Nov 13:37 | `attempt-1119-1337-g22-unknown…still render.log` | all PASS | 1 extra Chromium red: seek parity 19/20 at t=4.0 | 16/16 PASS | load rose 1.94 → 6.26; one seek frame did not match the still render |
+| 19 Nov 15:21 | `attempt-1119-1521-g23.log` | all PASS | known reds | 2 reds | load 2.35 → 8.95; Chromium max pause delta 700.7 ms (one 1027.9 ms click), Firefox p90 delta 233.8 |
+| 19 Nov 17:09 | `attempt-1119-1709-g22-unknown…6 effects.log` | all PASS | 1 extra Chromium red: 4K compare-drag long task 51 ms | 16/16 PASS | 1 ms over the 50 ms budget at p95 50.1; compare path is image-source and not touched by L1 |
+| 19 Nov 20:52 | `set5-run1-pass.log` | all PASS | known V3/V4/V5 reds | 16/16 PASS | valid standalone run, 48 min, load 2.97 |
+| 19 Nov 21:45 | `attempt-1119-2145-load-abort.log` | — (killed) | — | — | load 13.95 for 3 min at 22:27, aborted at 41 min |
+| 19 Nov 18:05–20:47 | `gate-progress.txt` | — (not started) | — | — | eight canaries rejected: Firefox worst 49.6–64.7 ms, once 292.7 ms |
+| 19 Nov 23:48 | `attempt-1119-2348-interrupted.log` | — (killed) | — | — | machine shut down at 00:05, 17 min into the run; no verdict, does not count |
 
 After the sampling revision (§4) G23 passed 16/16 three times in a row on the
 same tree: `g23-robust1.log` … `g23-robust3.log`, Chromium p50 deltas
@@ -225,9 +234,16 @@ a harness restart cannot kill it: it waits for load < 2.2 for two minutes and a
 clean `tools/machine_canary.py`, aborts a run only when load stays above 8.0 for
 three minutes, classifies every attempt against the known V3/V4/V5 rows, and
 keeps exactly the three consecutive valid runs as `gate-run1..3.log`. Progress is
-`gate-progress.txt`, hashes are `code-hashes.txt`, and every non-valid attempt is
-kept as `attempt-<stamp>-<reason>.log`. The final three-run result is appended
-below when the unit finishes.
+`gate-progress.txt`, hashes are `code-hashes.txt`, load samples are
+`gate-run{1,2,3}-load.txt`, and the screenshot matrix is hashed into
+`shots-run{1,2,3}.sha256` because the gate overwrites it. Every non-valid attempt
+is kept as `attempt-<stamp>-<reason>.log`.
+
+The unit then survived a harness restart but not the machine going down at
+00:05 on 20 November, 17 minutes into attempt 8 (that log is
+`attempt-1119-2348-interrupted.log`). It is relaunched on 20 November at 08:19
+with the same code and a fresh streak; the 21:40 valid run it would otherwise
+overwrite is preserved as `set5-run1-pass.log`.
 
 ## 8. Break-it (10 probes) and build
 
