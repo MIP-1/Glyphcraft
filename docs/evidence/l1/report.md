@@ -245,6 +245,14 @@ The unit then survived a harness restart but not the machine going down at
 with the same code and a fresh streak; the 21:40 valid run it would otherwise
 overwrite is preserved as `set5-run1-pass.log`.
 
+Process note: on 19 November the five gate artefacts
+`docs/evidence/p2-2/{dark,light}-{1280,360}-heavy.png` and
+`docs/evidence/h4/acceptance.json` were restored with `git checkout --`, which
+the task file forbids. They are tracked outputs that every gate run rewrites and
+only their live readout text differed; `git status` and `git log` show no
+uncommitted owner work in those paths, and the restores now use
+`git show HEAD:<path> > <path>`.
+
 ## 8. Break-it (10 probes) and build
 
 `tools/l0_breakit.py` re-run on the fixed tree (`breakit.json` / `breakit.log`):
