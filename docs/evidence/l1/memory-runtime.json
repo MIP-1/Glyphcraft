@@ -1,0 +1,560 @@
+{
+  "checkpoints": {
+    "start": {
+      "heap_mb": 2.51,
+      "urls": {
+        "c": 1,
+        "r": 0,
+        "live": 1
+      },
+      "bitmaps": [
+        2,
+        0
+      ],
+      "dom_canvas": 1
+    },
+    "after_20_loads": {
+      "heap_mb": 2.76,
+      "urls": {
+        "c": 21,
+        "r": 20,
+        "live": 1
+      },
+      "bitmaps": [
+        22,
+        10
+      ],
+      "dom_canvas": 1,
+      "dom_video": 0,
+      "source": "image"
+    },
+    "after_20_exports": {
+      "heap_mb": 3.13,
+      "urls": {
+        "c": 42,
+        "r": 40,
+        "live": 2
+      },
+      "bitmaps": [
+        22,
+        11
+      ],
+      "video_frames": [
+        1200,
+        0
+      ],
+      "error": ""
+    },
+    "after_60_undo": {
+      "heap_mb": 3.3,
+      "history_before": {
+        "undo": 60,
+        "redo": 0,
+        "bytes": 124293,
+        "heap_bytes": 146074
+      },
+      "history_after": {
+        "undo": 1,
+        "redo": 59,
+        "bytes": 2073,
+        "heap_bytes": 2437
+      },
+      "urls": {
+        "c": 43,
+        "r": 42,
+        "live": 1
+      }
+    },
+    "after_5min_playback": {
+      "heap_mb": 3.49,
+      "urls": {
+        "c": 44,
+        "r": 43,
+        "live": 1
+      }
+    }
+  },
+  "idle_playback": [
+    {
+      "t": 5.55,
+      "heap_mb": 24.5,
+      "renders": 360,
+      "longtasks": 435,
+      "backing": 1280,
+      "second": 5
+    },
+    {
+      "t": 10.61,
+      "heap_mb": 24.5,
+      "renders": 427,
+      "longtasks": 502,
+      "backing": 1280,
+      "second": 10
+    },
+    {
+      "t": 15.62,
+      "heap_mb": 24.5,
+      "renders": 498,
+      "longtasks": 574,
+      "backing": 1280,
+      "second": 15
+    },
+    {
+      "t": 0.63,
+      "heap_mb": 24.5,
+      "renders": 570,
+      "longtasks": 645,
+      "backing": 1280,
+      "second": 20
+    },
+    {
+      "t": 5.69,
+      "heap_mb": 24.5,
+      "renders": 641,
+      "longtasks": 716,
+      "backing": 1280,
+      "second": 25
+    },
+    {
+      "t": 10.72,
+      "heap_mb": 24.5,
+      "renders": 702,
+      "longtasks": 777,
+      "backing": 1280,
+      "second": 30
+    },
+    {
+      "t": 15.75,
+      "heap_mb": 24.5,
+      "renders": 767,
+      "longtasks": 842,
+      "backing": 1280,
+      "second": 35
+    },
+    {
+      "t": 0.75,
+      "heap_mb": 24.5,
+      "renders": 824,
+      "longtasks": 900,
+      "backing": 1280,
+      "second": 40
+    },
+    {
+      "t": 5.76,
+      "heap_mb": 24.5,
+      "renders": 889,
+      "longtasks": 965,
+      "backing": 1280,
+      "second": 45
+    },
+    {
+      "t": 10.78,
+      "heap_mb": 24.5,
+      "renders": 950,
+      "longtasks": 1025,
+      "backing": 1280,
+      "second": 50
+    },
+    {
+      "t": 15.85,
+      "heap_mb": 24.5,
+      "renders": 1020,
+      "longtasks": 1095,
+      "backing": 1280,
+      "second": 55
+    },
+    {
+      "t": 0.84,
+      "heap_mb": 24.5,
+      "renders": 1080,
+      "longtasks": 1155,
+      "backing": 1280,
+      "second": 60
+    },
+    {
+      "t": 5.86,
+      "heap_mb": 24.5,
+      "renders": 1149,
+      "longtasks": 1225,
+      "backing": 1280,
+      "second": 65
+    },
+    {
+      "t": 10.88,
+      "heap_mb": 24.5,
+      "renders": 1220,
+      "longtasks": 1296,
+      "backing": 1280,
+      "second": 70
+    },
+    {
+      "t": 15.94,
+      "heap_mb": 24.5,
+      "renders": 1286,
+      "longtasks": 1361,
+      "backing": 1280,
+      "second": 75
+    },
+    {
+      "t": 0.98,
+      "heap_mb": 24.5,
+      "renders": 1346,
+      "longtasks": 1421,
+      "backing": 1280,
+      "second": 80
+    },
+    {
+      "t": 6,
+      "heap_mb": 24.5,
+      "renders": 1414,
+      "longtasks": 1490,
+      "backing": 1280,
+      "second": 85
+    },
+    {
+      "t": 11.01,
+      "heap_mb": 24.5,
+      "renders": 1482,
+      "longtasks": 1558,
+      "backing": 1280,
+      "second": 90
+    },
+    {
+      "t": 16.07,
+      "heap_mb": 24.5,
+      "renders": 1556,
+      "longtasks": 1631,
+      "backing": 1280,
+      "second": 95
+    },
+    {
+      "t": 1.07,
+      "heap_mb": 24.5,
+      "renders": 1616,
+      "longtasks": 1692,
+      "backing": 1280,
+      "second": 100
+    },
+    {
+      "t": 6.11,
+      "heap_mb": 24.5,
+      "renders": 1680,
+      "longtasks": 1755,
+      "backing": 1280,
+      "second": 105
+    },
+    {
+      "t": 11.17,
+      "heap_mb": 24.5,
+      "renders": 1751,
+      "longtasks": 1826,
+      "backing": 1280,
+      "second": 110
+    },
+    {
+      "t": 16.19,
+      "heap_mb": 24.5,
+      "renders": 1806,
+      "longtasks": 1881,
+      "backing": 1280,
+      "second": 115
+    },
+    {
+      "t": 1.19,
+      "heap_mb": 24.5,
+      "renders": 1874,
+      "longtasks": 1949,
+      "backing": 1280,
+      "second": 120
+    },
+    {
+      "t": 6.22,
+      "heap_mb": 24.5,
+      "renders": 1940,
+      "longtasks": 2015,
+      "backing": 1280,
+      "second": 125
+    },
+    {
+      "t": 11.26,
+      "heap_mb": 24.5,
+      "renders": 2012,
+      "longtasks": 2087,
+      "backing": 1280,
+      "second": 130
+    },
+    {
+      "t": 16.32,
+      "heap_mb": 24.5,
+      "renders": 2078,
+      "longtasks": 2153,
+      "backing": 1280,
+      "second": 135
+    },
+    {
+      "t": 1.32,
+      "heap_mb": 24.5,
+      "renders": 2140,
+      "longtasks": 2215,
+      "backing": 1280,
+      "second": 140
+    },
+    {
+      "t": 6.33,
+      "heap_mb": 24.5,
+      "renders": 2208,
+      "longtasks": 2283,
+      "backing": 1280,
+      "second": 145
+    },
+    {
+      "t": 11.35,
+      "heap_mb": 24.5,
+      "renders": 2267,
+      "longtasks": 2342,
+      "backing": 1280,
+      "second": 150
+    },
+    {
+      "t": 16.41,
+      "heap_mb": 24.5,
+      "renders": 2339,
+      "longtasks": 2414,
+      "backing": 1280,
+      "second": 155
+    },
+    {
+      "t": 1.39,
+      "heap_mb": 24.5,
+      "renders": 2390,
+      "longtasks": 2466,
+      "backing": 1280,
+      "second": 160
+    },
+    {
+      "t": 6.47,
+      "heap_mb": 24.5,
+      "renders": 2451,
+      "longtasks": 2526,
+      "backing": 1280,
+      "second": 165
+    },
+    {
+      "t": 11.49,
+      "heap_mb": 24.5,
+      "renders": 2504,
+      "longtasks": 2579,
+      "backing": 1280,
+      "second": 170
+    },
+    {
+      "t": 16.52,
+      "heap_mb": 24.5,
+      "renders": 2554,
+      "longtasks": 2629,
+      "backing": 1280,
+      "second": 175
+    },
+    {
+      "t": 1.54,
+      "heap_mb": 24.5,
+      "renders": 2618,
+      "longtasks": 2693,
+      "backing": 1280,
+      "second": 180
+    },
+    {
+      "t": 6.59,
+      "heap_mb": 24.5,
+      "renders": 2676,
+      "longtasks": 2751,
+      "backing": 1280,
+      "second": 185
+    },
+    {
+      "t": 11.64,
+      "heap_mb": 24.5,
+      "renders": 2741,
+      "longtasks": 2816,
+      "backing": 1280,
+      "second": 190
+    },
+    {
+      "t": 16.69,
+      "heap_mb": 24.5,
+      "renders": 2800,
+      "longtasks": 2875,
+      "backing": 1280,
+      "second": 195
+    },
+    {
+      "t": 1.71,
+      "heap_mb": 24.5,
+      "renders": 2868,
+      "longtasks": 2943,
+      "backing": 1280,
+      "second": 200
+    },
+    {
+      "t": 6.78,
+      "heap_mb": 24.5,
+      "renders": 2939,
+      "longtasks": 3014,
+      "backing": 1280,
+      "second": 205
+    },
+    {
+      "t": 11.81,
+      "heap_mb": 24.5,
+      "renders": 3012,
+      "longtasks": 3087,
+      "backing": 1280,
+      "second": 210
+    },
+    {
+      "t": 16.88,
+      "heap_mb": 24.5,
+      "renders": 3077,
+      "longtasks": 3152,
+      "backing": 1280,
+      "second": 215
+    },
+    {
+      "t": 1.89,
+      "heap_mb": 24.5,
+      "renders": 3137,
+      "longtasks": 3212,
+      "backing": 1280,
+      "second": 220
+    },
+    {
+      "t": 6.91,
+      "heap_mb": 24.5,
+      "renders": 3193,
+      "longtasks": 3269,
+      "backing": 1280,
+      "second": 225
+    },
+    {
+      "t": 11.92,
+      "heap_mb": 24.5,
+      "renders": 3243,
+      "longtasks": 3319,
+      "backing": 1280,
+      "second": 230
+    },
+    {
+      "t": 16.93,
+      "heap_mb": 24.5,
+      "renders": 3313,
+      "longtasks": 3389,
+      "backing": 1280,
+      "second": 235
+    },
+    {
+      "t": 1.91,
+      "heap_mb": 24.5,
+      "renders": 3374,
+      "longtasks": 3449,
+      "backing": 1280,
+      "second": 240
+    },
+    {
+      "t": 6.93,
+      "heap_mb": 24.5,
+      "renders": 3441,
+      "longtasks": 3517,
+      "backing": 1280,
+      "second": 245
+    },
+    {
+      "t": 12.04,
+      "heap_mb": 24.5,
+      "renders": 3510,
+      "longtasks": 3585,
+      "backing": 1280,
+      "second": 250
+    },
+    {
+      "t": 17.07,
+      "heap_mb": 24.5,
+      "renders": 3576,
+      "longtasks": 3651,
+      "backing": 1280,
+      "second": 255
+    },
+    {
+      "t": 2.09,
+      "heap_mb": 24.5,
+      "renders": 3648,
+      "longtasks": 3723,
+      "backing": 1280,
+      "second": 260
+    },
+    {
+      "t": 7.1,
+      "heap_mb": 24.5,
+      "renders": 3698,
+      "longtasks": 3773,
+      "backing": 1280,
+      "second": 265
+    },
+    {
+      "t": 12.14,
+      "heap_mb": 24.5,
+      "renders": 3758,
+      "longtasks": 3833,
+      "backing": 1280,
+      "second": 270
+    },
+    {
+      "t": 17.19,
+      "heap_mb": 24.5,
+      "renders": 3825,
+      "longtasks": 3900,
+      "backing": 1280,
+      "second": 275
+    },
+    {
+      "t": 2.2,
+      "heap_mb": 24.5,
+      "renders": 3885,
+      "longtasks": 3960,
+      "backing": 1280,
+      "second": 280
+    },
+    {
+      "t": 7.29,
+      "heap_mb": 24.5,
+      "renders": 3936,
+      "longtasks": 4011,
+      "backing": 1280,
+      "second": 285
+    },
+    {
+      "t": 12.34,
+      "heap_mb": 24.5,
+      "renders": 3993,
+      "longtasks": 4068,
+      "backing": 1280,
+      "second": 290
+    },
+    {
+      "t": 17.35,
+      "heap_mb": 24.5,
+      "renders": 4059,
+      "longtasks": 4135,
+      "backing": 1280,
+      "second": 295
+    },
+    {
+      "t": 2.32,
+      "heap_mb": 24.5,
+      "renders": 4126,
+      "longtasks": 4201,
+      "backing": 1280,
+      "second": 300
+    }
+  ],
+  "errors": []
+}

@@ -82,6 +82,104 @@ Firefox per-frame breakdown after L1 (`stages-firefox.json`, 720p light):
 control of 62 ms. The residual delta is the effect work itself; the scan is the
 dominant shared cost in both windows.
 
+### 3b. Frame time, long tasks, CPU and heap (same harness as L0)
+
+`tools/l0_measure.py --part playback` on the L1 tree (`GATE_TASK=l1`,
+`playback-chromium.json`, `playback-firefox.json`), identical windows to L0:
+1440×1000 viewport, light theme, 20 s playback, five pause and five seek
+clicks, 720p and 1080p sources, 0/2/7 effects. Load at start was 5.59 for
+Chromium and 3.23 for Firefox on the owner's 4-core machine; each run measures
+its own zero-effect control, so the light-minus-control deltas are the
+load-robust numbers.
+
+Chromium, light stack, L0 → L1:
+
+| Metric | 720p L0 | 720p L1 | 1080p L0 | 1080p L1 |
+|---|---:|---:|---:|---:|
+| renders/s | 10.65 | **14.50** | 7.25 | **9.95** |
+| p50 frame | 66.1 | **41.6** | 112.3 | **69.1** |
+| p95 frame | 91.6 | **58.6** | 124.0 | **111.3** |
+| interval p50 | 83.7 | **69.0** | 133.4 | **96.3** |
+| long tasks >50 ms / total | 213 / 15,876 ms | **44 / 3,219 ms** | 145 / 17,375 ms | 199 / 16,074 ms |
+| pause median (5 clicks) | 8.8 | 10.7 | 116.0 | **8.6** |
+| seek median (5 clicks) | 420.2 | 464.1 | 730.6 | **532.7** |
+| CPU s / 20 s | 24.13 | **21.45** | 29.28 | **27.91** |
+| CPU ms per render | 113 | **74** | 202 | **140** |
+| heap, point sample | 50.4 MB | **29.4 MB** | 50.4 MB | **29.4 MB** |
+
+Chromium main-thread time in the 720p light window: task 16,721 → **14,236 ms**,
+script 14,979 → 12,663 ms, layout 19.4 → 16.1 ms, style 5.8 → 4.4 ms over the
+20 s window. The whole render is one long task, so the long-task count tracks
+the frame count: fewer renders above 50 ms, and 12.7 s less long-task time in
+the same wall window.
+
+Firefox, light stack, L0 → L1:
+
+| Metric | 720p L0 | 720p L1 | 1080p L0 | 1080p L1 |
+|---|---:|---:|---:|---:|
+| renders/s | 1.26* | **12.10** | 5.43 | **8.00** |
+| p50 frame | 161 | **80** | 162 | **121** |
+| p95 frame | 278 | **100** | 361 | **160** |
+| interval p50 | 164 | **81** | 166 | **123** |
+| pause median (5 clicks) | 930.3 | **168.2** | 471.6 | **366.5** |
+| seek median (5 clicks) | 791 | **418** | 363 | 682 |
+| CPU s / 20 s | 23.70 | 25.12 | 24.73 | 26.53 |
+| CPU ms per render | 296 | **104** | 227 | **166** |
+| heap | not exposed | not exposed | not exposed | not exposed |
+
+\* The L0 Firefox 720p light2 window is the 63 s starved one. The comparable
+number is the paired delta: L0 G23 measured **+109 ms** p50 for the light stack
+over its own control, L1 measures **+15 ms** here (80 vs 65 control) and +14 ms
+in G23.
+
+What the columns say:
+
+- Chromium 720p light2 now matches its own zero-effect control: 14.5 vs 14.3
+  renders/s, p50 41.6 vs 39.4 (+2.2 ms), p95 58.6 vs 62.1 ms. L0 was 66.1 vs
+  38.4 (+27.7 ms). Long-task time fell 15.9 s → 3.2 s per 20 s window.
+- Chromium 1080p light2 renders a **larger** preview backing than L0
+  (1600×900 instead of 1280×720) and still halves p50 (112.3 → 69.1 ms), lifts
+  fps 7.25 → 9.95 and drops CPU per render 202 → 140 ms. Its p95 stays above
+  50 ms (111.3), which is the software-raster limit recorded in §9, not a
+  regression: it is 12.7 ms better than L0 at 56 % more preview pixels.
+- Firefox 1080p light2: p50 162 → 121 ms, p95 361 → 160 ms, fps 5.43 → 8.0,
+  CPU per render 228 → 166 ms. Firefox's own control drifted between the two
+  runs (720p 52 → 65 ms, 1080p 107 → 95 ms), so the paired deltas are the
+  claim: p50 +109 → +15 ms at 720p and +55 → +26 ms at 1080p.
+- CPU seconds per window rise slightly in Firefox only because the run now
+  completes 160–242 frames where L0 completed 80–109; per frame the cost
+  falls 1.4–2.8×. Total CPU stays at 1.07–1.40 core, the same envelope as L0's 1.08–1.47.
+- Seek medians are five-sample medians and move with machine noise: Chromium
+  720p light2 464 ms against its own 441 ms control, 1080p 533 against 511;
+  Firefox 720p 418 against 416. The one large value (Firefox 1080p light2 682
+  against 627 control, +55 ms) is the same size as L0's own spread in that run
+  (control 434, light2 363) and does not reproduce across sizes, so it is
+  recorded as noise rather than claimed as a fix or a regression.
+
+### Heap and retained buffers (`memory-runtime.json`)
+
+Same harness as L0: image start, 20 alternating image/video loads, 20 WebM
+exports, 60 undo steps, then five minutes of uninterrupted 720p light-stack
+playback with the heap sampled every 5 s.
+
+| Checkpoint | L0 heap | L1 heap | Object URLs (created/revoked/live) | ImageBitmaps (created/closed) |
+|---|---:|---:|---|---|
+| Start (image loaded) | 2.50 MB | 2.51 MB | 1 / 0 / 1 | 2 / 0 |
+| After 20 load/clear cycles | 2.74 MB | 2.76 MB | 21 / 20 / 1 | 22 / 10 |
+| After 20 WebM exports (2 s, 320×180) | 3.11 MB | 3.13 MB | 42 / 40 / 2 | 22 / 11 |
+| After 60 undo steps | 3.28 MB | 3.30 MB | 43 / 42 / 1 | — |
+| **5 min playback, 60 samples** | **35.1 MB constant** | **24.5 MB constant** | 44 / 43 / 1 | — |
+| Renders in those 5 minutes | 3,151 | **4,126** | — | — |
+
+The leak behaviour is unchanged: one live object URL that is revoked on the
+next load, ownership-transferred bitmaps, the same 124,293-byte history cap,
+and 60/60 identical heap samples in both trees. The level is 10.6 MB lower
+while the same five minutes now completes 31 % more renders, which is the
+same effect seen in the playback windows (point sample 50.4 → 29.4 MB): fewer
+transient `ImageData`/canvas buffers are alive per frame, not a new retention
+policy. Heap snapshots are point-in-time; the flat 60-sample line is the leak
+claim, and the level is reported, not interpreted further.
+
 ## 4. G23 rule revision (recorded, not silent)
 
 The last absolute timing rule was the pause budget. With the fixed tree and
@@ -225,7 +323,7 @@ The exact G22 lines, unchanged from the V3/V4/V5 scope of this round:
   `[output] size controls are enabled for video`.
 - Firefox, all three runs: the same four, plus in run 3 only
   `[hitch] compare drag stays responsive on a 4K image with 6 effects`
-  (known Firefox row; `longtasks 0`, max 50.2 ms against the 50 ms bound).
+  (known Firefox row; `longtasks 0`, p95 32.6 ms against the 25 ms bound).
 - No other G22 line appears in any of the three runs.
 
 The runtime and test manifest is `c61ef811c9472438` (63 files) after every run,
@@ -328,9 +426,9 @@ errors".
   the preview is still the best the cap allows, but it is below
   `CSS × DPR` and is reported rather than silently failed.
 - Perceived sharpness at DPR 1, zoom 2 on a real HiDPI display.
-- Playback of a long (multi-minute) clip: memory is L0's flat 35.1 MB result;
-  L1 does not add retained buffers (the handed `ImageData` is the same
-  per-frame allocation, released immediately after the scan).
+- Playback of a long (multi-minute) clip: the harness ran five minutes and the
+  heap stayed at 24.5 MB in 60/60 samples (L0: 35.1 MB), but a real player
+  session on the owner's machine is not measured here.
 
 ## 10. Next
 

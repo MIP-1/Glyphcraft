@@ -30,7 +30,11 @@ preview backing store that follows the display up to 1920 px. The final set is
 three consecutive full-gate runs on 20 November (`gate-run1..3.log`, 49/48/49
 min, load 1.39–3.20, identical runtime manifest `c61ef811c9472438`): G1–G21
 PASS, G23 16/16 in all three, G22 red only on the known V3/V4 rows and, in one
-run, the known Firefox 4K compare-drag row. G20 is 200/200 exact.
+run, the known Firefox 4K compare-drag row. G20 is 200/200 exact. The same
+harness as L0 gives the after-columns: Chromium 720p light2 66.1 → 41.6 ms p50
+at 14.5 renders/s against a 14.3/s control, Firefox 1080p light2 162 → 121 ms,
+and the 5-minute heap is flat at 24.5 MB (L0: 35.1 MB) while rendering 31 %
+more frames.
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -267,8 +271,8 @@ and raw data are in `docs/evidence/p2-3/perf-log.md`.
 - L1 sharpness at DPR 2 above ~140 % zoom on a 4K source: the 1920 px backing cap
   is reached, so the preview is the best the cap allows but below CSS × DPR.
 - L1 real CPU and RAM on the owner's machine, and a long (multi-minute) clip:
-  memory was flat at 35.1 MB in L0 and L1 adds no retained buffer, but that is a
-  headless measurement.
+  the headless 5-minute heap is flat at 24.5 MB (L0: 35.1 MB) with 60/60 equal
+  samples, but that is still a headless measurement.
 - Real-device frame rate, real GPU playback and real Safari: the worker's
   long-task numbers come from headless Chromium and are not a real-device
   claim.

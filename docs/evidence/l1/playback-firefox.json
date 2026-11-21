@@ -1,0 +1,509 @@
+{
+  "browser": "firefox",
+  "windows": {
+    "720p-none": {
+      "renders": 297,
+      "renders_per_s": 14.85,
+      "render_p50": 65,
+      "render_p95": 80,
+      "render_max": 125,
+      "interval_p50": 66,
+      "interval_p95": 82,
+      "longtasks": 0,
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "longtasks_over_50": 0,
+      "rvfc": 297,
+      "skipped_rvfc": 0,
+      "raf": 0,
+      "canvases": 0,
+      "canvas_per_render": 0.0,
+      "gid_n": 0,
+      "gid_ms": 0,
+      "gid_mb": 0.0,
+      "pid_n": 0,
+      "pid_ms": 0,
+      "draw_n": 0,
+      "draw_ms": 0,
+      "video_time": 1.299,
+      "paused": false,
+      "backing": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "source": {
+        "w": 1280,
+        "h": 720,
+        "type": "video"
+      },
+      "status": null,
+      "heap_start_mb": null,
+      "heap_end_mb": null,
+      "heap_max_mb": null,
+      "heap_samples": 0,
+      "url_live": 1,
+      "bitmaps": [
+        0,
+        0
+      ],
+      "cpu_s": 25.179999999999993,
+      "wall_s": 20.00009250640869,
+      "cpu_cores": 1.26,
+      "cpu_ms_per_render": 84.8,
+      "rss_delta_mb": -1.2890625,
+      "video_start": 1.21,
+      "video_advance": 0.09,
+      "pause_latency_ms": [
+        182.8,
+        135.9,
+        135.7,
+        287.5,
+        140.7
+      ],
+      "pause_latency_med": 140.7,
+      "seek_latency_ms": [
+        513,
+        269,
+        521,
+        347,
+        416
+      ],
+      "seek_latency_med": 416,
+      "effects": [],
+      "size": "720p"
+    },
+    "720p-light2": {
+      "renders": 242,
+      "renders_per_s": 12.1,
+      "render_p50": 80,
+      "render_p95": 100,
+      "render_max": 164,
+      "interval_p50": 81,
+      "interval_p95": 101,
+      "longtasks": 0,
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "longtasks_over_50": 0,
+      "rvfc": 242,
+      "skipped_rvfc": 0,
+      "raf": 0,
+      "canvases": 0,
+      "canvas_per_render": 0.0,
+      "gid_n": 0,
+      "gid_ms": 0,
+      "gid_mb": 0.0,
+      "pid_n": 0,
+      "pid_ms": 0,
+      "draw_n": 0,
+      "draw_ms": 0,
+      "video_time": 1.395,
+      "paused": false,
+      "backing": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "source": {
+        "w": 1280,
+        "h": 720,
+        "type": "video"
+      },
+      "status": null,
+      "heap_start_mb": null,
+      "heap_end_mb": null,
+      "heap_max_mb": null,
+      "heap_samples": 0,
+      "url_live": 1,
+      "bitmaps": [
+        0,
+        0
+      ],
+      "cpu_s": 25.12000000000002,
+      "wall_s": 20.000100135803223,
+      "cpu_cores": 1.26,
+      "cpu_ms_per_render": 103.8,
+      "rss_delta_mb": 23.453125,
+      "video_start": 1.26,
+      "video_advance": 0.14,
+      "pause_latency_ms": [
+        16.6,
+        163.8,
+        169.3,
+        168.2,
+        262.6
+      ],
+      "pause_latency_med": 168.2,
+      "seek_latency_ms": [
+        512,
+        291,
+        477,
+        234,
+        418
+      ],
+      "seek_latency_med": 418,
+      "effects": [
+        "posterize",
+        "duotone"
+      ],
+      "size": "720p"
+    },
+    "720p-heavy7": {
+      "renders": 18,
+      "renders_per_s": 0.9,
+      "render_p50": 1227,
+      "render_p95": 1349,
+      "render_max": 1368,
+      "interval_p50": 1231,
+      "interval_p95": 1351,
+      "longtasks": 0,
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "longtasks_over_50": 0,
+      "rvfc": 18,
+      "skipped_rvfc": 0,
+      "raf": 0,
+      "canvases": 0,
+      "canvas_per_render": 0.0,
+      "gid_n": 0,
+      "gid_ms": 0,
+      "gid_mb": 0.0,
+      "pid_n": 0,
+      "pid_ms": 0,
+      "draw_n": 0,
+      "draw_ms": 0,
+      "video_time": 2.803,
+      "paused": false,
+      "backing": {
+        "w": 1280,
+        "h": 720
+      },
+      "preview": {
+        "w": 1280,
+        "h": 720,
+        "scale": 1
+      },
+      "full": {
+        "w": 1280,
+        "h": 720
+      },
+      "source": {
+        "w": 1280,
+        "h": 720,
+        "type": "video"
+      },
+      "status": null,
+      "heap_start_mb": null,
+      "heap_end_mb": null,
+      "heap_max_mb": null,
+      "heap_samples": 0,
+      "url_live": 1,
+      "bitmaps": [
+        0,
+        0
+      ],
+      "cpu_s": 23.50999999999999,
+      "wall_s": 20.000090837478638,
+      "cpu_cores": 1.18,
+      "cpu_ms_per_render": 1306.1,
+      "rss_delta_mb": -7.26171875,
+      "video_start": 1.45,
+      "video_advance": 1.35,
+      "pause_latency_ms": [
+        17.1,
+        2589.4,
+        2650.8,
+        3724.0,
+        3797.4
+      ],
+      "pause_latency_med": 2650.8,
+      "seek_latency_ms": [
+        1773,
+        1358,
+        1536,
+        1299,
+        1601
+      ],
+      "seek_latency_med": 1536,
+      "effects": [
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "sharpen",
+        "oil"
+      ],
+      "size": "720p"
+    },
+    "1080p-none": {
+      "renders": 202,
+      "renders_per_s": 10.1,
+      "render_p50": 95,
+      "render_p95": 125,
+      "render_max": 245,
+      "interval_p50": 97,
+      "interval_p95": 126,
+      "longtasks": 0,
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "longtasks_over_50": 0,
+      "rvfc": 202,
+      "skipped_rvfc": 0,
+      "raf": 0,
+      "canvases": 0,
+      "canvas_per_render": 0.0,
+      "gid_n": 0,
+      "gid_ms": 0,
+      "gid_mb": 0.0,
+      "pid_n": 0,
+      "pid_ms": 0,
+      "draw_n": 0,
+      "draw_ms": 0,
+      "video_time": 1.448,
+      "paused": false,
+      "backing": {
+        "w": 1600,
+        "h": 900
+      },
+      "preview": {
+        "w": 1600,
+        "h": 900,
+        "scale": 0.8333
+      },
+      "full": {
+        "w": 1920,
+        "h": 1080
+      },
+      "source": {
+        "w": 1920,
+        "h": 1080,
+        "type": "video"
+      },
+      "status": null,
+      "heap_start_mb": null,
+      "heap_end_mb": null,
+      "heap_max_mb": null,
+      "heap_samples": 0,
+      "url_live": 1,
+      "bitmaps": [
+        0,
+        0
+      ],
+      "cpu_s": 26.480000000000047,
+      "wall_s": 20.000068187713623,
+      "cpu_cores": 1.32,
+      "cpu_ms_per_render": 131.1,
+      "rss_delta_mb": 41.8359375,
+      "video_start": 1.21,
+      "video_advance": 0.23,
+      "pause_latency_ms": [
+        110.5,
+        217.7,
+        294.9,
+        204.4,
+        108.6
+      ],
+      "pause_latency_med": 204.4,
+      "seek_latency_ms": [
+        753,
+        507,
+        686,
+        351,
+        627
+      ],
+      "seek_latency_med": 627,
+      "effects": [],
+      "size": "1080p"
+    },
+    "1080p-light2": {
+      "renders": 160,
+      "renders_per_s": 8.0,
+      "render_p50": 121,
+      "render_p95": 160,
+      "render_max": 252,
+      "interval_p50": 123,
+      "interval_p95": 161,
+      "longtasks": 0,
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "longtasks_over_50": 0,
+      "rvfc": 160,
+      "skipped_rvfc": 0,
+      "raf": 0,
+      "canvases": 0,
+      "canvas_per_render": 0.0,
+      "gid_n": 0,
+      "gid_ms": 0,
+      "gid_mb": 0.0,
+      "pid_n": 0,
+      "pid_ms": 0,
+      "draw_n": 0,
+      "draw_ms": 0,
+      "video_time": 1.459,
+      "paused": false,
+      "backing": {
+        "w": 1600,
+        "h": 900
+      },
+      "preview": {
+        "w": 1600,
+        "h": 900,
+        "scale": 0.8333
+      },
+      "full": {
+        "w": 1920,
+        "h": 1080
+      },
+      "source": {
+        "w": 1920,
+        "h": 1080,
+        "type": "video"
+      },
+      "status": null,
+      "heap_start_mb": null,
+      "heap_end_mb": null,
+      "heap_max_mb": null,
+      "heap_samples": 0,
+      "url_live": 1,
+      "bitmaps": [
+        0,
+        0
+      ],
+      "cpu_s": 26.53000000000003,
+      "wall_s": 20.000078201293945,
+      "cpu_cores": 1.33,
+      "cpu_ms_per_render": 165.8,
+      "rss_delta_mb": 153.359375,
+      "video_start": 1.2,
+      "video_advance": 0.26,
+      "pause_latency_ms": [
+        140.1,
+        415.6,
+        365.1,
+        366.5,
+        383.1
+      ],
+      "pause_latency_med": 366.5,
+      "seek_latency_ms": [
+        780,
+        414,
+        816,
+        364,
+        682
+      ],
+      "seek_latency_med": 682,
+      "effects": [
+        "posterize",
+        "duotone"
+      ],
+      "size": "1080p"
+    },
+    "1080p-heavy7": {
+      "renders": 13,
+      "renders_per_s": 0.65,
+      "render_p50": 1902,
+      "render_p95": 2008,
+      "render_max": 2029,
+      "interval_p50": 1916,
+      "interval_p95": 2013,
+      "longtasks": 0,
+      "longtask_ms": 0,
+      "longest_ms": 0,
+      "longtasks_over_50": 0,
+      "rvfc": 13,
+      "skipped_rvfc": 0,
+      "raf": 0,
+      "canvases": 0,
+      "canvas_per_render": 0.0,
+      "gid_n": 0,
+      "gid_ms": 0,
+      "gid_mb": 0.0,
+      "pid_n": 0,
+      "pid_ms": 0,
+      "draw_n": 0,
+      "draw_ms": 0,
+      "video_time": 5.373,
+      "paused": false,
+      "backing": {
+        "w": 1600,
+        "h": 900
+      },
+      "preview": {
+        "w": 1600,
+        "h": 900,
+        "scale": 0.8333
+      },
+      "full": {
+        "w": 1920,
+        "h": 1080
+      },
+      "source": {
+        "w": 1920,
+        "h": 1080,
+        "type": "video"
+      },
+      "status": null,
+      "heap_start_mb": null,
+      "heap_end_mb": null,
+      "heap_max_mb": null,
+      "heap_samples": 0,
+      "url_live": 1,
+      "bitmaps": [
+        0,
+        0
+      ],
+      "cpu_s": 25.66999999999996,
+      "wall_s": 20.00006890296936,
+      "cpu_cores": 1.28,
+      "cpu_ms_per_render": 1974.6,
+      "rss_delta_mb": -204.57421875,
+      "video_start": 2.13,
+      "video_advance": 3.24,
+      "pause_latency_ms": [
+        3914.6,
+        5621.0,
+        7702.8,
+        5624.0,
+        4060.8
+      ],
+      "pause_latency_med": 5621.0,
+      "seek_latency_ms": [
+        2683,
+        2244,
+        2349,
+        2053,
+        2419
+      ],
+      "seek_latency_med": 2349,
+      "effects": [
+        "posterize",
+        "edges",
+        "sketch",
+        "emboss",
+        "blur",
+        "sharpen",
+        "oil"
+      ],
+      "size": "1080p"
+    }
+  },
+  "errors": [],
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64; rv:157.0) Gecko/20100101 Firefox/157.0"
+}
