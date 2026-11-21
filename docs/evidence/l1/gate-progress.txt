@@ -52,3 +52,23 @@
 2026-11-20T18:13:59 manifest sha256 c61ef811c9472438 files 63
 2026-11-20T18:13:59 screenshots 68 files sha256 c26f38760ecd80de -> shots-attempt-1120-1750.sha256
 2026-11-20T18:13:59 load samples -> attempt-1120-1750-load.txt
+2026-11-20T18:27:22 canary dirty: canary chromium: frames=3598 worst=66.7ms over40=1 load=2.18 3.44 4.99 | canary firefox: frames=3632 worst=33.5ms over40=0 load=1.89 3.13 4.77
+2026-11-20T18:32:42 quiet + canary clean: canary chromium: frames=3601 worst=16.8ms over40=0 load=2.01 2.47 4.09 | canary firefox: frames=3630 worst=33.4ms over40=0 load=1.63 2.23 3.88
+2026-11-20T18:32:42 attempt 8 for slot 1; load 1.63
+2026-11-20T19:21:12 VALID rc=1 in 49 min: 1/3 consecutive -> gate-run1.log
+2026-11-20T19:21:12 manifest sha256 c61ef811c9472438 files 63
+2026-11-20T19:21:13 screenshots 68 files sha256 532d5fa68eee9c55 -> shots-run1.sha256
+2026-11-20T19:21:13 load samples -> gate-run1-load.txt
+2026-11-20T19:27:33 quiet + canary clean: canary chromium: frames=3601 worst=16.8ms over40=0 load=2.38 2.53 3.03 | canary firefox: frames=3640 worst=34ms over40=0 load=2.01 2.39 2.94
+2026-11-20T19:27:33 attempt 9 for slot 2; load 2.01
+2026-11-20T20:15:18 VALID rc=1 in 48 min: 2/3 consecutive -> gate-run2.log
+2026-11-20T20:15:18 manifest sha256 c61ef811c9472438 files 63
+2026-11-20T20:15:18 screenshots 68 files sha256 d23c48a96f98babb -> shots-run2.sha256
+2026-11-20T20:15:18 load samples -> gate-run2-load.txt
+2026-11-20T20:25:39 quiet + canary clean: canary chromium: frames=3601 worst=16.8ms over40=0 load=1.75 2.12 2.64 | canary firefox: frames=3621 worst=33.4ms over40=0 load=1.39 1.94 2.54
+2026-11-20T20:25:39 attempt 10 for slot 3; load 1.39
+2026-11-20T21:14:24 VALID rc=1 in 49 min: 3/3 consecutive -> gate-run3.log
+2026-11-20T21:14:24 manifest sha256 c61ef811c9472438 files 63
+2026-11-20T21:14:24 screenshots 68 files sha256 c93524e0cc3e62dd -> shots-run3.sha256
+2026-11-20T21:14:24 load samples -> gate-run3-load.txt
+2026-11-20T21:14:24 DONE: three consecutive valid runs

@@ -206,7 +206,55 @@ threshold changes: the true-median estimator (§4), the sample-count revision
 (§4), and a per-run load sampler plus a blank-page canary so a spike is evidence
 instead of a guess.
 
-FINAL-GATE-RESULTS-PLACEHOLDER
+### Final set — three consecutive valid runs (20 November)
+
+`tools/gate_set.py` started each run only after load < 2.2 for two minutes and a
+clean 60 s blank-page canary, and kept the first three valid runs in a row.
+
+| # | Window | Log | Duration | Load min → max | G1–G21 | G22 | G23 |
+|---|---|---|---|---:|---|---|---|
+| 1 | 18:32 → 19:21 | `gate-run1.log` | 49 min | 1.63 → 2.84 | all PASS | 4 Chromium + 4 Firefox known rows | **16/16 PASS** |
+| 2 | 19:27 → 20:15 | `gate-run2.log` | 48 min | 2.01 → 2.83 | all PASS | 4 Chromium + 4 Firefox known rows | **16/16 PASS** |
+| 3 | 20:25 → 21:14 | `gate-run3.log` | 49 min | 1.39 → 3.20 | all PASS | 4 Chromium + 5 Firefox known rows | **16/16 PASS** |
+
+The exact G22 lines, unchanged from the V3/V4/V5 scope of this round:
+
+- Chromium, all three runs: `[seek] video control bar exists`,
+  `[seek] seek bar is a range input`,
+  `[seek] jump buttons meet 44px touch target`,
+  `[output] size controls are enabled for video`.
+- Firefox, all three runs: the same four, plus in run 3 only
+  `[hitch] compare drag stays responsive on a 4K image with 6 effects`
+  (known Firefox row; `longtasks 0`, max 50.2 ms against the 50 ms bound).
+- No other G22 line appears in any of the three runs.
+
+The runtime and test manifest is `c61ef811c9472438` (63 files) after every run,
+identical to the standalone valid runs earlier that day, so the tree did not
+move between runs.
+
+G23 from the third run (`g23.json`, 12 windows, 16 checks):
+
+| Check | Chromium | Firefox | Budget |
+|---|---|---|---|
+| light render p50 delta | 12.0 ms (pairs 13.5 / 12.0 / 11.3) | 14 ms (pairs 14 / 15 / 14) | ≤ 20 / 30 |
+| fps ratio | 0.90 | 0.83 | ≥ 0.60 |
+| interval p50 extra | 13.6 ms | 15 ms | ≤ 50 |
+| pause p90 delta | 14.8 ms | −12.9 ms | ≤ 150 |
+| pause max delta | 18.6 ms | 73.6 ms | ≤ 300 |
+| renders / 5 s | 70–74 | 60–61 | ≥ 15 |
+| video advance / 5 s | 5.0–5.06 s | 5.07–5.09 s | ≥ 4.5 |
+| sharpness | 8/8 cells | 8/8 cells | backing ≥ min(source, CSS×DPR) |
+
+Screenshot matrix: all 68 files were opened and described
+(`screenshot-review.md`). Their hashes are `shots-run{1,2,3}.sha256`; 7 files
+are byte-identical across all three runs (the empty-editor reload states and the
+mobile menu, which contain no live readout), and the other 61 differ only where
+the live render time and the canvas sit. The pixel oracles are the gate's own
+G19/G20/G21/G22 checks, not the PNG hashes.
+
+The earlier valid runs (`set5-run1-pass.log` and the 19:21 run of the 19th) were
+standalone: each was followed by an interrupted or failed run, so they never
+formed a set of three and are kept as history, not as the L1 gate result.
 
 ### Set 3 (after the sampling revision)
 

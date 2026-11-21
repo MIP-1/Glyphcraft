@@ -10,7 +10,7 @@ CSS and four classic scripts loaded in order (`engine.js` → `effects.js` →
 the browser supports it. Git keeps the readable sources; `npm run build`
 writes an optional minified `dist/` for publishing.
 
-## Status — 2026-11-19
+## Status — 2026-11-21
 
 **Current status:** the owner's video-fix round is **in progress** on `main`.
 V0 (`V0-pass`) reproduced the real video defects and registered G22; V1
@@ -23,13 +23,14 @@ and tagged `P2-3-pass`; P2-4 is still **NOT STARTED** and is not part of this
 pass.
 
 The lag and performance round (`docs/prompts/lag_performance_round.md`) is at
-**L1**: L0 measured the lag, the soft preview and the memory floor (`L0-pass`),
-and L1's fixes are committed in `6dd7aa1` — one effects buffer instead of four
-reads, a bit-identical fused posterize/duotone pass, and a preview backing store
-that follows the display up to 1920 px. G23 is 16/16 three times standalone and
-G20 is 200/200 exact. The last open item is three consecutive full-gate runs;
-two are green and the third was lost to a load spike on the owner's machine,
-which is recorded rather than excused in `docs/evidence/l1/report.md` §7.
+**L1 PASS**: L0 measured the lag, the soft preview and the memory floor
+(`L0-pass`), and L1's fixes are committed in `6dd7aa1` — one effects buffer
+instead of four reads, a bit-identical fused posterize/duotone pass, and a
+preview backing store that follows the display up to 1920 px. The final set is
+three consecutive full-gate runs on 20 November (`gate-run1..3.log`, 49/48/49
+min, load 1.39–3.20, identical runtime manifest `c61ef811c9472438`): G1–G21
+PASS, G23 16/16 in all three, G22 red only on the known V3/V4 rows and, in one
+run, the known Firefox 4K compare-drag row. G20 is 200/200 exact.
 
 | Work | State | Evidence |
 | --- | --- | --- |
@@ -53,7 +54,7 @@ which is recorded rather than excused in `docs/evidence/l1/report.md` §7.
 | Video fix V1 full-resolution frames | PASS | tag `V1-pass`, `docs/evidence/v1/report.md` |
 | Video fix V2 real MP4/WebM export | PASS | tag `V2-pass`, `docs/evidence/v2/report.md` |
 | Lag/perf L0 measure lag, softness, memory | PASS | tag `L0-pass`, `docs/evidence/l0/report.md` |
-| Lag/perf L1 one buffer + sharp preview | IN PROGRESS (gate set pending) | commit `6dd7aa1`, `docs/evidence/l1/report.md` |
+| Lag/perf L1 one buffer + sharp preview | PASS | tag `L1-pass`, `docs/evidence/l1/report.md` |
 | Video fix V3–V5 | IN PROGRESS | control bar, output sizes, hitches |
 | P2-4 undo / redo / history | NOT STARTED | history exists but is unfinished |
 | P2-5 before/after finish | NOT STARTED | |
@@ -237,15 +238,18 @@ and raw data are in `docs/evidence/p2-3/perf-log.md`.
 - G23's own measurements are now variance-robust without moving a budget: three
   control/light pairs, twenty pause clicks per side, true median, 3 s warm-up.
   The V2 tree still fails in every window it was measured in.
+- Final gate set, three consecutive runs on 20 November: G1–G21 PASS, G23 16/16
+  each time, G22 only the known V3/V4 rows (plus the known Firefox 4K drag row
+  once), identical runtime manifest `c61ef811c9472438`.
 - Build: JS 226,369 → 206,019 bytes; `dist_smoke` source hash equals dist hash.
 - Evidence, rejected variants and the failed-attempt log:
   `docs/evidence/l1/report.md`.
 
 **Next steps**
 
-1. Finish L1's gate set (three consecutive clean full-gate runs) and tag
-   `L1-pass`, then L2 (dead code, allocations, idle cost, load cost and
-   compression experiments) and L3 (audit and closeout).
+1. L2: dead code, allocations, idle and load cost, and the compression
+   experiments, each marked KEEP or REJECTED with numbers; then L3 audit and
+   closeout.
 2. V2 is PASS. After the lag round: V3 video control bar, V4 Output Size
    controls enabled for video, V5 image hitches and closeout.
 3. Owner hand-check: fresh reload in both themes, one real video over 100 MB,

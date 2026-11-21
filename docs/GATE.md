@@ -3893,3 +3893,12 @@ from about 3 to about 5 minutes inside the gate.
 The before/after table, the RED-to-GREEN logs and the rejected variants are in
 `docs/evidence/l1/report.md`. G23 runs after G22 and adds roughly four minutes
 to the gate (the sharpness and paired-window work).
+
+Final L1 gate set (20 November, `GATE_TASK=l1`): three consecutive valid runs,
+`gate-run1..3.log`, 49/48/49 min, load 1.39–3.20, runtime manifest
+`c61ef811c9472438` identical after each. G1–G21 PASS, G23 16/16 in all three,
+G22 red only on the four per-browser V3/V4 rows plus the known Firefox 4K
+compare-drag row in one run. Third-run G23: Chromium p50 delta 12.0 ms and
+Firefox 14 ms; fps ratio 0.90 / 0.83; pause p90 delta 14.8 / −12.9 ms;
+sharpness 8/8 cells. Two green runs from earlier the same day were standalone
+(`set5-run1-pass.log` and the 19:21 run) and are kept as history.
